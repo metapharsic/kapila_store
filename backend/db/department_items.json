@@ -1,0 +1,9008 @@
+{
+  "TIFFINS": [
+    {
+      "name": "ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "ATUKULU",
+      "unit": "kg"
+    },
+    {
+      "name": "B.LEAF",
+      "unit": "g"
+    },
+    {
+      "name": "BAKING PWR/EATING SODA",
+      "unit": "g"
+    },
+    {
+      "name": "BUTTER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANA DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT",
+      "unit": "pcs"
+    },
+    {
+      "name": "COCONUT POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COFFEE POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "CORN FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINI",
+      "unit": "g"
+    },
+    {
+      "name": "DALDA",
+      "unit": "kg"
+    },
+    {
+      "name": "DHANIYA",
+      "unit": "g"
+    },
+    {
+      "name": "DHANIYA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "DOSA FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "DRY COCONUT",
+      "unit": "g"
+    },
+    {
+      "name": "ELAICHI",
+      "unit": "g"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GAS",
+      "unit": "cylinder"
+    },
+    {
+      "name": "GHEE",
+      "unit": "kg"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN PEAS",
+      "unit": "kg"
+    },
+    {
+      "name": "HING",
+      "unit": "g"
+    },
+    {
+      "name": "JAGGERY",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA",
+      "unit": "g"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "KABULI CHANA",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU NUKA",
+      "unit": "g"
+    },
+    {
+      "name": "KASHMIRCHILLI",
+      "unit": "g"
+    },
+    {
+      "name": "KASTURI METHI",
+      "unit": "g"
+    },
+    {
+      "name": "KHAS-KHAS",
+      "unit": "g"
+    },
+    {
+      "name": "LAVANG",
+      "unit": "g"
+    },
+    {
+      "name": "MAIDA",
+      "unit": "kg"
+    },
+    {
+      "name": "MASOOR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "MENTULU",
+      "unit": "g"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "MOONG DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PALM OIL",
+      "unit": "L"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PATHER PHOOL",
+      "unit": "g"
+    },
+    {
+      "name": "PEPPER",
+      "unit": "g"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PESARLU",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI ROUND",
+      "unit": "g"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PUTANA",
+      "unit": "kg"
+    },
+    {
+      "name": "RAGI FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "RAI",
+      "unit": "g"
+    },
+    {
+      "name": "RED CHILLI",
+      "unit": "g"
+    },
+    {
+      "name": "SALT BIG",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT SMALL",
+      "unit": "kg"
+    },
+    {
+      "name": "SAMBER POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "SOMP",
+      "unit": "g"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "TAMARIND",
+      "unit": "kg"
+    },
+    {
+      "name": "TARBUJ",
+      "unit": "kg"
+    },
+    {
+      "name": "TILL",
+      "unit": "g"
+    },
+    {
+      "name": "TUGAR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TURMERIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "UPMA RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE BATANA",
+      "unit": "kg"
+    },
+    {
+      "name": "RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BOILED RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "URAD DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "METHI SEEDS",
+      "unit": "g"
+    },
+    {
+      "name": "CHANADAL",
+      "unit": "kg"
+    },
+    {
+      "name": "POHA",
+      "unit": "kg"
+    },
+    {
+      "name": "IDLY RAVA",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSA BATTER",
+      "unit": "kg"
+    },
+    {
+      "name": "3 CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8 CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "CARRY BAG 13x16",
+      "unit": "pcs"
+    },
+    {
+      "name": "CARRY BAG 4x6",
+      "unit": "pcs"
+    },
+    {
+      "name": "KAPILA PARCEL COVERS 16*20",
+      "unit": "pcs"
+    },
+    {
+      "name": "6*8 SILVER COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN SPOON BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "7*9 SILVER COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "pcs"
+    },
+    {
+      "name": "WAITER CAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pcs"
+    },
+    {
+      "name": "4*6 PARCEL COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "5*8 PARCEL COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "roll"
+    },
+    {
+      "name": "PARCEL LEAF BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "roll"
+    },
+    {
+      "name": "PAPER ROLL",
+      "unit": "roll"
+    },
+    {
+      "name": "PLASTER",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING CLOTH",
+      "unit": "pcs"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "20-20",
+      "unit": "box"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "AMCHOOR POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "AMCHUR RAW",
+      "unit": "kg"
+    },
+    {
+      "name": "ANAR",
+      "unit": "kg"
+    },
+    {
+      "name": "AROMATIC POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BADAM",
+      "unit": "kg"
+    },
+    {
+      "name": "BAKING POWDER",
+      "unit": "pcs"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BHARATH GAS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI LEAF",
+      "unit": "kg"
+    },
+    {
+      "name": "BIRYANI RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BIS COFFE BISCUITS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BIS COFFE PASTE",
+      "unit": "bottle"
+    },
+    {
+      "name": "BLACK OLIVES",
+      "unit": "bottle"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK URAD DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "BLUE LAGOON",
+      "unit": "bottle"
+    },
+    {
+      "name": "BOBBERLU",
+      "unit": "kg"
+    },
+    {
+      "name": "BOOST",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOURNVITA",
+      "unit": "kg"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BREAD CRUMBS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BREAD PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "BROKEN RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "BROWNIE",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BUN",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER 500 GM",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER PAPER",
+      "unit": "pkt"
+    },
+    {
+      "name": "BUTTER SCOTCH ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "BUTTER SCOTCH SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHAT MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHEESE 500G",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHEESE SLICE",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHILLY FLAKES KG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES SACHETS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHOCOLATE ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "CHOLE MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING COTH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONET OIL",
+      "unit": "L"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COFFEE NESCAFE",
+      "unit": "pkt"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CORN FLAKES",
+      "unit": "kg"
+    },
+    {
+      "name": "CREAM",
+      "unit": "pcs"
+    },
+    {
+      "name": "CURD CUPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CUSTOD POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINA",
+      "unit": "kg"
+    },
+    {
+      "name": "DARK CHOCO CHIPS",
+      "unit": "kg"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "DR RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "DRY YEAST",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "EATING SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "EGGS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "FRUIT COCKTAIL",
+      "unit": "L"
+    },
+    {
+      "name": "FUEL TINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARAM MASALA",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GINGER POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "GOLD MILK",
+      "unit": "L"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN BATANA RAW",
+      "unit": "kg"
+    },
+    {
+      "name": "GULKANDA",
+      "unit": "kg"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "HEZELNUTS",
+      "unit": "jar"
+    },
+    {
+      "name": "HMT RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "HOMA",
+      "unit": "kg"
+    },
+    {
+      "name": "HONEY",
+      "unit": "kg"
+    },
+    {
+      "name": "HORLICKS",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CONE",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "IDLY RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "INDIAN GAS",
+      "unit": "pcs"
+    },
+    {
+      "name": "JAJIKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "JAL JEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPENO",
+      "unit": "jar"
+    },
+    {
+      "name": "JAPATHRI",
+      "unit": "kg"
+    },
+    {
+      "name": "KABULI CHANNA",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU 2 PIECES",
+      "unit": "kg"
+    },
+    {
+      "name": "KALA KHATTA SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KHAS KHAS",
+      "unit": "kg"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KISMIS",
+      "unit": "kg"
+    },
+    {
+      "name": "KIT KAT",
+      "unit": "pkt"
+    },
+    {
+      "name": "KITCHEN KING MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "KOVA",
+      "unit": "kg"
+    },
+    {
+      "name": "KUNAFA",
+      "unit": "pcs"
+    },
+    {
+      "name": "KURBANI",
+      "unit": "kg"
+    },
+    {
+      "name": "LAMSA",
+      "unit": "pcs"
+    },
+    {
+      "name": "LOCAL CHANNA",
+      "unit": "kg"
+    },
+    {
+      "name": "PHOOL MAKHAN",
+      "unit": "kg"
+    },
+    {
+      "name": "MAKKA CHUDWA",
+      "unit": "kg"
+    },
+    {
+      "name": "MANGO PICKLE",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MEAL MAKER",
+      "unit": "kg"
+    },
+    {
+      "name": "MEAL MAKER KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK MAID",
+      "unit": "tin"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSQUITO COIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "MOTE",
+      "unit": "kg"
+    },
+    {
+      "name": "MOZZARELLA CHEESE",
+      "unit": "pkt"
+    },
+    {
+      "name": "MTR SAMBAR POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "MURMURA",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSTARD OIL",
+      "unit": "bottle"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "NOODLES",
+      "unit": "pkt"
+    },
+    {
+      "name": "NUTELLA CHOCOLATE",
+      "unit": "jar"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "OREGANO 500GM",
+      "unit": "kg"
+    },
+    {
+      "name": "OREGANO SACHET",
+      "unit": "pkt"
+    },
+    {
+      "name": "ORENG",
+      "unit": "kg"
+    },
+    {
+      "name": "OREO BISCUITS",
+      "unit": "pkt"
+    },
+    {
+      "name": "OSMANIYA BISCUTS",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLY CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "PAPAD",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PARTY CHIKEN",
+      "unit": "kg"
+    },
+    {
+      "name": "PASTA",
+      "unit": "pkt"
+    },
+    {
+      "name": "PATHER POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "PAV",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAVBAJI MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PISTA",
+      "unit": "kg"
+    },
+    {
+      "name": "PISTA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "PITAMBARAM",
+      "unit": "pkt"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "PUFF ROTI",
+      "unit": "pcs"
+    },
+    {
+      "name": "PUTANI",
+      "unit": "kg"
+    },
+    {
+      "name": "RAJMA",
+      "unit": "kg"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "ROCK SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROUND CONTAINAR750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROUND PALLY",
+      "unit": "kg"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SABUDANA",
+      "unit": "kg"
+    },
+    {
+      "name": "SAFFRON",
+      "unit": "pcs"
+    },
+    {
+      "name": "SAJEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SANDWICH BREAD",
+      "unit": "pkt"
+    },
+    {
+      "name": "SCHEZWAN CHUTNEY",
+      "unit": "pkt"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SEMIYA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOFTY CHOCOLATE CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY CHOCOLATE MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOFTY VANILLA CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY VANILLA MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOMP WHITE",
+      "unit": "kg"
+    },
+    {
+      "name": "SP.MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "STAR POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "STRAWBERRY ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEETCORN TIN",
+      "unit": "tin"
+    },
+    {
+      "name": "TANG RASNA",
+      "unit": "pkt"
+    },
+    {
+      "name": "TATA SALT",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "THOKA MIRYAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "TUTI FRUITY",
+      "unit": "pkt"
+    },
+    {
+      "name": "VANILA SPOUNG",
+      "unit": "kg"
+    },
+    {
+      "name": "VANILLA ESSENCE",
+      "unit": "pcs"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WHITE PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN ICECREAM SPOON",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "STAFF": [
+    {
+      "name": "AROMATIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "ATUKULU",
+      "unit": "kg"
+    },
+    {
+      "name": "B.LEAF",
+      "unit": "g"
+    },
+    {
+      "name": "CHANA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANA DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINI",
+      "unit": "g"
+    },
+    {
+      "name": "DHANIYA",
+      "unit": "g"
+    },
+    {
+      "name": "DHANIYA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "DRY COCONUT",
+      "unit": "g"
+    },
+    {
+      "name": "ELAICHI",
+      "unit": "g"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GAS",
+      "unit": "cylinder"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "IDLY RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA",
+      "unit": "g"
+    },
+    {
+      "name": "LAVANG",
+      "unit": "g"
+    },
+    {
+      "name": "MAIDA",
+      "unit": "kg"
+    },
+    {
+      "name": "MEAL-MAKER",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "BISCUITS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOONG DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PALM OIL",
+      "unit": "L"
+    },
+    {
+      "name": "PATHER PHOOL",
+      "unit": "g"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI ROUND",
+      "unit": "g"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PUTANA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN",
+      "unit": "kg"
+    },
+    {
+      "name": "EGG",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "TABLE RICE/HMT",
+      "unit": "kg"
+    },
+    {
+      "name": "TEA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "TUGAR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "UPMA RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "URAD DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "DONDAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "VANKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "BEERAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "BENDAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "PUDINA",
+      "unit": "g"
+    },
+    {
+      "name": "KOTHMIR",
+      "unit": "g"
+    },
+    {
+      "name": "DOSAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "MONAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "SORAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "TOMATO",
+      "unit": "kg"
+    },
+    {
+      "name": "CABBAGE",
+      "unit": "kg"
+    },
+    {
+      "name": "CAPSICUM",
+      "unit": "kg"
+    },
+    {
+      "name": "CARROT",
+      "unit": "kg"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "20-20",
+      "unit": "box"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "AMCHOOR POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "AMCHUR RAW",
+      "unit": "kg"
+    },
+    {
+      "name": "ANAR",
+      "unit": "kg"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BAKING POWDER",
+      "unit": "pcs"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BHARATH GAS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI LEAF",
+      "unit": "kg"
+    },
+    {
+      "name": "BIS COFFE BISCUITS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BIS COFFE PASTE",
+      "unit": "bottle"
+    },
+    {
+      "name": "BLACK OLIVES",
+      "unit": "bottle"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK URAD DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "BLUE LAGOON",
+      "unit": "bottle"
+    },
+    {
+      "name": "BOBBERLU",
+      "unit": "kg"
+    },
+    {
+      "name": "BOILED RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BOOST",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOURNVITA",
+      "unit": "kg"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BREAD CRUMBS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BREAD PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "BROKEN RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BROWNIE",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BUN",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER 500 GM",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER PAPER",
+      "unit": "pkt"
+    },
+    {
+      "name": "BUTTER SCOTCH ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "BUTTER SCOTCH SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHAT MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHEESE 500G",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHEESE SLICE",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHILLY FLAKES KG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES SACHETS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHOCOLATE ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "CHOLE MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING COTH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONET OIL",
+      "unit": "L"
+    },
+    {
+      "name": "COCONUT",
+      "unit": "pcs"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COFFEE NESCAFE",
+      "unit": "pkt"
+    },
+    {
+      "name": "COFFEE POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CORN FLAKES",
+      "unit": "kg"
+    },
+    {
+      "name": "CORN FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "CREAM",
+      "unit": "pcs"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD CUPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CUSTOD POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINA",
+      "unit": "kg"
+    },
+    {
+      "name": "DALDA",
+      "unit": "kg"
+    },
+    {
+      "name": "DARK CHOCO CHIPS",
+      "unit": "kg"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSA RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "DR RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "DRY YEAST",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "EATING SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "EGGS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "FRUIT COCKTAIL",
+      "unit": "L"
+    },
+    {
+      "name": "FUEL TINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARAM MASALA",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GHEE",
+      "unit": "kg"
+    },
+    {
+      "name": "GINGER POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "GOLD MILK",
+      "unit": "L"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN BATANA RAW",
+      "unit": "kg"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "HING",
+      "unit": "pcs"
+    },
+    {
+      "name": "HMT RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "HOMA",
+      "unit": "kg"
+    },
+    {
+      "name": "HONEY",
+      "unit": "kg"
+    },
+    {
+      "name": "HORLICKS",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CONE",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "INDIAN GAS",
+      "unit": "pcs"
+    },
+    {
+      "name": "JAGGERY",
+      "unit": "kg"
+    },
+    {
+      "name": "JAJIKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "JAL JEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPENO",
+      "unit": "jar"
+    },
+    {
+      "name": "JAPATHRI",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KABULI CHANNA",
+      "unit": "kg"
+    },
+    {
+      "name": "KALA KHATTA SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KASTURI METHI",
+      "unit": "kg"
+    },
+    {
+      "name": "KHAS KHAS",
+      "unit": "kg"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KIT KAT",
+      "unit": "pkt"
+    },
+    {
+      "name": "KITCHEN KING MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "KOVA",
+      "unit": "kg"
+    },
+    {
+      "name": "KUNAFA",
+      "unit": "pcs"
+    },
+    {
+      "name": "LAMSA",
+      "unit": "pcs"
+    },
+    {
+      "name": "LOCAL CHANNA",
+      "unit": "kg"
+    },
+    {
+      "name": "PHOOL MAKHAN",
+      "unit": "kg"
+    },
+    {
+      "name": "MAKKA CHUDWA",
+      "unit": "kg"
+    },
+    {
+      "name": "MANGO PICKLE",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MASOOR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "MEAL MAKER",
+      "unit": "kg"
+    },
+    {
+      "name": "MEAL MAKER KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "MENTULU",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK MAID",
+      "unit": "tin"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSQUITO COIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "MOTE",
+      "unit": "kg"
+    },
+    {
+      "name": "MOZZARELLA CHEESE",
+      "unit": "pkt"
+    },
+    {
+      "name": "MTR SAMBAR POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "MURMURA",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSTARD OIL",
+      "unit": "bottle"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "NOODLES",
+      "unit": "pkt"
+    },
+    {
+      "name": "NUTELLA CHOCOLATE",
+      "unit": "jar"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "OREGANO 500GM",
+      "unit": "kg"
+    },
+    {
+      "name": "OREGANO SACHET",
+      "unit": "pkt"
+    },
+    {
+      "name": "ORENG",
+      "unit": "kg"
+    },
+    {
+      "name": "OREO BISCUITS",
+      "unit": "pkt"
+    },
+    {
+      "name": "OSMANIYA BISCUTS",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLY CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PAPAD",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PARTY CHIKEN",
+      "unit": "kg"
+    },
+    {
+      "name": "PASTA",
+      "unit": "pkt"
+    },
+    {
+      "name": "PATHER POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "PAV",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAVBAJI MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI",
+      "unit": "kg"
+    },
+    {
+      "name": "PESARLU",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PISTA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "PITAMBARAM",
+      "unit": "pkt"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "PUFF ROTI",
+      "unit": "pcs"
+    },
+    {
+      "name": "PUTANI",
+      "unit": "kg"
+    },
+    {
+      "name": "RAGI FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "RAI",
+      "unit": "kg"
+    },
+    {
+      "name": "RAJMA",
+      "unit": "kg"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "ROCK SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROUND CONTAINAR750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROUND PALLY",
+      "unit": "kg"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SABUDANA",
+      "unit": "kg"
+    },
+    {
+      "name": "SAFFRON",
+      "unit": "pcs"
+    },
+    {
+      "name": "SAJEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SANDWICH BREAD",
+      "unit": "pkt"
+    },
+    {
+      "name": "SCHEZWAN CHUTNEY",
+      "unit": "pkt"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SEMIYA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOFTY CHOCOLATE CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY CHOCOLATE MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOFTY VANILLA CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY VANILLA MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOMP",
+      "unit": "kg"
+    },
+    {
+      "name": "SOMP WHITE",
+      "unit": "kg"
+    },
+    {
+      "name": "SP.MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "STAR POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "STRAWBERRY ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEETCORN TIN",
+      "unit": "tin"
+    },
+    {
+      "name": "TAMARIND",
+      "unit": "kg"
+    },
+    {
+      "name": "TANG RASNA",
+      "unit": "pkt"
+    },
+    {
+      "name": "TATA SALT",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "THOKA MIRYAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TILL",
+      "unit": "kg"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "TURMERIC POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "TUTI FRUITY",
+      "unit": "pkt"
+    },
+    {
+      "name": "VANILA SPOUNG",
+      "unit": "kg"
+    },
+    {
+      "name": "VANILLA ESSENCE",
+      "unit": "pcs"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WHITE BATANA",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN ICECREAM SPOON",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "SI-MEALS": [
+    {
+      "name": "ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "ATUKULU",
+      "unit": "kg"
+    },
+    {
+      "name": "B.LEAF",
+      "unit": "g"
+    },
+    {
+      "name": "BAKING PWR/EATING SODA",
+      "unit": "g"
+    },
+    {
+      "name": "BOBBARLU",
+      "unit": "kg"
+    },
+    {
+      "name": "BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "BROKEN RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BUTTER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANA DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHAT MASALA",
+      "unit": "g"
+    },
+    {
+      "name": "CHILLI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT",
+      "unit": "pcs"
+    },
+    {
+      "name": "COCONUT POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COFFEE POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "CORN FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD CUPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "DALCHINI",
+      "unit": "g"
+    },
+    {
+      "name": "DALDA",
+      "unit": "kg"
+    },
+    {
+      "name": "DHANIYA",
+      "unit": "g"
+    },
+    {
+      "name": "DHANIYA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "DOSA FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSA RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "DRY COCONUT",
+      "unit": "g"
+    },
+    {
+      "name": "ELAICHI",
+      "unit": "g"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GAS",
+      "unit": "cylinder"
+    },
+    {
+      "name": "GHEE",
+      "unit": "kg"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN PEAS",
+      "unit": "kg"
+    },
+    {
+      "name": "HING",
+      "unit": "g"
+    },
+    {
+      "name": "HOMA/AJWAIN",
+      "unit": "g"
+    },
+    {
+      "name": "IDLY RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "JAGGERY",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA",
+      "unit": "g"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "KABULI CHANA",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU 2 PIECE",
+      "unit": "g"
+    },
+    {
+      "name": "KAJU NUKA",
+      "unit": "g"
+    },
+    {
+      "name": "KASHMIRCHILLI",
+      "unit": "g"
+    },
+    {
+      "name": "KASTURI METHI",
+      "unit": "g"
+    },
+    {
+      "name": "KHAS-KHAS",
+      "unit": "g"
+    },
+    {
+      "name": "KOVA",
+      "unit": "kg"
+    },
+    {
+      "name": "KISMIS",
+      "unit": "g"
+    },
+    {
+      "name": "LAVANG",
+      "unit": "g"
+    },
+    {
+      "name": "LOCAL CHANA",
+      "unit": "kg"
+    },
+    {
+      "name": "MAIDA",
+      "unit": "kg"
+    },
+    {
+      "name": "MAKKA CHUDWA",
+      "unit": "kg"
+    },
+    {
+      "name": "MANGO PICKLE",
+      "unit": "kg"
+    },
+    {
+      "name": "MASOOR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "MEAL-MAKER",
+      "unit": "kg"
+    },
+    {
+      "name": "MENTULU",
+      "unit": "g"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "MILK MAID",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOONG DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PALM OIL",
+      "unit": "L"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PAPAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "PATHER PHOOL",
+      "unit": "g"
+    },
+    {
+      "name": "PEPPER",
+      "unit": "g"
+    },
+    {
+      "name": "PESARLU",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI ROUND",
+      "unit": "g"
+    },
+    {
+      "name": "PICKLE PACKET",
+      "unit": "pcs"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PUTANA",
+      "unit": "kg"
+    },
+    {
+      "name": "RAGI FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "RAI",
+      "unit": "g"
+    },
+    {
+      "name": "RAJMA",
+      "unit": "kg"
+    },
+    {
+      "name": "RED CHILLI",
+      "unit": "g"
+    },
+    {
+      "name": "SABUDANA",
+      "unit": "kg"
+    },
+    {
+      "name": "SAJEERA",
+      "unit": "g"
+    },
+    {
+      "name": "SALT BIG",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT SMALL",
+      "unit": "kg"
+    },
+    {
+      "name": "SAMBER POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "SEMIYA",
+      "unit": "kg"
+    },
+    {
+      "name": "SOMP",
+      "unit": "g"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "TABLE RICE/HMT",
+      "unit": "kg"
+    },
+    {
+      "name": "TAMARIND",
+      "unit": "kg"
+    },
+    {
+      "name": "TANDOORI ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "TARBUJ",
+      "unit": "kg"
+    },
+    {
+      "name": "TEA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "TILL",
+      "unit": "g"
+    },
+    {
+      "name": "TUGAR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TURMERIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "UPMA RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "URAD DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE BATANA",
+      "unit": "kg"
+    },
+    {
+      "name": "BEERAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "BENDAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "CABBAGE",
+      "unit": "kg"
+    },
+    {
+      "name": "CAPSICUM",
+      "unit": "kg"
+    },
+    {
+      "name": "CARROT",
+      "unit": "kg"
+    },
+    {
+      "name": "CAULIFLOWER",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "DONDAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "KOTHMIR",
+      "unit": "g"
+    },
+    {
+      "name": "PUDINA",
+      "unit": "g"
+    },
+    {
+      "name": "TOMATO",
+      "unit": "kg"
+    },
+    {
+      "name": "VANKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "20-20",
+      "unit": "box"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "AMCHOOR POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "AMCHUR RAW",
+      "unit": "kg"
+    },
+    {
+      "name": "ANAR",
+      "unit": "kg"
+    },
+    {
+      "name": "AROMATIC POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BADAM",
+      "unit": "kg"
+    },
+    {
+      "name": "BAKING POWDER",
+      "unit": "pcs"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BHARATH GAS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI LEAF",
+      "unit": "kg"
+    },
+    {
+      "name": "BIRYANI RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BIS COFFE BISCUITS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BIS COFFE PASTE",
+      "unit": "bottle"
+    },
+    {
+      "name": "BLACK OLIVES",
+      "unit": "bottle"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK URAD DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "BLUE LAGOON",
+      "unit": "bottle"
+    },
+    {
+      "name": "BOBBERLU",
+      "unit": "kg"
+    },
+    {
+      "name": "BOILED RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BOOST",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOURNVITA",
+      "unit": "kg"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BREAD CRUMBS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BREAD PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "BROWNIE",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BUN",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER 500 GM",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER PAPER",
+      "unit": "pkt"
+    },
+    {
+      "name": "BUTTER SCOTCH ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "BUTTER SCOTCH SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHEESE 500G",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHEESE SLICE",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHICKEN BIG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN SMALL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN STAFF",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES KG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES SACHETS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHOCOLATE ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "CHOLE MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING COTH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONET OIL",
+      "unit": "L"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COFFEE NESCAFE",
+      "unit": "pkt"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CORN FLAKES",
+      "unit": "kg"
+    },
+    {
+      "name": "CREAM",
+      "unit": "pcs"
+    },
+    {
+      "name": "CUSTOD POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINA",
+      "unit": "kg"
+    },
+    {
+      "name": "DARK CHOCO CHIPS",
+      "unit": "kg"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DR RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "DRY YEAST",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "EATING SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "EGGS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FISH",
+      "unit": "kg"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "FRUIT COCKTAIL",
+      "unit": "L"
+    },
+    {
+      "name": "FUEL TINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARAM MASALA",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GINGER POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "GOLD MILK",
+      "unit": "L"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN BATANA RAW",
+      "unit": "kg"
+    },
+    {
+      "name": "GULKANDA",
+      "unit": "kg"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "HEZELNUTS",
+      "unit": "jar"
+    },
+    {
+      "name": "HMT RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "HOMA",
+      "unit": "kg"
+    },
+    {
+      "name": "HONEY",
+      "unit": "kg"
+    },
+    {
+      "name": "HORLICKS",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CONE",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "INDIAN GAS",
+      "unit": "pcs"
+    },
+    {
+      "name": "JAJIKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "JAL JEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPENO",
+      "unit": "jar"
+    },
+    {
+      "name": "JAPATHRI",
+      "unit": "kg"
+    },
+    {
+      "name": "KABULI CHANNA",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU 2 PIECES",
+      "unit": "kg"
+    },
+    {
+      "name": "KALA KHATTA SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KHAS KHAS",
+      "unit": "kg"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KIT KAT",
+      "unit": "pkt"
+    },
+    {
+      "name": "KITCHEN KING MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "KUNAFA",
+      "unit": "pcs"
+    },
+    {
+      "name": "KURBANI",
+      "unit": "kg"
+    },
+    {
+      "name": "LAMSA",
+      "unit": "pcs"
+    },
+    {
+      "name": "LOCAL CHANNA",
+      "unit": "kg"
+    },
+    {
+      "name": "PHOOL MAKHAN",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MEAL MAKER",
+      "unit": "kg"
+    },
+    {
+      "name": "MEAL MAKER KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSQUITO COIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "MOTE",
+      "unit": "kg"
+    },
+    {
+      "name": "MOZZARELLA CHEESE",
+      "unit": "pkt"
+    },
+    {
+      "name": "MTR SAMBAR POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUOTTN KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "MURMURA",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSTARD OIL",
+      "unit": "bottle"
+    },
+    {
+      "name": "MUTTON",
+      "unit": "kg"
+    },
+    {
+      "name": "MUTTON KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "NOODLES",
+      "unit": "pkt"
+    },
+    {
+      "name": "NUTELLA CHOCOLATE",
+      "unit": "jar"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "OREGANO 500GM",
+      "unit": "kg"
+    },
+    {
+      "name": "OREGANO SACHET",
+      "unit": "pkt"
+    },
+    {
+      "name": "ORENG",
+      "unit": "kg"
+    },
+    {
+      "name": "OREO BISCUITS",
+      "unit": "pkt"
+    },
+    {
+      "name": "OSMANIYA BISCUTS",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLY CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PARTY CHIKEN",
+      "unit": "kg"
+    },
+    {
+      "name": "PASTA",
+      "unit": "pkt"
+    },
+    {
+      "name": "PATHER POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "PAV",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAVBAJI MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PISTA",
+      "unit": "kg"
+    },
+    {
+      "name": "PISTA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "PITAMBARAM",
+      "unit": "pkt"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "PRAWNS",
+      "unit": "kg"
+    },
+    {
+      "name": "PUFF ROTI",
+      "unit": "pcs"
+    },
+    {
+      "name": "PUTANI",
+      "unit": "kg"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "ROCK SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROUND CONTAINAR750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROUND PALLY",
+      "unit": "kg"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SAFFRON",
+      "unit": "pcs"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SANDWICH BREAD",
+      "unit": "pkt"
+    },
+    {
+      "name": "SCHEZWAN CHUTNEY",
+      "unit": "pkt"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOFTY CHOCOLATE CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY CHOCOLATE MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOFTY VANILLA CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY VANILLA MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOMP WHITE",
+      "unit": "kg"
+    },
+    {
+      "name": "SP.MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "STAR POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "STRAWBERRY ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEETCORN TIN",
+      "unit": "tin"
+    },
+    {
+      "name": "TANG RASNA",
+      "unit": "pkt"
+    },
+    {
+      "name": "TATA SALT",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "THOKA MIRYAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "TUTI FRUITY",
+      "unit": "pkt"
+    },
+    {
+      "name": "VANILA SPOUNG",
+      "unit": "kg"
+    },
+    {
+      "name": "VANILLA ESSENCE",
+      "unit": "pcs"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WHITE PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN ICECREAM SPOON",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "NORTH INDIAN": [
+    {
+      "name": "AROMATIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "B.LEAF",
+      "unit": "g"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BIRYANI RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "BUTTER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHAT MASALA",
+      "unit": "g"
+    },
+    {
+      "name": "CHILLI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CORN FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "DALCHINI",
+      "unit": "g"
+    },
+    {
+      "name": "DALDA",
+      "unit": "kg"
+    },
+    {
+      "name": "DHANIYA",
+      "unit": "g"
+    },
+    {
+      "name": "DHANIYA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "DRY COCONUT",
+      "unit": "g"
+    },
+    {
+      "name": "ELAICHI",
+      "unit": "g"
+    },
+    {
+      "name": "FROZEN GREEN PEAS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GAS",
+      "unit": "cylinder"
+    },
+    {
+      "name": "GHEE",
+      "unit": "kg"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "JAIPAL",
+      "unit": "g"
+    },
+    {
+      "name": "JAPATRI",
+      "unit": "g"
+    },
+    {
+      "name": "JEERA",
+      "unit": "g"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "KABULI CHANA",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU 2 PIECE",
+      "unit": "g"
+    },
+    {
+      "name": "KAJU NUKA",
+      "unit": "g"
+    },
+    {
+      "name": "KASHMIRI CHILLI POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "KASTURI METHI",
+      "unit": "g"
+    },
+    {
+      "name": "KHAS-KHAS",
+      "unit": "g"
+    },
+    {
+      "name": "KEWRA WATER",
+      "unit": "ml"
+    },
+    {
+      "name": "LAVANG",
+      "unit": "g"
+    },
+    {
+      "name": "MAIDA",
+      "unit": "kg"
+    },
+    {
+      "name": "MASOOR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK MAID",
+      "unit": "pcs"
+    },
+    {
+      "name": "MUSTARD OIL",
+      "unit": "L"
+    },
+    {
+      "name": "NOODLES",
+      "unit": "kg"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "OYSTER SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "PALM OIL",
+      "unit": "L"
+    },
+    {
+      "name": "PEPPER",
+      "unit": "g"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "RED CHILLI",
+      "unit": "g"
+    },
+    {
+      "name": "RED CHILLI SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "ROSE WATER",
+      "unit": "ml"
+    },
+    {
+      "name": "SAJEERA",
+      "unit": "g"
+    },
+    {
+      "name": "SOYA SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SALT SMALL",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT BIG",
+      "unit": "kg"
+    },
+    {
+      "name": "STARPHOOL",
+      "unit": "g"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SWEET CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CORN TIN",
+      "unit": "pcs"
+    },
+    {
+      "name": "TAMARIND",
+      "unit": "kg"
+    },
+    {
+      "name": "TANDOORI ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "TARBUJ",
+      "unit": "kg"
+    },
+    {
+      "name": "TILL",
+      "unit": "g"
+    },
+    {
+      "name": "TOMATO SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "TUGAR DAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TURMERIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "VINEGAR",
+      "unit": "ml"
+    },
+    {
+      "name": "VEG MAYONNAISE",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE PEPPER",
+      "unit": "g"
+    },
+    {
+      "name": "CHICKEN BIG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN SMALL",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "EGGS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FISH",
+      "unit": "kg"
+    },
+    {
+      "name": "KEEMA MUTTON",
+      "unit": "kg"
+    },
+    {
+      "name": "MUTTON",
+      "unit": "kg"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PRAWNS",
+      "unit": "kg"
+    },
+    {
+      "name": "BEANS",
+      "unit": "kg"
+    },
+    {
+      "name": "CABBAGE",
+      "unit": "kg"
+    },
+    {
+      "name": "CAPSICUM",
+      "unit": "kg"
+    },
+    {
+      "name": "CARROT",
+      "unit": "kg"
+    },
+    {
+      "name": "CAULIFLOWER",
+      "unit": "kg"
+    },
+    {
+      "name": "CUCUMBER",
+      "unit": "kg"
+    },
+    {
+      "name": "KOTHMIR",
+      "unit": "g"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "LEMON",
+      "unit": "pcs"
+    },
+    {
+      "name": "PALAK",
+      "unit": "kg"
+    },
+    {
+      "name": "TOMATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PUDINA",
+      "unit": "g"
+    },
+    {
+      "name": "3CP BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "5CP BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "AMCHOOR POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "BADAM",
+      "unit": "kg"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI LEAF",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "BLUE LAGOON",
+      "unit": "bottle"
+    },
+    {
+      "name": "BOILED RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BREAD CRUMBS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BREAD PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "BROKEN RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BUN",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER 500 GM",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER PAPER",
+      "unit": "pkt"
+    },
+    {
+      "name": "BUTTER SCOTCH ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "BUTTER SCOTCH SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHANNA ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHEESE 500G",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHEESE SLICE",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHICKEN STAFF",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES KG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHOCOLATE ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "CHOCOLATE SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "CHOLE MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COCONET OIL",
+      "unit": "L"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD CUPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CUSTOD POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINA",
+      "unit": "kg"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSA RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "DR RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "FRENCH FRIES",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARAM MASALA",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GINGER POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "GOLD MILK",
+      "unit": "L"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN CHILLY SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "GULKANDA",
+      "unit": "kg"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "HEZELNUTS",
+      "unit": "jar"
+    },
+    {
+      "name": "HING",
+      "unit": "pcs"
+    },
+    {
+      "name": "HMT RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "HOMA",
+      "unit": "kg"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "IDLY RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "JAL JEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "JAPATHRI",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU 2 PIECES",
+      "unit": "kg"
+    },
+    {
+      "name": "KALA KHATTA SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KHAS KHAS",
+      "unit": "kg"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KISMIS",
+      "unit": "kg"
+    },
+    {
+      "name": "KISSAN JAM",
+      "unit": "kg"
+    },
+    {
+      "name": "KITCHEN KING MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "KOVA",
+      "unit": "kg"
+    },
+    {
+      "name": "KURBANI",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MAYONNAISE",
+      "unit": "pkt"
+    },
+    {
+      "name": "MENTULU",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSQUITO COIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "MOZZARELLA CHEESE",
+      "unit": "pkt"
+    },
+    {
+      "name": "MTR SAMBAR POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUOTTN KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "MUTTON KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "PANEER MOMOS",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PATHER POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "PAV",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAVBAJI MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PISTA",
+      "unit": "kg"
+    },
+    {
+      "name": "PISTA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA SAUCE",
+      "unit": "pkt"
+    },
+    {
+      "name": "RAGI FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "RED CHILLY SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCHEZWAN SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOFTY CHOCOLATE CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY CHOCOLATE MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOFTY VANILLA CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY VANILLA MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SP.MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "SPRING ROLLS",
+      "unit": "pkt"
+    },
+    {
+      "name": "STAR POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "STRAWBERRY ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CONE MOMOS",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEETCORN TIN",
+      "unit": "tin"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "THOKA MIRYAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOMATO KETCHUP",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "UPMA RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "VEG MOMOS",
+      "unit": "pkt"
+    },
+    {
+      "name": "VEG OYSTER SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "VINIGER",
+      "unit": "bottle"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN ICECREAM SPOON",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "CHAT & SOFTY": [
+    {
+      "name": "ATTA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHAT MASALA",
+      "unit": "g"
+    },
+    {
+      "name": "CHILLI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "DHANIYA",
+      "unit": "g"
+    },
+    {
+      "name": "DHANIYA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "ELAICHI",
+      "unit": "g"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GAS",
+      "unit": "cylinder"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "HING",
+      "unit": "g"
+    },
+    {
+      "name": "JAGGERY",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA",
+      "unit": "g"
+    },
+    {
+      "name": "KALA NAMAK",
+      "unit": "kg"
+    },
+    {
+      "name": "KOTHMIR",
+      "unit": "g"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI ROUND",
+      "unit": "g"
+    },
+    {
+      "name": "PAPAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PUDINA",
+      "unit": "g"
+    },
+    {
+      "name": "RAI",
+      "unit": "g"
+    },
+    {
+      "name": "SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "SOMP",
+      "unit": "g"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "TAMARIND",
+      "unit": "kg"
+    },
+    {
+      "name": "TOMATO",
+      "unit": "kg"
+    },
+    {
+      "name": "TURMERIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "UPMA RAVVA",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "CHOCOLATE SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SOFTY CONE",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOFTY CUP",
+      "unit": "pcs"
+    },
+    {
+      "name": "VANILLA ESSENCE",
+      "unit": "ml"
+    },
+    {
+      "name": "CARAMEL SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "BUTTERSCOTCH SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SPRINKLES",
+      "unit": "g"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "ALMOND SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "AMCHOOR POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "APPLES",
+      "unit": "kg"
+    },
+    {
+      "name": "AROMATIC POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BANANA",
+      "unit": "dozen"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI LEAF",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK GRAPES",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "BLUE LAGOON",
+      "unit": "bottle"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BREAD CRUMBS",
+      "unit": "pkt"
+    },
+    {
+      "name": "BREAD PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BUN",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER 500 GM",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER PAPER",
+      "unit": "pkt"
+    },
+    {
+      "name": "BUTTER SCOTCH ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "BUTTER SCOTCH SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARAMIL SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHEESE 500G",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHEESE SLICE",
+      "unit": "pkt"
+    },
+    {
+      "name": "CHERRIES",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES KG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHOCOLATE ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "CHOLE MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COKE",
+      "unit": "bottle"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CREAM",
+      "unit": "pcs"
+    },
+    {
+      "name": "CURD CUPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CUSTIC SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "CUSTOD POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINA",
+      "unit": "kg"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARAM MASALA",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GHEE",
+      "unit": "kg"
+    },
+    {
+      "name": "GINGER POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "GINGER SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "GOLD MILK",
+      "unit": "L"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN MOJITO MINT",
+      "unit": "bottle"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "HOMA",
+      "unit": "kg"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "JAL JEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "JAPATHRI",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA MASALA SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KASTURI METHI",
+      "unit": "kg"
+    },
+    {
+      "name": "KEWARA WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "KHAS KHAS",
+      "unit": "kg"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KINLEY 1LIT WATER",
+      "unit": "box"
+    },
+    {
+      "name": "KITCHEN KING MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "KIWI CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "KOVA",
+      "unit": "kg"
+    },
+    {
+      "name": "LAVANG",
+      "unit": "kg"
+    },
+    {
+      "name": "LEMON SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "M.WATER 1L",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATER 500ML",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATR 250 ML",
+      "unit": "box"
+    },
+    {
+      "name": "MANGO CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "MANGO ICE CREM",
+      "unit": "bulk"
+    },
+    {
+      "name": "MANGOS",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MENTULU",
+      "unit": "kg"
+    },
+    {
+      "name": "MILK MAID",
+      "unit": "tin"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSAMBI",
+      "unit": "kg"
+    },
+    {
+      "name": "MOZZARELLA CHEESE",
+      "unit": "pkt"
+    },
+    {
+      "name": "MTR SAMBAR POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSKMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "ORANGE SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "ORIGINAL MINT MOJITHO",
+      "unit": "bottle"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PATHER POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "PAV",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAVBAJI MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PINEAPPLE",
+      "unit": "pcs"
+    },
+    {
+      "name": "PINEAPPLE CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "PINEAPPLE SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "PISTA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROSE SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "ROSE WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SAJEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SODA 750 ML",
+      "unit": "bottle"
+    },
+    {
+      "name": "SOFTY CHOCOLATE CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY CHOCOLATE MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SOFTY VANILLA CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY VANILLA MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SP.MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "SPRITE 750 ML",
+      "unit": "bottle"
+    },
+    {
+      "name": "STAR POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "STRAWBERRY CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "STRAWBERRY ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEETCORN TIN",
+      "unit": "tin"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "THOKA MIRYAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TILL",
+      "unit": "kg"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "bulk"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WATER MELON SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "WATERMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN ICECREAM SPOON",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "CHINESE & DOSA": [
+    {
+      "name": "AROMATIC POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "BIRYANI RICE",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "g"
+    },
+    {
+      "name": "CORN FLOUR",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GAS",
+      "unit": "cylinder"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "HONEY",
+      "unit": "ml"
+    },
+    {
+      "name": "KAJU 2 PIECE",
+      "unit": "g"
+    },
+    {
+      "name": "KASHMIRI CHILLI POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "MAIDA",
+      "unit": "kg"
+    },
+    {
+      "name": "NOODLES",
+      "unit": "kg"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PANEER MOMOS",
+      "unit": "kg"
+    },
+    {
+      "name": "RED CHILLI SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "SCHEZWAN CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "SCHEZWAN SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SOYA SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SPRING ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "TOMATO SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "TOMATO KETCHUP",
+      "unit": "ml"
+    },
+    {
+      "name": "VEG MOMOS",
+      "unit": "kg"
+    },
+    {
+      "name": "VINEGAR",
+      "unit": "ml"
+    },
+    {
+      "name": "WHITE PEPPER POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "OYSTER SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "SWEET CORN PACKET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BEANS",
+      "unit": "kg"
+    },
+    {
+      "name": "CABBAGE",
+      "unit": "kg"
+    },
+    {
+      "name": "CAPSICUM",
+      "unit": "kg"
+    },
+    {
+      "name": "CARROT",
+      "unit": "kg"
+    },
+    {
+      "name": "CAULIFLOWER",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "KOTHMIR",
+      "unit": "g"
+    },
+    {
+      "name": "PUDINA",
+      "unit": "g"
+    },
+    {
+      "name": "400 ML ROUND BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "500 ML RECTANGULAR BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE 500 ML BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE 750 ML BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "4x6 COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER",
+      "unit": "kg"
+    },
+    {
+      "name": "GHEE",
+      "unit": "kg"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "PUTANA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHOCOLATE SYRUP/NUTELLA",
+      "unit": "kg"
+    },
+    {
+      "name": "PALLI CHUTNEY",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU",
+      "unit": "g"
+    },
+    {
+      "name": "CITRIC ACID",
+      "unit": "g"
+    },
+    {
+      "name": "COCONUT",
+      "unit": "pcs"
+    },
+    {
+      "name": "MAYONNAISE",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINI",
+      "unit": "g"
+    },
+    {
+      "name": "TOMATO",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN PEAS",
+      "unit": "kg"
+    },
+    {
+      "name": "6x8 SILVER COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "SAJEERA",
+      "unit": "g"
+    },
+    {
+      "name": "CHEESE",
+      "unit": "kg"
+    },
+    {
+      "name": "ELAICHI",
+      "unit": "g"
+    },
+    {
+      "name": "JEERA",
+      "unit": "g"
+    },
+    {
+      "name": "LAVANG",
+      "unit": "g"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "AMCHOOR POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BIRYANI LEAF",
+      "unit": "kg"
+    },
+    {
+      "name": "BLUE LAGOON",
+      "unit": "bottle"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHAT MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN BIG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN SMALL",
+      "unit": "kg"
+    },
+    {
+      "name": "CHICKEN STAFF",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY FLAKES KG",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHOCOLATE SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "CHOLE MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONET OIL",
+      "unit": "L"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "DALCHINA",
+      "unit": "kg"
+    },
+    {
+      "name": "DALDA",
+      "unit": "kg"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DHANIYA",
+      "unit": "kg"
+    },
+    {
+      "name": "DHANIYA POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FISH",
+      "unit": "kg"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "FRENCH FRIES",
+      "unit": "pkt"
+    },
+    {
+      "name": "FROZEN GREEN PEAS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARAM MASALA",
+      "unit": "pkt"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GINGER POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN CHILLY SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "HING",
+      "unit": "pcs"
+    },
+    {
+      "name": "HOMA",
+      "unit": "kg"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "JAL JEERA",
+      "unit": "kg"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "JAPATHRI",
+      "unit": "kg"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KASTURI METHI",
+      "unit": "kg"
+    },
+    {
+      "name": "KHAS KHAS",
+      "unit": "kg"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KISSAN JAM",
+      "unit": "kg"
+    },
+    {
+      "name": "KITCHEN KING MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MENTULU",
+      "unit": "kg"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSQUITO COIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "MTR SAMBAR POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUOTTN KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSTARD OIL",
+      "unit": "bottle"
+    },
+    {
+      "name": "MUTTON",
+      "unit": "kg"
+    },
+    {
+      "name": "MUTTON KEEMA",
+      "unit": "kg"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "PALM OIL",
+      "unit": "L"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PATHER POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "PAVBAJI MASALA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA SAUCE",
+      "unit": "pkt"
+    },
+    {
+      "name": "PRAWNS",
+      "unit": "kg"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "RED CHILLY SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOFTY CHOCOLATE CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOFTY VANILLA CONE POWDER",
+      "unit": "pkt"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "STAR POOL",
+      "unit": "kg"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CONE MOMOS",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "THOKA MIRYAL",
+      "unit": "kg"
+    },
+    {
+      "name": "TILL",
+      "unit": "kg"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "TURMERIC POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "VEG OYSTER SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "VINIGER",
+      "unit": "bottle"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WHITE PEPPER",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "MOCKTAILS & CONTINENTAL": [
+    {
+      "name": "BADAM",
+      "unit": "g"
+    },
+    {
+      "name": "BASIL SEEDS (SABJA)",
+      "unit": "g"
+    },
+    {
+      "name": "BLUE LAGOON SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "BROWNIE",
+      "unit": "pcs"
+    },
+    {
+      "name": "CARAMEL SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "CHOCOLATE ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "CHOCOLATE SAUCE",
+      "unit": "ml"
+    },
+    {
+      "name": "COFFEE POWDER (NESCAFE)",
+      "unit": "g"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "GINGER SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "JEERA MASALA SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "JEERA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "KAJU 2 PCS",
+      "unit": "g"
+    },
+    {
+      "name": "KALA KATTA SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "LEMON",
+      "unit": "pcs"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "GOLD MILK",
+      "unit": "pcs"
+    },
+    {
+      "name": "KITKAT",
+      "unit": "pcs"
+    },
+    {
+      "name": "GULKAND",
+      "unit": "kg"
+    },
+    {
+      "name": "BISCOFF PASTE",
+      "unit": "kg"
+    },
+    {
+      "name": "BISCOFF BISCUITS",
+      "unit": "pcs"
+    },
+    {
+      "name": "VIRGIN MOJITO SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "BUTTERSCOTCH ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "HAZELNUT SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "MINT SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "MANGO CRUSH",
+      "unit": "ml"
+    },
+    {
+      "name": "OREO BISCUITS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PINEAPPLE SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "ROSE SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "SEMIYA",
+      "unit": "kg"
+    },
+    {
+      "name": "SODA 750 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "SPRITE 750 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "KUNAFA",
+      "unit": "pcs"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "WATERMELON SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "PIZZA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOMATO KETCHUP",
+      "unit": "ml"
+    },
+    {
+      "name": "SILVER CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BANANA",
+      "unit": "kg"
+    },
+    {
+      "name": "MANGO ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "MILK MAID",
+      "unit": "pcs"
+    },
+    {
+      "name": "KESARI",
+      "unit": "kg"
+    },
+    {
+      "name": "KOVA",
+      "unit": "kg"
+    },
+    {
+      "name": "CLING WRAP",
+      "unit": "roll"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "roll"
+    },
+    {
+      "name": "MIXED FRUIT TIN",
+      "unit": "pcs"
+    },
+    {
+      "name": "SPONGE CAKE (PLAIN)",
+      "unit": "pcs"
+    },
+    {
+      "name": "BABY CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "BLACK OLIVES",
+      "unit": "g"
+    },
+    {
+      "name": "BLACK PEPPER",
+      "unit": "g"
+    },
+    {
+      "name": "BREAD CRUMBS",
+      "unit": "kg"
+    },
+    {
+      "name": "BURGER PATTY",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BUN",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHEESE SLICE",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHILLI FLAKES",
+      "unit": "g"
+    },
+    {
+      "name": "DRY YEAST",
+      "unit": "g"
+    },
+    {
+      "name": "FRENCH FRIES",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC",
+      "unit": "kg"
+    },
+    {
+      "name": "GARLIC BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "GINGER",
+      "unit": "kg"
+    },
+    {
+      "name": "JALAPENO",
+      "unit": "g"
+    },
+    {
+      "name": "JALAPENO SLICES",
+      "unit": "g"
+    },
+    {
+      "name": "MAIDA",
+      "unit": "kg"
+    },
+    {
+      "name": "MAKHANI SAUCE",
+      "unit": "kg"
+    },
+    {
+      "name": "MAYONNAISE",
+      "unit": "kg"
+    },
+    {
+      "name": "MIXED HERBS (PIZZA MIX)",
+      "unit": "g"
+    },
+    {
+      "name": "MOZZARELLA CHEESE",
+      "unit": "kg"
+    },
+    {
+      "name": "OLIVE OIL",
+      "unit": "ml"
+    },
+    {
+      "name": "OREGANO",
+      "unit": "g"
+    },
+    {
+      "name": "PANEER",
+      "unit": "kg"
+    },
+    {
+      "name": "PASTA",
+      "unit": "kg"
+    },
+    {
+      "name": "PERI PERI MIX",
+      "unit": "g"
+    },
+    {
+      "name": "PIZZA SAUCE",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "SANDWICH BREAD",
+      "unit": "pcs"
+    },
+    {
+      "name": "SUNFLOWER OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SWEET CORN",
+      "unit": "kg"
+    },
+    {
+      "name": "TANDOORI SAUCE",
+      "unit": "kg"
+    },
+    {
+      "name": "AMUL CREAM",
+      "unit": "ml"
+    },
+    {
+      "name": "BEET ROOT",
+      "unit": "kg"
+    },
+    {
+      "name": "BEANS",
+      "unit": "kg"
+    },
+    {
+      "name": "CAPSICUM",
+      "unit": "kg"
+    },
+    {
+      "name": "CARROT",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "KOTHMIR",
+      "unit": "g"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "PUDINA",
+      "unit": "g"
+    },
+    {
+      "name": "KHEERA/DOSAKAYA",
+      "unit": "kg"
+    },
+    {
+      "name": "TOMATO",
+      "unit": "kg"
+    },
+    {
+      "name": "POTATO",
+      "unit": "kg"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "STRAW SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "STRAW BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "250 ML BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "ALMOND SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "APPLES",
+      "unit": "kg"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BLACK GRAPES",
+      "unit": "kg"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BROWN ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARAMIL SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHERRIES",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COKE",
+      "unit": "bottle"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CUSTIC SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "GREEN CHILLY SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "GREEN MOJITO MINT",
+      "unit": "bottle"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KEWARA WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KINLEY 1LIT WATER",
+      "unit": "box"
+    },
+    {
+      "name": "KISSAN JAM",
+      "unit": "kg"
+    },
+    {
+      "name": "KIWI CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "LEMON SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "M.WATER 1L",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATER 500ML",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATR 250 ML",
+      "unit": "box"
+    },
+    {
+      "name": "MANGO ICE CREM",
+      "unit": "bulk"
+    },
+    {
+      "name": "MANGOS",
+      "unit": "kg"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOSAMBI",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSHROOM",
+      "unit": "pkt"
+    },
+    {
+      "name": "MUSKMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "ORANGE SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "ORIGINAL MINT MOJITHO",
+      "unit": "bottle"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PINEAPPLE",
+      "unit": "pcs"
+    },
+    {
+      "name": "PINEAPPLE CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "RED CHILLY SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROSE WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "SABJEE BINGE",
+      "unit": "kg"
+    },
+    {
+      "name": "SCHEZWAN SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SMALL ONION",
+      "unit": "pkt"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOYA SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "STRAWBERRY CRUSH",
+      "unit": "bottle"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "SWEET CORN MAKKA",
+      "unit": "pkt"
+    },
+    {
+      "name": "SWEET CORN PKT",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOMATO SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "VEG OYSTER SAUCE",
+      "unit": "bottle"
+    },
+    {
+      "name": "VEGETABLES",
+      "unit": "kg"
+    },
+    {
+      "name": "VINIGER",
+      "unit": "bottle"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WATER MELON SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "WATERMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "RESTAURANT": [
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "THUMS UP 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "SPRITE 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "roll"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "MINERAL WATER 1L",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHERRIES",
+      "unit": "g"
+    },
+    {
+      "name": "SOMP",
+      "unit": "g"
+    },
+    {
+      "name": "WHITE SOMP",
+      "unit": "g"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "pcs"
+    },
+    {
+      "name": "RAM JHADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "LEMONS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "L"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "TEA POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "COFFEE POWDER",
+      "unit": "g"
+    },
+    {
+      "name": "MILK",
+      "unit": "L"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "HORLICKS",
+      "unit": "g"
+    },
+    {
+      "name": "BOOST",
+      "unit": "g"
+    },
+    {
+      "name": "LAMSA",
+      "unit": "pcs"
+    },
+    {
+      "name": "TEA CUPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING CLOTH",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROSE SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "CHOCOLATE SYRUP",
+      "unit": "ml"
+    },
+    {
+      "name": "BISCOFF PASTE",
+      "unit": "kg"
+    },
+    {
+      "name": "BISCOFF BISCUITS",
+      "unit": "pcs"
+    },
+    {
+      "name": "OREO BISCUITS",
+      "unit": "pcs"
+    },
+    {
+      "name": "KITKAT",
+      "unit": "pcs"
+    },
+    {
+      "name": "GULKAND",
+      "unit": "kg"
+    },
+    {
+      "name": "COFFEE POWDER CONTI",
+      "unit": "g"
+    },
+    {
+      "name": "SPRITE 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "SODA 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "APPLE",
+      "unit": "kg"
+    },
+    {
+      "name": "PINEAPPLE",
+      "unit": "kg"
+    },
+    {
+      "name": "ORANGE",
+      "unit": "kg"
+    },
+    {
+      "name": "MOSAMBI",
+      "unit": "kg"
+    },
+    {
+      "name": "WATERMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSKMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "MANGO",
+      "unit": "kg"
+    },
+    {
+      "name": "BANANA",
+      "unit": "kg"
+    },
+    {
+      "name": "ANAR",
+      "unit": "pcs"
+    },
+    {
+      "name": "BLUE CURACAO",
+      "unit": "ml"
+    },
+    {
+      "name": "SEMIYA",
+      "unit": "kg"
+    },
+    {
+      "name": "KAJU",
+      "unit": "g"
+    },
+    {
+      "name": "BADAM",
+      "unit": "g"
+    },
+    {
+      "name": "PISTHA",
+      "unit": "g"
+    },
+    {
+      "name": "SABJA SEEDS",
+      "unit": "g"
+    },
+    {
+      "name": "VANILLA ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "BUTTERSCOTCH ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "DELIGHT ICE CREAM",
+      "unit": "L"
+    },
+    {
+      "name": "BROWNIE",
+      "unit": "pcs"
+    },
+    {
+      "name": "KUNAFA",
+      "unit": "pcs"
+    },
+    {
+      "name": "STRAWS",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASSES",
+      "unit": "pcs"
+    },
+    {
+      "name": "ALUMINIUM FOIL",
+      "unit": "roll"
+    },
+    {
+      "name": "GARBAGE BAGS (24*32)",
+      "unit": "pcs"
+    },
+    {
+      "name": "PLASTERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COKE",
+      "unit": "bottle"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CUSTIC SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KEWARA WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KINLEY 1LIT WATER",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATER 1L",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATER 500ML",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATR 250 ML",
+      "unit": "box"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROSE WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SODA 750 ML",
+      "unit": "bottle"
+    },
+    {
+      "name": "SPRITE 750 ML",
+      "unit": "bottle"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WATER MELON SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ],
+  "ROOM SERVICE": [
+    {
+      "name": "DUST BIN COVER",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT (M)",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT (R)",
+      "unit": "pcs"
+    },
+    {
+      "name": "HAIR OIL",
+      "unit": "ml"
+    },
+    {
+      "name": "MEDIMIX SOAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "RAM JHADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "NAPKINS",
+      "unit": "pcs"
+    },
+    {
+      "name": "ROOM FRESHNER",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO",
+      "unit": "ml"
+    },
+    {
+      "name": "SOAP OIL",
+      "unit": "L"
+    },
+    {
+      "name": "SPONGE",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PASTE",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "HARPIC",
+      "unit": "L"
+    },
+    {
+      "name": "JAM",
+      "unit": "kg"
+    },
+    {
+      "name": "CORNFLAKES",
+      "unit": "g"
+    },
+    {
+      "name": "MINERAL WATER 1 LIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "FLOOR CLEANER",
+      "unit": "L"
+    },
+    {
+      "name": "BLANKET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BED SHEETS",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOWELS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PILLOW COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "ONION",
+      "unit": "kg"
+    },
+    {
+      "name": "LEMON",
+      "unit": "pcs"
+    },
+    {
+      "name": "PINEAPPLE",
+      "unit": "kg"
+    },
+    {
+      "name": "MUSKMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "WATERMELON",
+      "unit": "kg"
+    },
+    {
+      "name": "CURD",
+      "unit": "kg"
+    },
+    {
+      "name": "GREEN CHILLI",
+      "unit": "kg"
+    },
+    {
+      "name": "SALT",
+      "unit": "kg"
+    },
+    {
+      "name": "SUGAR",
+      "unit": "kg"
+    },
+    {
+      "name": "SHOWER GEL",
+      "unit": "ml"
+    },
+    {
+      "name": "DENTAL KIT",
+      "unit": "pcs"
+    },
+    {
+      "name": "500ML WATER BOTTLE",
+      "unit": "pcs"
+    },
+    {
+      "name": "SHAMPOO GEL",
+      "unit": "ml"
+    },
+    {
+      "name": "5CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "3CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "8CP",
+      "unit": "pcs"
+    },
+    {
+      "name": "BEDSHEET",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1000 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 1500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 200 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 250ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 300 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 400ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 500 ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BOX CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUFFET PLATES",
+      "unit": "pcs"
+    },
+    {
+      "name": "BURGER BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "BUTTER COVERS",
+      "unit": "pcs"
+    },
+    {
+      "name": "CAPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "CARRY BAGS 20*24",
+      "unit": "kg"
+    },
+    {
+      "name": "CHILLY POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "CHINESE CONTAINER 1000ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CHINESE CONTAINER 750ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "CLEANING BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "COAL",
+      "unit": "kg"
+    },
+    {
+      "name": "COCONUT BROOMS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COKE",
+      "unit": "bottle"
+    },
+    {
+      "name": "COMBS",
+      "unit": "pcs"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 13*16",
+      "unit": "kg"
+    },
+    {
+      "name": "COMPOSTABLE GROCERY BAGS 16*20",
+      "unit": "kg"
+    },
+    {
+      "name": "CUSTIC SODA",
+      "unit": "kg"
+    },
+    {
+      "name": "DOSA BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "DOSA BROOM",
+      "unit": "pcs"
+    },
+    {
+      "name": "DUST BIN COVERS",
+      "unit": "pkt"
+    },
+    {
+      "name": "DUST PAN",
+      "unit": "pcs"
+    },
+    {
+      "name": "FALUDA GLASS",
+      "unit": "pcs"
+    },
+    {
+      "name": "GARBAGE BAGS",
+      "unit": "kg"
+    },
+    {
+      "name": "GOOD NIGHT MACHINE",
+      "unit": "pcs"
+    },
+    {
+      "name": "GOOD NIGHT REFILL",
+      "unit": "pcs"
+    },
+    {
+      "name": "HAND GLOVES",
+      "unit": "pkt"
+    },
+    {
+      "name": "HAND WASH",
+      "unit": "L"
+    },
+    {
+      "name": "ICE CREAM CUPS",
+      "unit": "pkt"
+    },
+    {
+      "name": "IDLY BOX",
+      "unit": "pkt"
+    },
+    {
+      "name": "JALPAN CARRYBAGS 11*14",
+      "unit": "kg"
+    },
+    {
+      "name": "KASHMIRI MIRCHI POWDER",
+      "unit": "kg"
+    },
+    {
+      "name": "KEWARA WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "KING WRAP",
+      "unit": "pcs"
+    },
+    {
+      "name": "KINLEY 1LIT WATER",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATER 1L",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATER 500ML",
+      "unit": "box"
+    },
+    {
+      "name": "M.WATR 250 ML",
+      "unit": "box"
+    },
+    {
+      "name": "MASK",
+      "unit": "pcs"
+    },
+    {
+      "name": "MOISTIRIZER 20ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "NAME BOARDS",
+      "unit": "pkt"
+    },
+    {
+      "name": "ODONIL",
+      "unit": "pkt"
+    },
+    {
+      "name": "PAPER ROLLS",
+      "unit": "pcs"
+    },
+    {
+      "name": "PARCEL COVERS 4*6",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 5*8",
+      "unit": "kg"
+    },
+    {
+      "name": "PARCEL COVERS 6*9",
+      "unit": "kg"
+    },
+    {
+      "name": "PIZZA BOX BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "PIZZA BOX SMALL",
+      "unit": "pcs"
+    },
+    {
+      "name": "RAMJADU",
+      "unit": "pcs"
+    },
+    {
+      "name": "RECTRANGLE BOX 500ML",
+      "unit": "pcs"
+    },
+    {
+      "name": "RED CHILLY",
+      "unit": "kg"
+    },
+    {
+      "name": "ROSE WATER",
+      "unit": "bottle"
+    },
+    {
+      "name": "SANDWICH BOX",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ALUM",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER ORDINARY",
+      "unit": "pcs"
+    },
+    {
+      "name": "SCRUBBER PLASTIC",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER CONTAINER BIG",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER FOIL",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 5*7",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 6*8",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 7*9",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 8*10",
+      "unit": "pcs"
+    },
+    {
+      "name": "SILVER POUCH 9*12",
+      "unit": "pcs"
+    },
+    {
+      "name": "SOAPS",
+      "unit": "pcs"
+    },
+    {
+      "name": "SODA 750 ML",
+      "unit": "bottle"
+    },
+    {
+      "name": "SPRITE 750 ML",
+      "unit": "bottle"
+    },
+    {
+      "name": "STRAWS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "STRAWS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "SURF",
+      "unit": "kg"
+    },
+    {
+      "name": "TEA CUPS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "TEA CUPS SMALL",
+      "unit": "pkt"
+    },
+    {
+      "name": "TOILET BRUSH",
+      "unit": "pcs"
+    },
+    {
+      "name": "TOOTH PICK",
+      "unit": "box"
+    },
+    {
+      "name": "WATER GLASS",
+      "unit": "pkt"
+    },
+    {
+      "name": "WATER MELON SYRUP",
+      "unit": "bottle"
+    },
+    {
+      "name": "WHITE TAPE",
+      "unit": "pcs"
+    },
+    {
+      "name": "WIPER",
+      "unit": "pcs"
+    },
+    {
+      "name": "WOODEN FORK",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS BIG",
+      "unit": "pkt"
+    },
+    {
+      "name": "WOODEN SPOONS SMALL",
+      "unit": "pkt"
+    }
+  ]
+}

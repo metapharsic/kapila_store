@@ -1,0 +1,492 @@
+import { useState, useEffect } from "react";
+import kapilaLogo from "./assets/kapila-logo.png";
+import { globalCss, COLORS } from "./styles/colors";
+import { AppProvider, useAppContext } from "./context/AppContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import ProtectedScreen from "./components/ProtectedScreen";
+import { 
+  LayoutDashboard, Package, Factory, Building2, Receipt, Inbox, Bell, 
+  Scale, ArrowLeftRight, CalendarRange, ClipboardList, Send, ChefHat, 
+  ArchiveRestore, Trash2, Search, Users, ShieldCheck, LogOut, BarChart3,
+  CalendarCheck, ClipboardCheck
+} from "lucide-react";
+
+import Dashboard      from "./screens/Dashboard";
+import StockScreen    from "./screens/Stock";
+import IndentScreen   from "./screens/Indent";
+import IssuanceScreen from "./screens/Issuance";
+import ProductionScreen from "./screens/Production";
+import SuppliersScreen      from "./screens/Suppliers";
+import DepartmentsScreen    from "./screens/Departments";
+import PurchaseOrdersScreen  from "./screens/PurchaseOrders";
+import GoodsReceiptScreen    from "./screens/GoodsReceipt";
+import ReconciliationScreen  from "./screens/Reconciliation";
+import TransfersScreen       from "./screens/Transfers";
+import ReorderPointsScreen   from "./screens/ReorderPoints";
+import ChefStatsScreen        from "./screens/ChefStats";
+import UserManagementScreen from "./screens/UserManagement";
+import AuditLogsScreen from "./screens/AuditLogs";
+import LoginScreen from "./screens/Login";
+import ProductionPlannerScreen from "./screens/ProductionPlanner";
+import AuditScreen from "./screens/audit/AuditScreen";
+import ApprovalsScreen from "./screens/Approvals";
+
+
+import StoreManagerHome from "./screens/StoreManagerHome";
+import StoreManagerStockPurchase from "./screens/StoreManagerStockPurchase";
+import ChefHome from "./screens/ChefHome";
+import PowerBiDashboard from "./screens/Reports/PowerBiDashboard";
+import NotificationPanel from "./components/NotificationPanel";
+
+const NAV_CATEGORIES = [
+  {
+    title: "General",
+    items: [
+      { id: "dashboard",    label: "Dashboard",       permission: "dashboard.view", icon: <LayoutDashboard size={16} /> },
+      { id: "reports",      label: "BI Reports",      permission: "dashboard.view", icon: <BarChart3 size={16} /> },
+    ]
+  },
+  {
+    title: "Master Data",
+    items: [
+      { id: "stock",        label: "Stock Master",    permission: "stock.view", icon: <Package size={16} /> },
+      { id: "audit",        label: "Stock Audit",     permission: "audit.view", icon: <ClipboardCheck size={16} /> },
+    ]
+  },
+  {
+    title: "Procurement",
+    items: [
+      { id: "pos",          label: "Purchase Orders", permission: "purchase_orders.view", icon: <Receipt size={16} /> },
+      { id: "grn",          label: "Goods Receipt",   permission: "grn.view", icon: <Inbox size={16} /> },
+      { id: "reorder",      label: "Reorder Points",  permission: "reorder_points.view", icon: <Bell size={16} /> },
+      { id: "approvals",    label: "Approval Queue",  permission: "purchase_orders.approve", icon: <ClipboardCheck size={16} /> },
+    ]
+  },
+  {
+    title: "Store Operations",
+    items: [
+      { id: "indent",       label: "Indent Requests", permission: "indents.view",     icon: <ClipboardList size={16} /> },
+      { id: "issuance",     label: "Store Issuance",  permission: "issuances.create", icon: <Send size={16} /> },
+      { id: "reconcile",    label: "Reconciliation",  permission: "reconciliation.view", icon: <Scale size={16} /> },
+      { id: "transfers",    label: "Stock Transfers", permission: "transfers.view",   icon: <ArrowLeftRight size={16} /> },
+    ]
+  },
+  {
+    title: "Kitchen & Depts",
+    items: [
+      { id: "production_planner", label: "Production Planner", permission: "recipes.view", icon: <CalendarCheck size={16} /> },
+      { id: "production",   label: "Daily Production & Waste", permission: ["production.view", "leftovers.view", "waste_analytics.view"], icon: <ChefHat size={16} /> },
+      { id: "chef_stats",    label: "Chef Statistics",  permission: "chef_stats.view", icon: <BarChart3 size={16} /> },
+    ]
+  },
+  {
+    title: "Administration",
+    items: [
+      { id: "suppliers",    label: "Suppliers Master", permission: "suppliers.view", icon: <Factory size={16} /> },
+      { id: "departments",  label: "Departments",     permission: "departments.view", icon: <Building2 size={16} /> },
+      { id: "users",        label: "User Management", permission: "users.view", icon: <Users size={16} /> },
+      { id: "audit_logs",   label: "Audit Logs",      permission: "audit_logs.view", icon: <ShieldCheck size={16} /> },
+    ]
+  }
+];
+
+const STORE_MANAGER_NAV_CATEGORIES = [
+  {
+    title: "Store Operations",
+    items: [
+      { id: "store_manager_home",            label: "Home",             permission: "stock.view",        icon: <LayoutDashboard size={16} /> },
+      { id: "store_manager_available_stock", label: "Available Stock",  permission: "stock.view",        icon: <Package size={16} /> },
+      { id: "store_manager_stock_purchase",  label: "Receive Stock",    permission: "stock.create",      icon: <Receipt size={16} /> },
+      { id: "store_manager_store_issuance",  label: "Store Issuance",   permission: "issuances.create",  icon: <Send size={16} /> },
+      { id: "store_manager_indent",          label: "Indent Request",   permission: "indents.view",      icon: <ClipboardList size={16} /> },
+    ]
+  },
+  {
+    title: "Procurement & Inward",
+    items: [
+      { id: "pos",                            label: "Purchase Orders",     permission: "purchase_orders.view", icon: <Receipt size={16} /> },
+      { id: "grn",                            label: "Goods Receipt (GRN)", permission: "grn.view",             icon: <Inbox size={16} /> },
+      { id: "reorder",                        label: "Reorder Points",      permission: "reorder_points.view",   icon: <Bell size={16} /> },
+      { id: "approvals",                      label: "Approval Queue",      permission: "purchase_orders.approve", icon: <ClipboardCheck size={16} /> },
+    ]
+  },
+  {
+    title: "Inventory Control",
+    items: [
+      { id: "audit",                          label: "Stock Audit",         permission: "audit.view",           icon: <ClipboardCheck size={16} /> },
+      { id: "reconcile",                      label: "Reconciliation",      permission: "reconciliation.view",   icon: <Scale size={16} /> },
+      { id: "transfers",                      label: "Stock Transfers",     permission: "transfers.view",       icon: <ArrowLeftRight size={16} /> },
+    ]
+  }
+];
+
+const SCREEN_PERMISSIONS = Object.fromEntries([
+  ...NAV_CATEGORIES.flatMap((cat) => cat.items.map((item) => [item.id, item.permission])),
+  ...STORE_MANAGER_NAV_CATEGORIES.flatMap((cat) => cat.items.map((item) => [item.id, item.permission])),
+]);
+
+const SIDEBAR_WIDTH = 230;
+
+function Inner() {
+  const { currentScreen: screen, setCurrentScreen: setScreen, refreshStockNames, refreshReorderAlerts, reorderAlerts = [] } = useAppContext();
+  const { user, roles, loading, isAuthenticated, hasPermission, hasAnyPermission, logout } = useAuth();
+
+  const screenHasPermission = (screenId) => {
+    const perm = SCREEN_PERMISSIONS[screenId];
+    if (!perm) return false;
+    return Array.isArray(perm) ? hasAnyPermission(perm) : hasPermission(perm);
+  };
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const lowStockCount = reorderAlerts.length;
+
+  const itemHasPermission = (item) => {
+    if (Array.isArray(item.permission)) {
+      return hasAnyPermission(item.permission);
+    }
+    return hasPermission(item.permission);
+  };
+
+  const isStoreManager = roles.some((role) => role.key === "store_manager");
+  const isChef         = roles.some((role) => role.key === "chef");
+
+  const activeNavSource = isStoreManager ? STORE_MANAGER_NAV_CATEGORIES : NAV_CATEGORIES;
+  const visibleNavCategories = activeNavSource
+    .map((cat) => ({ ...cat, items: cat.items.filter(itemHasPermission) }))
+    .filter((cat) => cat.items.length > 0);
+  const visibleNavItems = visibleNavCategories.flatMap((cat) => cat.items);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshStockNames();
+      refreshReorderAlerts();
+    }
+  }, [isAuthenticated, refreshStockNames, refreshReorderAlerts]);
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      if (isChef) {
+        if (!screenHasPermission(screen)) {
+          setScreen("chef_home");
+        }
+      } else if (isStoreManager) {
+        // SM must stay on a store_manager_ screen OR one of their own nav items
+        // (e.g. "pos" — the shared Purchase Orders screen, same window as
+        // admin) that the role can actually access via permission.
+        const allowedIds = visibleNavItems.map((item) => item.id);
+        if ((!(screen.startsWith("store_manager_") || allowedIds.includes(screen)) || !screenHasPermission(screen)) && visibleNavItems.length) {
+          setScreen(visibleNavItems[0].id);
+        }
+      } else if (visibleNavItems.length && !screenHasPermission(screen)) {
+        setScreen(visibleNavItems[0].id);
+      }
+    }
+  }, [loading, isAuthenticated, isStoreManager, isChef, visibleNavItems, screen, hasPermission, hasAnyPermission, setScreen, roles]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setIsSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const screens = {
+    dashboard:  <ProtectedScreen permission="dashboard.view"><Dashboard /></ProtectedScreen>,
+    reports:    <ProtectedScreen permission="dashboard.view"><PowerBiDashboard /></ProtectedScreen>,
+    stock:      <ProtectedScreen permission="stock.view"><StockScreen /></ProtectedScreen>,
+    suppliers:  <ProtectedScreen permission="suppliers.view"><SuppliersScreen /></ProtectedScreen>,
+    departments: <ProtectedScreen permission="departments.view"><DepartmentsScreen /></ProtectedScreen>,
+    pos:        <ProtectedScreen permission="purchase_orders.view"><PurchaseOrdersScreen /></ProtectedScreen>,
+    grn:        <ProtectedScreen permission="grn.view"><GoodsReceiptScreen /></ProtectedScreen>,
+    reorder:    <ProtectedScreen permission="reorder_points.view"><ReorderPointsScreen /></ProtectedScreen>,
+    reconcile:  <ProtectedScreen permission="reconciliation.view"><ReconciliationScreen /></ProtectedScreen>,
+    transfers:  <ProtectedScreen permission="transfers.view"><TransfersScreen /></ProtectedScreen>,
+    approvals:  <ProtectedScreen permission="purchase_orders.approve"><ApprovalsScreen /></ProtectedScreen>,
+    indent:     <ProtectedScreen permission="indents.view"><IndentScreen /></ProtectedScreen>,
+    issuance:   <ProtectedScreen permission="issuances.create"><IssuanceScreen /></ProtectedScreen>,
+
+    production: (
+      <ProtectedScreen permission={["production.view", "leftovers.view", "waste_analytics.view"]}>
+        <ProductionScreen />
+      </ProtectedScreen>
+    ),
+    production_planner: <ProtectedScreen permission="recipes.view"><ProductionPlannerScreen /></ProtectedScreen>,
+    chef_stats: <ProtectedScreen permission="chef_stats.view"><ChefStatsScreen /></ProtectedScreen>,
+    users: <ProtectedScreen permission="users.view"><UserManagementScreen /></ProtectedScreen>,
+    audit_logs: <ProtectedScreen permission="audit_logs.view"><AuditLogsScreen /></ProtectedScreen>,
+    audit: <ProtectedScreen permission="audit.view"><AuditScreen /></ProtectedScreen>,
+    
+    store_manager_home: <ProtectedScreen permission="stock.view"><StoreManagerHome /></ProtectedScreen>,
+    store_manager_available_stock: <ProtectedScreen permission="stock.view"><StockScreen /></ProtectedScreen>,
+    store_manager_stock_purchase: <ProtectedScreen permission="stock.create"><StoreManagerStockPurchase /></ProtectedScreen>,
+    store_manager_store_issuance: <ProtectedScreen permission="issuances.create"><IssuanceScreen /></ProtectedScreen>,
+    store_manager_indent: <ProtectedScreen permission="indents.view"><IndentScreen /></ProtectedScreen>,
+    
+    chef_home: <ProtectedScreen permission="production.view"><ChefHome /></ProtectedScreen>,
+  };
+
+  const handleNavigation = (id) => {
+    setScreen(id);
+    if (isMobile) setIsSidebarOpen(false);
+  };
+
+  const activeNavItem = visibleNavItems.find(n => n.id === screen);
+  const primaryRole = roles[0]?.name || "User";
+
+  if (loading) {
+    return (
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: COLORS.bg, gap: 16 }}>
+        <style>{`
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `}</style>
+        <div style={{
+          width: 40, height: 40,
+          border: `3px solid ${COLORS.border}`,
+          borderTopColor: COLORS.brand,
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite"
+        }} />
+        <p style={{ color: COLORS.muted, fontSize: 14, fontWeight: 500 }}>Initializing Kapila IMS...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
+
+  const showSidebar = !isChef;
+
+  return (
+    <>
+      <style>{globalCss}</style>
+      <div style={{ display: "flex", height: "100vh", overflow: "hidden", backgroundColor: COLORS.bg }}>
+        
+        {/* Mobile Overlay */}
+        {isMobile && isSidebarOpen && (
+          <div 
+            onClick={() => setIsSidebarOpen(false)}
+            style={{
+              position: "fixed", inset: 0,
+              backgroundColor: "rgba(0,0,0,0.5)", zIndex: 99,
+              backdropFilter: "blur(2px)"
+            }}
+          />
+        )}
+
+        {/* ═══ SIDEBAR ═══ */}
+        {showSidebar && (
+          <aside style={{
+            width: SIDEBAR_WIDTH,
+            background: "var(--color-bg-sidebar)",
+            borderRight: "1px solid var(--sidebar-border)",
+            boxShadow: "var(--shadow-sidebar)",
+            display: "flex",
+            flexDirection: "column",
+            position: isMobile ? "fixed" : "relative",
+            top: 0, bottom: 0, left: 0,
+            transform: isMobile ? (isSidebarOpen ? "translateX(0)" : `translateX(-${SIDEBAR_WIDTH}px)`) : "none",
+            transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
+            zIndex: 100,
+            flexShrink: 0,
+            overflowY: "auto",
+            scrollbarWidth: "thin"
+          }}>
+          {/* Logo */}
+          <div style={{
+            display: "flex", alignItems: "center",
+            padding: "14px 16px", borderBottom: "1px solid var(--sidebar-border)",
+            flexShrink: 0
+          }}>
+            <div 
+              onClick={() => {
+                if (isStoreManager) setScreen("store_manager_home");
+                else if (isChef) setScreen("chef_home");
+                else setScreen("dashboard");
+                if (isMobile) setIsSidebarOpen(false);
+              }}
+              style={{
+              backgroundColor: "#1E293B", borderRadius: 8,
+              padding: "8px 14px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "100%",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+              cursor: "pointer"
+            }}>
+              <img
+                src={kapilaLogo}
+                alt="Kapila IMS"
+                style={{ height: 28, width: "auto", display: "block", objectFit: "contain" }}
+              />
+            </div>
+          </div>
+
+          {/* User Profile */}
+          <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--sidebar-border)" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: COLORS.brand + "20", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: COLORS.brand }} title={user?.name}>
+              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1F2937" }}>{user?.name || "Kapila User"}</div>
+              <div style={{ fontSize: 11, color: "#9CA3AF" }}>{primaryRole}</div>
+            </div>
+          </div>
+
+          {/* Nav */}
+          <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto", scrollbarWidth: "none" }}>
+            {visibleNavCategories.map((cat) => (
+              <div key={cat.title} style={{ marginBottom: 4 }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, color: "var(--sidebar-category)",
+                  textTransform: "uppercase", letterSpacing: "0.08em",
+                  padding: "8px 12px 4px", userSelect: "none"
+                }}>
+                  {cat.title}
+                </div>
+                {cat.items.map((n) => {
+                  const isActive = screen === n.id;
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => handleNavigation(n.id)}
+                      title={n.label}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        width: "100%",
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        background: isActive ? "var(--sidebar-active-bg)" : "transparent",
+                        color: isActive ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
+                        border: "none",
+                        transition: "all 0.15s",
+                        textAlign: "left",
+                        fontSize: 13,
+                        fontWeight: isActive ? 600 : 400,
+                        cursor: "pointer",
+                        position: "relative"
+                      }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "var(--sidebar-hover-bg)"; e.currentTarget.style.color = "var(--sidebar-text-hover)"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--sidebar-text)"; } }}
+                    >
+                      <span style={{ 
+                        color: isActive ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
+                        display: "flex", flexShrink: 0
+                      }}>
+                        {n.icon}
+                      </span>
+                      <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {n.label}
+                      </span>
+                      {n.id === "reorder" && lowStockCount > 0 && (
+                        <span style={{
+                          background: COLORS.danger,
+                          color: "#fff",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          minWidth: 16, height: 16,
+                          padding: "0 4px",
+                          borderRadius: 8,
+                          display: "flex", alignItems: "center", justifyContent: "center"
+                        }}>
+                          {lowStockCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+
+          {/* Footer */}
+          <div style={{
+            padding: "12px 16px",
+            borderTop: "1px solid var(--sidebar-border)",
+            display: "flex", alignItems: "center", gap: 8,
+            flexShrink: 0
+          }}>
+            <div style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: "#10B981"
+            }} className="pulse" />
+            <span style={{ fontSize: 11, color: "var(--sidebar-category)", fontWeight: 500 }}>PostgreSQL · Live v1.0.0</span>
+          </div>
+        </aside>
+        )}
+
+        {/* ═══ MAIN AREA ═══ */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+          
+          {/* Top Bar */}
+          {showSidebar && (
+            <header style={{
+              height: 52,
+              display: "flex", alignItems: "center",
+              padding: isMobile ? "0 16px" : "0 24px",
+              background: COLORS.surface,
+              borderBottom: `1px solid ${COLORS.border}`,
+              gap: 12,
+              flexShrink: 0,
+              zIndex: 10
+            }}>
+              {isMobile && (
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  aria-label="Open sidebar"
+                  style={{ background: "none", border: "none", fontSize: 20, color: COLORS.text, cursor: "pointer", display: "flex", padding: 4 }}
+                >
+                  ☰
+                </button>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: COLORS.muted }}>
+                <span style={{ fontWeight: 600, color: COLORS.text }}>
+                  {activeNavItem?.label || "Dashboard"}
+                </span>
+              </div>
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16 }}>
+                <NotificationPanel user={user} />
+                <button onClick={logout} title="Logout" aria-label="Logout" style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.surface, border: `1px solid ${COLORS.border}`, display: "grid", placeItems: "center", cursor: "pointer" }}>
+                  <LogOut size={15} color={COLORS.muted} />
+                </button>
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: COLORS.brand + "20",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 600, color: COLORS.brand, fontSize: 13
+                }} title={user?.name}>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                </div>
+              </div>
+            </header>
+          )}
+
+          {/* Scrollable Content */}
+          <main style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: isMobile ? "12px 16px" : "20px 24px",
+            backgroundColor: COLORS.bg
+          }}>
+            {screens[screen]}
+          </main>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppProvider>
+        <Inner />
+      </AppProvider>
+    </AuthProvider>
+  );
+}

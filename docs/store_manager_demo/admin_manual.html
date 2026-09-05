@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Manual — Kapila Hotel IMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.33.0/dist/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand: #e8a838;
+      --dark: #1E293B;
+      --surface: #F8FAFC;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --muted: #64748B;
+      --success: #10B981;
+      --danger: #EF4444;
+      --blue: #3B82F6;
+      --purple: #8B5CF6;
+      --teal: #0D9488;
+    }
+    body { font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #F1F5F9; color: var(--text); }
+
+    /* ── NAV ── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--dark); padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between; height: 52px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-brand .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    .nav-brand h1 { font-size: 14px; font-weight: 800; color: #fff; letter-spacing: -.3px; }
+    .nav-brand span { font-size: 11px; color: #94A3B8; margin-left: 4px; font-weight: 500; }
+    .nav-badge { background: #DC2626; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: .4px; }
+    .back-link { color: #94A3B8; font-size: 12px; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    .back-link:hover { color: #fff; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, #0F172A 100%);
+      padding: 48px 40px 40px; text-align: center;
+    }
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: #DC262622; color: #FCA5A5; border: 1px solid #FCA5A544; border-radius: 20px; padding: 4px 14px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 16px; }
+    .hero h2 { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -.5px; margin-bottom: 10px; }
+    .hero p { color: #94A3B8; font-size: 15px; max-width: 600px; margin: 0 auto 28px; }
+    .hero-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .hero-chip { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: #CBD5E1; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+
+    /* ── TOC ── */
+    .toc-row { background: white; border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; gap: 8px; flex-wrap: wrap; position: sticky; top: 52px; z-index: 90; }
+    .toc-pill { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; text-decoration: none; transition: all .15s; }
+    .toc-pill:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    /* ── PAGE WRAP ── */
+    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 36px 24px 80px; }
+
+    /* ── SECTION ── */
+    .section { margin-bottom: 56px; scroll-margin-top: 110px; }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .section-number { width: 36px; height: 36px; background: var(--dark); color: var(--brand); font-size: 14px; font-weight: 900; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .section-title { font-size: 20px; font-weight: 800; color: var(--text); }
+    .section-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 860px) { .section-grid { grid-template-columns: 1fr; } }
+
+    /* ── MOCK FRAME ── */
+    .mock-frame {
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,.13);
+      border: 1px solid var(--border);
+    }
+    .mock-chrome {
+      background: #E5E7EB; padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #EF4444; }
+    .dot-amber { background: #F59E0B; }
+    .dot-green { background: #10B981; }
+    .url-bar { flex: 1; background: white; border-radius: 4px; padding: 3px 10px; font-size: 10px; color: #64748B; font-family: monospace; }
+    .mock-screen { background: var(--surface); padding: 0; }
+    .mock-bar { background: var(--dark); color: white; padding: 10px 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+
+    /* ── STEPS PANEL ── */
+    .steps-panel { display: flex; flex-direction: column; gap: 0; }
+    .step-item { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .step-item:last-child { border-bottom: none; }
+    .step-num { width: 26px; height: 26px; background: var(--dark); color: var(--brand); font-size: 12px; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .step-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ── TIP BOX ── */
+    .tip-box { background: #FEF9C3; border: 1px solid #FDE68A; border-radius: 10px; padding: 14px 18px; margin-top: 18px; font-size: 13px; color: #78350F; line-height: 1.5; }
+    .tip-box strong { color: #92400E; }
+
+    /* ── ALERT BOX ── */
+    .alert-box { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 14px 18px; margin-top: 18px; font-size: 13px; color: #7F1D1D; line-height: 1.5; }
+    .alert-box strong { color: #991B1B; }
+
+    /* ── INFO BOX ── */
+    .info-box { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 14px 18px; margin-top: 18px; font-size: 13px; color: #1E3A5F; line-height: 1.5; }
+    .info-box strong { color: #1D4ED8; }
+
+    /* ── UI COMPONENTS inside mocks ── */
+    .mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .mock-table th { padding: 8px 12px; text-align: left; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; background: white; border-bottom: 1px solid var(--border); }
+    .mock-table td { padding: 9px 12px; border-bottom: 1px solid #F1F5F9; color: var(--text); }
+    .mock-table tr:last-child td { border-bottom: none; }
+    .mock-form { padding: 14px 16px; background: white; }
+    .mock-input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 12px; color: var(--text); margin-bottom: 8px; font-family: inherit; }
+    .mock-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; display: block; }
+    .mock-btn { padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .mock-btn-brand { background: var(--brand); color: var(--dark); }
+    .mock-btn-ghost { background: white; color: var(--muted); border: 1px solid var(--border); }
+    .mock-btn-danger { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; }
+    .mock-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+    .badge-green { background: #D1FAE5; color: #065F46; }
+    .badge-amber { background: #FEF3C7; color: #92400E; }
+    .badge-red { background: #FEE2E2; color: #991B1B; }
+    .badge-blue { background: #DBEAFE; color: #1D4ED8; }
+    .badge-purple { background: #EDE9FE; color: #6D28D9; }
+    .badge-gray { background: #F1F5F9; color: #475569; }
+    .chip { display: inline-block; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; margin: 2px; }
+    .chip-active { border-color: var(--brand); background: #FEF3C722; color: #92400E; }
+    .chip-inactive { background: var(--surface); color: var(--muted); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px; }
+    .kpi-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+    .kpi-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+    .kpi-value { font-size: 20px; font-weight: 800; color: var(--text); margin-top: 4px; }
+    .matrix-cell { width: 16px; height: 16px; accent-color: var(--brand); }
+    .role-header { font-size: 10px; font-weight: 700; color: var(--muted); padding: 6px 10px; text-align: center; }
+    .perm-name { font-size: 11px; font-weight: 600; color: var(--text); padding: 8px 10px; }
+    .perm-key { font-size: 9px; color: var(--muted); font-family: monospace; }
+    .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 12px; }
+    .stat-box { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 10px 8px; text-align: center; }
+    .stat-label { font-size: 9px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+    .stat-val { font-size: 15px; font-weight: 800; color: var(--text); margin-top: 2px; }
+    .timeline-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #E2E8F0; font-size: 11px; }
+    .timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); margin-top: 3px; flex-shrink: 0; }
+
+    /* ── ROLE TABLE ── */
+    .role-matrix-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .role-matrix-table th, .role-matrix-table td { border: 1px solid var(--border); padding: 6px 10px; }
+    .role-matrix-table thead { background: var(--dark); color: white; }
+    .role-matrix-table td:first-child { font-weight: 600; color: var(--text); width: 180px; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--dark); color: #64748B; text-align: center; padding: 24px; font-size: 12px; }
+    footer strong { color: var(--brand); }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <div class="logo"><i class="ti ti-building-store" style="color:#1E293B;font-size:16px;"></i></div>
+    <h1>Kapila Hotel IMS <span>· Admin Manual</span></h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="nav-badge">ADMIN ONLY</span>
+    <a href="index.html" class="back-link"><i class="ti ti-arrow-left" style="font-size:14px;"></i> All Docs</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-eyebrow"><i class="ti ti-shield-lock" style="font-size:13px;"></i> SYSTEM ADMINISTRATOR</div>
+  <h2>Admin Control Panel — Complete Guide</h2>
+  <p>Full reference for all admin-exclusive screens: user accounts, roles & permissions, departments, suppliers, reorder rules, BI reports, and audit logs.</p>
+  <div class="hero-chips">
+    <span class="hero-chip">👤 User Management</span>
+    <span class="hero-chip">🔐 Roles & Permissions</span>
+    <span class="hero-chip">🏢 Departments</span>
+    <span class="hero-chip">🏭 Suppliers</span>
+    <span class="hero-chip">⚠️ Reorder Points</span>
+    <span class="hero-chip">📊 BI Reports</span>
+    <span class="hero-chip">📋 Audit Logs</span>
+  </div>
+</div>
+
+<!-- ══ TOC ══ -->
+<div class="toc-row">
+  <a href="#user-mgmt" class="toc-pill">1 · User Management</a>
+  <a href="#roles" class="toc-pill">2 · Roles & Permissions</a>
+  <a href="#departments" class="toc-pill">3 · Departments</a>
+  <a href="#suppliers" class="toc-pill">4 · Suppliers</a>
+  <a href="#reorder" class="toc-pill">5 · Reorder Points</a>
+  <a href="#bi" class="toc-pill">6 · BI Studio</a>
+  <a href="#audit" class="toc-pill">7 · Audit Logs</a>
+  <a href="#security" class="toc-pill">8 · Security Rules</a>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 — USER MANAGEMENT
+  ══════════════════════════════════════════ -->
+  <div class="section" id="user-mgmt">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <div>
+        <div class="section-title">User Management</div>
+        <div class="section-sub">Create accounts, assign roles, set department access, activate/deactivate users</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / user-management</div>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-bar">
+            <span>User Management</span>
+            <span style="font-size:10px;color:#94A3B8;">Create users · Assign roles · Department scope</span>
+          </div>
+          <div style="display:grid;grid-template-columns:220px 1fr;gap:0;">
+            <!-- Form column -->
+            <div class="mock-form" style="border-right:1px solid #E2E8F0;">
+              <div style="font-size:11px;font-weight:800;color:#1E293B;margin-bottom:10px;">Create User</div>
+              <label class="mock-label">Name</label>
+              <input class="mock-input" value="Ravi Kumar" readOnly />
+              <label class="mock-label">Email</label>
+              <input class="mock-input" value="ravi@kapila.hotel" readOnly />
+              <label class="mock-label">Phone</label>
+              <input class="mock-input" value="+91 98765 43210" readOnly />
+              <label class="mock-label">Employee Code</label>
+              <input class="mock-input" value="KPL-042" readOnly />
+              <div style="margin:10px 0 6px;display:flex;justify-content:space-between;align-items:center;">
+                <span class="mock-label" style="margin:0;">Roles</span>
+                <span style="font-size:9px;color:#e8a838;font-weight:700;cursor:pointer;">View Permissions Matrix</span>
+              </div>
+              <div>
+                <span class="chip chip-active">Store Manager</span>
+                <span class="chip chip-inactive">Chef</span>
+                <span class="chip chip-inactive">Admin</span>
+                <span class="chip chip-inactive">Manager</span>
+              </div>
+              <div style="margin:10px 0 6px;"><span class="mock-label" style="margin:0;">Departments (Scope)</span></div>
+              <div>
+                <span class="chip chip-active">TIFFINS</span>
+                <span class="chip chip-active">RESTAURANT</span>
+                <span class="chip chip-inactive">STAFF</span>
+              </div>
+              <div style="margin:10px 0;display:flex;align-items:center;gap:6px;font-size:11px;color:#475569;">
+                <input type="checkbox" checked readOnly /> Active user
+              </div>
+              <button class="mock-btn mock-btn-brand" style="width:100%;">Create User</button>
+            </div>
+            <!-- Table column -->
+            <div style="overflow:auto;">
+              <table class="mock-table">
+                <thead>
+                  <tr><th>User</th><th>Role</th><th>Dept</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Suresh M.</strong><div style="font-size:9px;color:#94A3B8;">suresh@kapila.hotel</div></td>
+                    <td><span class="mock-badge badge-red">Admin</span></td>
+                    <td style="font-size:10px;color:#64748B;">All</td>
+                    <td><span class="mock-badge badge-green">Active</span></td>
+                    <td style="font-size:10px;color:#64748B;">Today 9:12 AM</td>
+                    <td>
+                      <button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:3px 7px;">Edit</button>
+                      <button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:3px 7px;margin-left:3px;">Activity</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Anjali K.</strong><div style="font-size:9px;color:#94A3B8;">anjali@kapila.hotel</div></td>
+                    <td><span class="mock-badge badge-blue">Store Mgr</span></td>
+                    <td style="font-size:10px;color:#64748B;">TIFFINS, RESTAURANT</td>
+                    <td><span class="mock-badge badge-green">Active</span></td>
+                    <td style="font-size:10px;color:#64748B;">Yesterday</td>
+                    <td>
+                      <button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:3px 7px;">Edit</button>
+                      <button class="mock-btn mock-btn-danger" style="font-size:9px;padding:3px 7px;margin-left:3px;">Deactivate</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Deepak R.</strong><div style="font-size:9px;color:#94A3B8;">deepak@kapila.hotel</div></td>
+                    <td><span class="mock-badge badge-amber">Chef</span></td>
+                    <td style="font-size:10px;color:#64748B;">NORTH INDIAN</td>
+                    <td><span class="mock-badge badge-gray" style="opacity:.5;">Inactive</span></td>
+                    <td style="font-size:10px;color:#64748B;">3 days ago</td>
+                    <td>
+                      <button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:3px 7px;color:#10B981;border-color:#10B981;">Activate</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Fill the Create User form (left panel)</div>
+            <div class="step-desc">Enter Name, Email (unique), Phone, Employee Code, and a Temporary Password. Email cannot be changed after creation.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Assign one or more Roles</div>
+            <div class="step-desc">Click role chips to toggle them. Roles determine what screens and actions the user can access. A user can hold multiple roles — all permissions are merged.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Set Department scope (data isolation)</div>
+            <div class="step-desc">Select which departments this user can see. A Chef assigned only to "NORTH INDIAN" cannot view indents or stock from other departments. Leave unassigned for full visibility.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Activate / Deactivate accounts</div>
+            <div class="step-desc">Deactivated users cannot log in. Use this instead of deleting — it preserves all their history in audit logs and indents.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div>
+            <div class="step-title">Reset Password on demand</div>
+            <div class="step-desc">Click "Reset Password" in the actions column. You'll be prompted to enter a temporary password. The user must change it on next login.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">6</div>
+          <div>
+            <div class="step-title">View Activity Log per user</div>
+            <div class="step-desc">Click "Activity Log" to open a modal showing every action that user has taken — indents submitted, stock received, approvals made — with timestamps.</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Best practice:</strong> Always assign the minimum departments needed. Over-scoping gives users access to sensitive data from other outlets. The system admin (role key: <code>admin</code>) always bypasses all department restrictions.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 — ROLES & PERMISSIONS MATRIX
+  ══════════════════════════════════════════ -->
+  <div class="section" id="roles">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <div>
+        <div class="section-title">Roles & Permissions Matrix</div>
+        <div class="section-sub">Define what each role can see and do — granular permission control per role</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / user-management → Permissions Matrix</div>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-bar">
+            <span>Role Permissions Matrix</span>
+            <span style="font-size:10px;color:#94A3B8;">Admin role is locked — always full access</span>
+          </div>
+          <div style="padding:12px;overflow:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead>
+                <tr style="background:#1E293B;">
+                  <th style="padding:8px 10px;text-align:left;color:#94A3B8;font-size:10px;min-width:160px;">Permission</th>
+                  <th class="role-header" style="color:#e8a838;">Admin</th>
+                  <th class="role-header" style="color:#94A3B8;">Store Mgr</th>
+                  <th class="role-header" style="color:#94A3B8;">Chef</th>
+                  <th class="role-header" style="color:#94A3B8;">Manager</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #F1F5F9;">
+                  <td class="perm-name">Approve Indent<div class="perm-key">indent.approve</div></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked disabled /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                </tr>
+                <tr style="border-bottom:1px solid #F1F5F9;">
+                  <td class="perm-name">Manage Suppliers<div class="perm-key">supplier.manage</div></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked disabled /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                </tr>
+                <tr style="border-bottom:1px solid #F1F5F9;">
+                  <td class="perm-name">View Reports<div class="perm-key">report.view</div></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked disabled /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                </tr>
+                <tr style="border-bottom:1px solid #F1F5F9;">
+                  <td class="perm-name">Issue Goods<div class="perm-key">issuance.create</div></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked disabled /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                </tr>
+                <tr>
+                  <td class="perm-name">Create Indent<div class="perm-key">indent.create</div></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked disabled /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" checked /></td>
+                  <td style="text-align:center;"><input type="checkbox" class="matrix-cell" /></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px;">
+              <button class="mock-btn mock-btn-ghost">Cancel</button>
+              <button class="mock-btn mock-btn-brand">Save Permissions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Open the matrix from User Management</div>
+            <div class="step-desc">In the Create/Edit User form, click "View Permissions Matrix" (gold link, top-right of the Roles field). The full matrix modal opens over the page.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Read the grid: rows = permissions, columns = roles</div>
+            <div class="step-desc">Each row shows one permission (human label + machine key). Each column is a role. A checked checkbox means that role has that permission.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">The Admin column is locked — never modify it</div>
+            <div class="step-desc">The <code>admin</code> role key bypasses all permission checks in code. Its checkboxes are greyed-out/disabled in the UI to prevent accidental restriction.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Toggle checkboxes to add/remove permissions</div>
+            <div class="step-desc">Click any non-admin checkbox to toggle it. Changes are local until you click "Save Permissions" — you can freely experiment before saving.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div>
+            <div class="step-title">Save refreshes all active sessions instantly</div>
+            <div class="step-desc">After save, the backend invalidates permission caches. Logged-in users with that role get updated access on their next API call — no need to log them out.</div>
+          </div>
+        </div>
+        <div class="alert-box">
+          <strong>Warning:</strong> Removing <code>indent.approve</code> from Store Manager means pending indents will not have any approver. Always ensure at least one non-admin role retains approval access, otherwise the workflow stalls.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 — DEPARTMENTS
+  ══════════════════════════════════════════ -->
+  <div class="section" id="departments">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <div>
+        <div class="section-title">Departments</div>
+        <div class="section-sub">Configure kitchen units and dining outlets — these drive all indent routing, issuance scoping, and stock separation</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / departments</div>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-bar">
+            <span>Departments</span>
+            <span style="font-size:10px;color:#94A3B8;">Manage kitchen units · dining rooms · chef routing</span>
+          </div>
+          <div style="display:grid;grid-template-columns:200px 1fr;">
+            <div class="mock-form" style="border-right:1px solid #E2E8F0;">
+              <div style="font-size:11px;font-weight:800;color:#1E293B;margin-bottom:10px;">Add Department</div>
+              <label class="mock-label">Department Name *</label>
+              <input class="mock-input" value="Room Service" readOnly />
+              <label class="mock-label">Code (Short) *</label>
+              <input class="mock-input" value="RS" readOnly style="font-family:monospace;color:#0D9488;" />
+              <label class="mock-label">Head Chef / Manager</label>
+              <input class="mock-input" value="Chef Priya" readOnly />
+              <button class="mock-btn mock-btn-brand" style="width:100%;margin-top:6px;">Add Department</button>
+            </div>
+            <div>
+              <div style="padding:8px 12px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;">Active Departments</span>
+                <span style="font-size:10px;color:#64748B;">9 units</span>
+              </div>
+              <table class="mock-table">
+                <thead><tr><th>Department</th><th>Code</th><th>Head Chef</th><th style="text-align:right;">Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>TIFFINS</strong></td><td><span style="font-family:monospace;font-size:10px;background:#F1F5F9;color:#e8a838;padding:1px 6px;border-radius:3px;">TIF</span></td><td style="color:#64748B;font-size:11px;">Chef Ramesh</td><td style="text-align:right;"><button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:2px 7px;">Edit</button></td></tr>
+                  <tr><td><strong>RESTAURANT</strong></td><td><span style="font-family:monospace;font-size:10px;background:#F1F5F9;color:#e8a838;padding:1px 6px;border-radius:3px;">RES</span></td><td style="color:#64748B;font-size:11px;">Chef Anand</td><td style="text-align:right;"><button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:2px 7px;">Edit</button></td></tr>
+                  <tr><td><strong>NORTH INDIAN</strong></td><td><span style="font-family:monospace;font-size:10px;background:#F1F5F9;color:#e8a838;padding:1px 6px;border-radius:3px;">NI</span></td><td style="color:#64748B;font-size:11px;">Chef Deepak</td><td style="text-align:right;"><button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:2px 7px;">Edit</button></td></tr>
+                  <tr><td><strong>CHINESE & DOSA</strong></td><td><span style="font-family:monospace;font-size:10px;background:#F1F5F9;color:#e8a838;padding:1px 6px;border-radius:3px;">CHD</span></td><td style="color:#64748B;font-size:11px;">—</td><td style="text-align:right;"><button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:2px 7px;">Edit</button> <button class="mock-btn mock-btn-danger" style="font-size:9px;padding:2px 7px;">Delete</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Add a new department</div>
+            <div class="step-desc">Fill Department Name, a short Code (e.g. "RS" for Room Service), and optionally the Head Chef name. Click "Add Department". The new unit immediately appears in indent and issuance dropdowns.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Edit an existing department</div>
+            <div class="step-desc">Click "Edit" on any row — the form pre-fills. Update name, code, or chef assignment. Save with "Save Changes". Historical records using this department are unaffected (they store the name string).</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">The Code field drives indent grouping</div>
+            <div class="step-desc">Each indent request is tagged with the department name. The code is used in short references and reporting pivot tables. Keep codes uppercase and 2–5 characters.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Delete only unused departments</div>
+            <div class="step-desc">Delete is permanent and raises a confirmation dialog. If the department has linked indents, issuances, or user assignments, deletion will fail with a foreign-key error from the database.</div>
+          </div>
+        </div>
+        <div class="alert-box">
+          <strong>Warning:</strong> Renaming a department code changes all future dropdowns but does NOT retroactively rename the string stored in past indent records. Rename codes with caution.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 — SUPPLIERS
+  ══════════════════════════════════════════ -->
+  <div class="section" id="suppliers">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <div>
+        <div class="section-title">Supplier / Vendor Master</div>
+        <div class="section-sub">Add vendors, track PO history, analyze spend, view per-item price trends</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / suppliers</div>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-bar">
+            <span>Suppliers</span>
+            <span style="font-size:10px;color:#94A3B8;">Vendor master · contacts · GSTIN · PO history</span>
+          </div>
+
+          <!-- KPI row -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;">
+            <div style="background:white;border:1px solid #E2E8F0;border-left:3px solid #3B82F6;border-radius:8px;padding:10px;">
+              <div style="font-size:10px;color:#64748B;font-weight:600;">Total Active Vendors</div>
+              <div style="font-size:22px;font-weight:800;color:#0F172A;">14</div>
+            </div>
+            <div style="background:white;border:1px solid #E2E8F0;border-left:3px solid #10B981;border-radius:8px;padding:10px;">
+              <div style="font-size:10px;color:#64748B;font-weight:600;">System Status</div>
+              <div style="font-size:14px;font-weight:700;color:#0F172A;margin-top:4px;">Online & Synced</div>
+            </div>
+          </div>
+
+          <!-- Supplier row (expanded) -->
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead><tr style="border-bottom:1px solid #E2E8F0;background:white;"><th style="padding:8px 12px;color:#64748B;">Supplier</th><th style="padding:8px 12px;color:#64748B;">Contact</th><th style="padding:8px 12px;color:#64748B;">Phone</th><th style="padding:8px 12px;color:#64748B;">GSTIN</th><th></th></tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #E2E8F0;background:#F8FAFC;">
+                <td style="padding:10px 12px;"><strong>▼ Fresh Farms India</strong><div style="font-size:9px;color:#64748B;">fresh@farms.in</div></td>
+                <td style="padding:10px 12px;color:#475569;">Mohan S.</td>
+                <td style="padding:10px 12px;"><a style="color:#3B82F6;font-size:11px;">+91 98765 10001</a></td>
+                <td style="padding:10px 12px;"><span style="font-family:monospace;font-size:9px;background:#EFF6FF;color:#1D4ED8;padding:2px 6px;border-radius:4px;">29ABCDE1234F1Z5</span></td>
+                <td style="padding:10px 12px;"><button class="mock-btn" style="background:#10B981;color:white;font-size:9px;padding:4px 8px;border:none;border-radius:4px;">⚡ Auto-Draft PO</button></td>
+              </tr>
+              <!-- Expanded analytics -->
+              <tr><td colspan="5" style="padding:12px;background:#F8FAFC;">
+                <div style="background:white;border:1px solid #E2E8F0;border-radius:8px;padding:12px;">
+                  <div class="stat-row">
+                    <div class="stat-box"><div class="stat-label">Spend</div><div class="stat-val" style="font-size:13px;">₹1.2L</div></div>
+                    <div class="stat-box"><div class="stat-label">POs</div><div class="stat-val">18</div></div>
+                    <div class="stat-box" style="background:#ECFDF5;border-color:#D1FAE5;"><div class="stat-label" style="color:#059669;">Done</div><div class="stat-val" style="color:#047857;">14</div></div>
+                    <div class="stat-box" style="background:#FEF2F2;border-color:#FEE2E2;"><div class="stat-label" style="color:#DC2626;">Pending</div><div class="stat-val" style="color:#B91C1C;">4</div></div>
+                    <div class="stat-box"><div class="stat-label">Fill Rate</div><div class="stat-val" style="color:#3B82F6;font-size:14px;">92%</div></div>
+                    <div class="stat-box"><div class="stat-label">Lead</div><div class="stat-val" style="color:#8B5CF6;font-size:14px;">2.4d</div></div>
+                  </div>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Add a supplier with full contact details</div>
+            <div class="step-desc">Fill Supplier Name (required), contact person, phone, email, GSTIN, and address. GSTIN is validated against the standard 15-character Indian format before saving.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Click a supplier row to expand the analytics dashboard</div>
+            <div class="step-desc">Clicking any row expands an inline analytics panel showing: Total Spend, PO count, Completed vs Pending orders, Fulfillment Rate (%), and Average Lead Time in days.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">View Recent POs and click to open invoice detail</div>
+            <div class="step-desc">The left panel of the expanded view shows the last 10 Purchase Orders with status chips (Draft/Sent/Received). Click any PO row to open a full invoice modal with line items and totals.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Catalog: view all items & price history</div>
+            <div class="step-desc">The right panel lists every stock item this supplier has delivered, with last known price and trend arrow (↗ / ↘). Click an item row to expand its full price timeline with batch-by-batch cost changes.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div>
+            <div class="step-title">Auto-Draft PO for all low-stock items</div>
+            <div class="step-desc">Click "⚡ Auto-Draft PO (Low Stock)" in the expanded header. The system scans all items linked to this supplier that are below their reorder threshold and creates a single draft PO automatically.</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Best practice:</strong> Set a Preferred Supplier on each Reorder Point rule (Section 5). Then the Auto-Draft PO button knows which vendor to route the order to without manual selection.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5 — REORDER POINTS
+  ══════════════════════════════════════════ -->
+  <div class="section" id="reorder">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <div>
+        <div class="section-title">Reorder Points</div>
+        <div class="section-sub">Set stock thresholds — get alerts automatically and one-click draft POs when items run low</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / reorder-points</div>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-bar">
+            <span>Reorder Points</span>
+            <span style="font-size:10px;color:#94A3B8;">Set thresholds · auto-alerts · one-click PO</span>
+          </div>
+          <!-- Alert banner -->
+          <div style="background:#FEF2F222;border:1px solid #EF444444;margin:10px;border-radius:8px;padding:10px 14px;">
+            <div style="color:#EF4444;font-weight:600;font-size:11px;margin-bottom:6px;">⚠ 3 items below reorder threshold</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;">Tomatoes — 2.0 / 5 kg</span>
+              <span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;">Cooking Oil — 1.5 / 3 L</span>
+              <span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;">Onions — 4.0 / 8 kg</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:200px 1fr;gap:0;">
+            <div class="mock-form" style="border-right:1px solid #E2E8F0;">
+              <label class="mock-label">Item Name</label>
+              <input class="mock-input" value="Tomatoes" readOnly />
+              <label class="mock-label">Item Code</label>
+              <input class="mock-input" value="KPL-014" readOnly style="font-family:monospace;color:#0D9488;" />
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div><label class="mock-label">Min Qty *</label><input class="mock-input" value="5" readOnly /></div>
+                <div><label class="mock-label">Reorder Qty *</label><input class="mock-input" value="20" readOnly /></div>
+              </div>
+              <label class="mock-label">Lead Time (days)</label>
+              <input class="mock-input" value="3" readOnly />
+              <label class="mock-label">Preferred Supplier</label>
+              <select class="mock-input" disabled><option>Fresh Farms India</option></select>
+              <button class="mock-btn mock-btn-brand" style="width:100%;margin-top:8px;">Add Reorder Point</button>
+            </div>
+            <div>
+              <table class="mock-table">
+                <thead><tr><th>Item</th><th>Code</th><th>Min</th><th>Reorder</th><th>Stock</th><th>Lead</th><th>Supplier</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Tomatoes</strong></td>
+                    <td style="font-family:monospace;font-size:9px;color:#0D9488;">KPL-014</td>
+                    <td>5</td><td style="color:#e8a838;font-weight:700;">20</td>
+                    <td style="color:#EF4444;font-weight:700;">2.0 ⚠</td>
+                    <td style="color:#64748B;">3d</td>
+                    <td style="font-size:10px;color:#64748B;">Fresh Farms</td>
+                    <td><span class="mock-badge badge-green">Active</span></td>
+                    <td><button class="mock-btn" style="background:#D1FAE5;color:#065F46;border:none;font-size:9px;padding:3px 7px;">Draft PO</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Maida Flour</strong></td>
+                    <td style="font-family:monospace;font-size:9px;color:#0D9488;">KPL-007</td>
+                    <td>10</td><td style="color:#e8a838;font-weight:700;">50</td>
+                    <td style="color:#10B981;font-weight:700;">28.5</td>
+                    <td style="color:#64748B;">2d</td>
+                    <td style="font-size:10px;color:#64748B;">Star Traders</td>
+                    <td><span class="mock-badge badge-green">Active</span></td>
+                    <td><button class="mock-btn mock-btn-ghost" style="font-size:9px;padding:3px 7px;">Edit</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Understand the three quantity fields</div>
+            <div class="step-desc"><strong>Min Qty</strong> — below this triggers the red alert banner. <strong>Reorder Qty</strong> — how much to order when restocking. <strong>Lead Time</strong> — supplier delivery days (for planning only, not auto-calculated yet).</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Start typing an item name — it auto-fills the code</div>
+            <div class="step-desc">The Item Name field is connected to the live stock list via a datalist. Type a few letters and pick the matching item. The Item Code field fills automatically from stock records.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Set a Preferred Supplier for each rule</div>
+            <div class="step-desc">Select the vendor from the dropdown. This links the reorder rule to a supplier so that "Draft PO" and "Auto-Draft PO" know where to route orders without asking you every time.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Red alert banner shows real-time breaches</div>
+            <div class="step-desc">The amber/red banner at the top auto-loads on page open. It lists every item currently below its Min Qty threshold with current stock vs. minimum displayed as a chip.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div>
+            <div class="step-title">Click "Draft PO" for a single-item order</div>
+            <div class="step-desc">"Draft PO" appears on rows that are breached AND have a preferred supplier. It creates a purchase order in Draft status for this item, pre-filled with the reorder quantity and last known price.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">6</div>
+          <div>
+            <div class="step-title">Enable / Disable rules without deleting</div>
+            <div class="step-desc">The "Disable" button sets is_active = false — the rule stays in the database but stops triggering alerts. Re-enable seasonally (e.g. mango season rules, Christmas extras).</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Best practice:</strong> Review and update reorder quantities monthly. If your kitchen consumption pattern changes (e.g. new menu items), stale min_qty values will fire too many alerts or miss real shortfalls.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 6 — BI STUDIO
+  ══════════════════════════════════════════ -->
+  <div class="section" id="bi">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <div>
+        <div class="section-title">Enterprise BI Studio</div>
+        <div class="section-sub">Cross-filtering analytics — Procurement Spend, Consumption Yield, Variance & Anomalies across any date range</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / reports / bi</div>
+        </div>
+        <div class="mock-screen">
+          <div style="padding:12px 16px;background:white;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:14px;font-weight:800;color:#1E293B;display:flex;align-items:center;gap:6px;">📊 Enterprise BI Studio</div>
+              <div style="font-size:10px;color:#94A3B8;">Interactive cross-filtering reporting module</div>
+            </div>
+            <button style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">⬇ Export to PDF</button>
+          </div>
+          <div style="display:flex;min-height:200px;">
+            <!-- Sidebar -->
+            <div style="width:160px;background:white;border-right:1px solid #E2E8F0;padding:12px;">
+              <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;margin-bottom:12px;">🔽 Global Slicers</div>
+              <label style="font-size:10px;font-weight:600;color:#1E293B;display:block;margin-bottom:5px;">Time Period</label>
+              <select style="width:100%;padding:5px 8px;border:1px solid #E2E8F0;border-radius:5px;font-size:11px;margin-bottom:12px;"><option>Year to Date (YTD)</option></select>
+              <label style="font-size:10px;font-weight:600;color:#1E293B;display:block;margin-bottom:5px;">Supplier Pivot</label>
+              <select style="width:100%;padding:5px 8px;border:1px solid #E2E8F0;border-radius:5px;font-size:11px;margin-bottom:12px;"><option>All Suppliers</option></select>
+              <label style="font-size:10px;font-weight:600;color:#1E293B;display:block;margin-bottom:5px;">Dept Pivot</label>
+              <select style="width:100%;padding:5px 8px;border:1px solid #E2E8F0;border-radius:5px;font-size:11px;"><option>All Departments</option></select>
+            </div>
+            <!-- Main -->
+            <div style="flex:1;display:flex;flex-direction:column;">
+              <div style="padding:10px 14px;border-bottom:1px solid #E2E8F0;background:white;display:flex;gap:6px;">
+                <button style="padding:6px 12px;border-radius:5px;border:none;background:#1E293B;color:white;font-size:11px;font-weight:600;">📦 Procurement & Spend</button>
+                <button style="padding:6px 12px;border-radius:5px;border:none;background:transparent;color:#64748B;font-size:11px;">📈 Consumption Yield</button>
+                <button style="padding:6px 12px;border-radius:5px;border:none;background:transparent;color:#64748B;font-size:11px;">⚡ Variance & Anomalies</button>
+              </div>
+              <div style="padding:12px;flex:1;">
+                <!-- Mini chart simulation -->
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+                  <div style="background:white;border:1px solid #E2E8F0;border-radius:6px;padding:10px;border-left:3px solid #3B82F6;">
+                    <div style="font-size:9px;color:#64748B;font-weight:600;">TOTAL SPEND</div>
+                    <div style="font-size:18px;font-weight:800;color:#0F172A;">₹4.8L</div>
+                    <div style="font-size:10px;color:#10B981;">↑ 12% vs last year</div>
+                  </div>
+                  <div style="background:white;border:1px solid #E2E8F0;border-radius:6px;padding:10px;border-left:3px solid #10B981;">
+                    <div style="font-size:9px;color:#64748B;font-weight:600;">ORDERS PLACED</div>
+                    <div style="font-size:18px;font-weight:800;color:#0F172A;">142</div>
+                    <div style="font-size:10px;color:#64748B;">18 suppliers</div>
+                  </div>
+                  <div style="background:white;border:1px solid #E2E8F0;border-radius:6px;padding:10px;border-left:3px solid #8B5CF6;">
+                    <div style="font-size:9px;color:#64748B;font-weight:600;">TOP SUPPLIER</div>
+                    <div style="font-size:13px;font-weight:800;color:#0F172A;">Fresh Farms</div>
+                    <div style="font-size:10px;color:#64748B;">₹1.2L spend</div>
+                  </div>
+                </div>
+                <!-- Bar chart simulation -->
+                <div style="background:white;border:1px solid #E2E8F0;border-radius:6px;padding:10px;">
+                  <div style="font-size:10px;font-weight:700;color:#64748B;margin-bottom:8px;">Monthly Spend Trend</div>
+                  <div style="display:flex;align-items:flex-end;gap:4px;height:60px;">
+                    <div style="flex:1;background:#BFDBFE;border-radius:2px 2px 0 0;height:45px;"></div>
+                    <div style="flex:1;background:#BFDBFE;border-radius:2px 2px 0 0;height:38px;"></div>
+                    <div style="flex:1;background:#BFDBFE;border-radius:2px 2px 0 0;height:52px;"></div>
+                    <div style="flex:1;background:#BFDBFE;border-radius:2px 2px 0 0;height:41px;"></div>
+                    <div style="flex:1;background:#BFDBFE;border-radius:2px 2px 0 0;height:56px;"></div>
+                    <div style="flex:1;background:#3B82F6;border-radius:2px 2px 0 0;height:60px;"></div>
+                  </div>
+                  <div style="display:flex;gap:4px;margin-top:4px;">
+                    <div style="flex:1;font-size:8px;text-align:center;color:#94A3B8;">Jan</div>
+                    <div style="flex:1;font-size:8px;text-align:center;color:#94A3B8;">Feb</div>
+                    <div style="flex:1;font-size:8px;text-align:center;color:#94A3B8;">Mar</div>
+                    <div style="flex:1;font-size:8px;text-align:center;color:#94A3B8;">Apr</div>
+                    <div style="flex:1;font-size:8px;text-align:center;color:#94A3B8;">May</div>
+                    <div style="flex:1;font-size:8px;text-align:center;color:#3B82F6;">Jun</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Choose a Lens (Tab) at the top of the dashboard</div>
+            <div class="step-desc"><strong>Procurement & Spend</strong> — supplier costs, PO volumes, price trends. <strong>Consumption Yield</strong> — how much each department consumed vs. what was issued. <strong>Variance & Anomalies</strong> — unexpected spikes, waste alerts, over-issue flags.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Use Global Slicers (left sidebar) to filter all charts at once</div>
+            <div class="step-desc">Change <strong>Time Period</strong> (MTD / YTD / Custom), <strong>Supplier Pivot</strong>, or <strong>Dept Pivot</strong>. All three charts inside the active lens update simultaneously — this is cross-filtering.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Click a bar/segment to drill down</div>
+            <div class="step-desc">Clicking a supplier bar in the Procurement view sets that supplier as the active Supplier Pivot filter — all other charts now show only that supplier's data. Click "Clear Supplier Filter" to reset.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Export to PDF for management reports</div>
+            <div class="step-desc">The "Export to PDF" button (top-right) captures the current view including active filters and all visible charts. Use this for weekly management review packs.</div>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>Note:</strong> The BI Studio is read-only — no data is modified here. All charts pull from live production data, so reports reflect the exact current state of the database.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 7 — AUDIT LOGS
+  ══════════════════════════════════════════ -->
+  <div class="section" id="audit">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <div>
+        <div class="section-title">Audit Logs</div>
+        <div class="section-sub">Full immutable trail of every system action — who did what, when, on which resource</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">localhost:5173 / audit-logs</div>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-bar">
+            <span>Audit Logs</span>
+            <span style="font-size:10px;color:#94A3B8;">System activity · administrative changes · 50 per page</span>
+          </div>
+          <table class="mock-table">
+            <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Resource</th><th>Department</th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="white-space:nowrap;font-size:10px;color:#64748B;">22 Jun 2026, 9:14 AM</td>
+                <td><strong>Suresh M.</strong></td>
+                <td><span style="color:#e8a838;font-weight:700;font-size:11px;">indent.approve</span></td>
+                <td style="font-size:11px;">indents #482</td>
+                <td><span style="background:#E2E8F0;padding:2px 6px;border-radius:4px;font-size:10px;">RESTAURANT</span></td>
+              </tr>
+              <tr>
+                <td style="white-space:nowrap;font-size:10px;color:#64748B;">22 Jun 2026, 9:10 AM</td>
+                <td><strong>Anjali K.</strong></td>
+                <td><span style="color:#3B82F6;font-weight:700;font-size:11px;">issuance.create</span></td>
+                <td style="font-size:11px;">issuances #201</td>
+                <td><span style="background:#E2E8F0;padding:2px 6px;border-radius:4px;font-size:10px;">TIFFINS</span></td>
+              </tr>
+              <tr>
+                <td style="white-space:nowrap;font-size:10px;color:#64748B;">22 Jun 2026, 9:02 AM</td>
+                <td><strong>System</strong></td>
+                <td><span style="color:#8B5CF6;font-weight:700;font-size:11px;">po.auto_draft</span></td>
+                <td style="font-size:11px;">purchase_orders #89</td>
+                <td><span style="font-size:10px;color:#94A3B8;">—</span></td>
+              </tr>
+              <tr>
+                <td style="white-space:nowrap;font-size:10px;color:#64748B;">22 Jun 2026, 8:55 AM</td>
+                <td><strong>Suresh M.</strong></td>
+                <td><span style="color:#EF4444;font-weight:700;font-size:11px;">roles.update</span></td>
+                <td style="font-size:11px;">roles #3</td>
+                <td><span style="font-size:10px;color:#94A3B8;">—</span></td>
+              </tr>
+              <tr>
+                <td style="white-space:nowrap;font-size:10px;color:#64748B;">22 Jun 2026, 8:48 AM</td>
+                <td><strong>Ravi K.</strong></td>
+                <td><span style="color:#0D9488;font-weight:700;font-size:11px;">stock.receive</span></td>
+                <td style="font-size:11px;">stocks #1042</td>
+                <td><span style="background:#E2E8F0;padding:2px 6px;border-radius:4px;font-size:10px;">RESTAURANT</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- Pagination row -->
+          <div style="padding:10px 14px;border-top:1px solid #E2E8F0;display:flex;justify-content:flex-end;gap:4px;">
+            <button style="padding:4px 10px;border:1px solid #E2E8F0;border-radius:5px;font-size:11px;background:white;cursor:pointer;">←</button>
+            <button style="padding:4px 10px;border:1px solid #e8a838;border-radius:5px;font-size:11px;background:#FEF3C7;color:#92400E;font-weight:700;">1</button>
+            <button style="padding:4px 10px;border:1px solid #E2E8F0;border-radius:5px;font-size:11px;background:white;cursor:pointer;">2</button>
+            <button style="padding:4px 10px;border:1px solid #E2E8F0;border-radius:5px;font-size:11px;background:white;cursor:pointer;">→</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Five columns in every log row</div>
+            <div class="step-desc"><strong>Time</strong> — exact timestamp. <strong>Actor</strong> — the user who triggered the action (or "System" for automated processes). <strong>Action</strong> — machine key like <code>indent.approve</code>. <strong>Resource</strong> — table name + record ID. <strong>Department</strong> — if the action was scoped to a department.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Logs are immutable — nothing can be deleted</div>
+            <div class="step-desc">The audit_logs table has no delete or update API. Every write is append-only. This ensures accountability and tamper-proof history for compliance reviews.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Paginate 50 records at a time</div>
+            <div class="step-desc">Use the pagination buttons at the bottom to scroll back through history. Logs are sorted newest-first. 50 per page loads quickly even with thousands of entries.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Per-user Activity Log (from User Management)</div>
+            <div class="step-desc">For a filtered view of one person's actions, go to User Management → click "Activity Log" on that user. This shows only their actions — useful for investigating a specific incident without scrolling through system-wide logs.</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Monthly practice:</strong> Review audit logs at least once a month. Look for unexpected <code>roles.update</code> or <code>user.create</code> entries — these indicate admin-level changes. Any change you didn't personally make should be investigated immediately.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 8 — SECURITY RULES
+  ══════════════════════════════════════════ -->
+  <div class="section" id="security">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <div>
+        <div class="section-title">Security Rules & Best Practices</div>
+        <div class="section-sub">How the permission system works and what admins must never do</div>
+      </div>
+    </div>
+    <div class="section-grid">
+
+      <!-- MOCK: Role hierarchy diagram -->
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">Role Hierarchy & Access Model</div>
+        </div>
+        <div class="mock-screen" style="padding:16px;background:white;">
+          <div style="font-size:11px;font-weight:800;color:#1E293B;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;">Access Tier Overview</div>
+
+          <!-- Admin tier -->
+          <div style="background:#1E293B;border-radius:8px;padding:12px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:14px;">👑</span>
+                <div>
+                  <div style="font-weight:800;color:#e8a838;font-size:13px;">Admin</div>
+                  <div style="font-size:10px;color:#94A3B8;">Bypasses all permission checks · Sees all departments</div>
+                </div>
+              </div>
+              <span style="background:#DC262622;color:#FCA5A5;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid #FCA5A544;">UNRESTRICTED</span>
+            </div>
+          </div>
+
+          <!-- Manager tier -->
+          <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:14px;">🏢</span>
+                <div>
+                  <div style="font-weight:700;color:#0F172A;font-size:13px;">Manager / Store Manager</div>
+                  <div style="font-size:10px;color:#64748B;">Cross-department access · Approve indents · Issue goods · Manage POs</div>
+                </div>
+              </div>
+              <span style="background:#DBEAFE;color:#1D4ED8;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;">ELEVATED</span>
+            </div>
+          </div>
+
+          <!-- Chef tier -->
+          <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:14px;">👨‍🍳</span>
+                <div>
+                  <div style="font-weight:700;color:#0F172A;font-size:13px;">Chef</div>
+                  <div style="font-size:10px;color:#64748B;">Own department only · Create indents · Log production · View own data</div>
+                </div>
+              </div>
+              <span style="background:#D1FAE5;color:#065F46;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;">SCOPED</span>
+            </div>
+          </div>
+
+          <!-- Never-do list -->
+          <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;">
+            <div style="font-size:11px;font-weight:800;color:#991B1B;margin-bottom:8px;">🚫 Never Do</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#7F1D1D;">
+                <span>✕</span><span>Share the admin account across multiple people</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#7F1D1D;">
+                <span>✕</span><span>Grant admin role to operational staff (chefs, store clerks)</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#7F1D1D;">
+                <span>✕</span><span>Delete users who have placed indents or received stock</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#7F1D1D;">
+                <span>✕</span><span>Leave "ChangeMe123!" as a permanent password</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#7F1D1D;">
+                <span>✕</span><span>Modify the <code style="background:#FEE2E2;padding:1px 4px;">admin</code> role key in the database</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-panel">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">The <code>admin</code> role bypasses ALL checks in code</div>
+            <div class="step-desc">The backend's <code>hasPermission()</code> and frontend's <code>hasPermission()</code> both return <code>true</code> for any permission if the user has a role with <code>key === "admin"</code>. This is hard-coded — no permissions matrix setting can restrict it.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Department scoping is enforced server-side</div>
+            <div class="step-desc">Even if a user somehow bypasses the UI, the backend's <code>assertDepartmentAccess()</code> function checks every indent/issuance API call. Chef assigned to TIFFINS cannot query RESTAURANT data via any path.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Never delete a user — deactivate instead</div>
+            <div class="step-desc">Deleted users break foreign keys on historical indents. Always use Deactivate. The deactivated user cannot log in, their token refresh will fail, and they will see "Account inactive" on next attempt.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Protect the last admin account</div>
+            <div class="step-desc">The backend runs <code>ensureNotLastAdmin()</code> before any user role removal or deactivation. If you try to deactivate the only admin, the API returns 400 "Cannot deactivate — this is the last admin account." This prevents full lockout.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div>
+            <div class="step-title">Tokens are short-lived (in-memory, httpOnly cookie)</div>
+            <div class="step-desc">The access token is stored in-memory (not localStorage). An httpOnly cookie handles refresh. This means on browser close, the session ends. On page reload, the app re-calls <code>/api/auth/refresh</code> automatically to restore the session.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">6</div>
+          <div>
+            <div class="step-title">Passwords are stored plain text — handle with care</div>
+            <div class="step-desc">The current system stores passwords as plain text in the database (noted in project constraints). Do not expose the DB or server to the internet. Always run behind a VPN or private network until a hashing migration is implemented.</div>
+          </div>
+        </div>
+        <div class="alert-box">
+          <strong>Security reminder (from .cursorrules):</strong> Passwords are stored plain text — do NOT hash without a full migration plan. When hashing is implemented, all existing passwords must be re-seeded or users forced to reset. Plan this carefully to avoid locking out all users.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ QUICK REFERENCE TABLE ══ -->
+  <div style="background:white;border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:40px;">
+    <h3 style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:18px;">Quick Reference — Admin Screens at a Glance</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:var(--dark);color:white;">
+          <th style="padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Screen</th>
+          <th style="padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Navigate To</th>
+          <th style="padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Primary Purpose</th>
+          <th style="padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Required Role</th>
+          <th style="padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Frequency of Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:12px 14px;font-weight:700;">User Management</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">/user-management</td>
+          <td style="padding:12px 14px;color:var(--muted);">Create/edit staff accounts, assign roles</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-red">Admin</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">When hiring / transferring staff</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--surface);">
+          <td style="padding:12px 14px;font-weight:700;">Roles & Permissions</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">User Mgmt → Matrix</td>
+          <td style="padding:12px 14px;color:var(--muted);">Define what each role can do</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-red">Admin</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">Rarely — only for new role types</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:12px 14px;font-weight:700;">Departments</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">/departments</td>
+          <td style="padding:12px 14px;color:var(--muted);">Add/edit kitchen units and outlets</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-red">Admin</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">When opening new outlets</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--surface);">
+          <td style="padding:12px 14px;font-weight:700;">Suppliers</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">/suppliers</td>
+          <td style="padding:12px 14px;color:var(--muted);">Vendor master, PO history, price trends</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-blue">Store Mgr+</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">Monthly — new vendor onboarding</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:12px 14px;font-weight:700;">Reorder Points</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">/reorder-points</td>
+          <td style="padding:12px 14px;color:var(--muted);">Min stock thresholds, auto-alert rules</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-blue">Store Mgr+</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">Monthly — review thresholds</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--surface);">
+          <td style="padding:12px 14px;font-weight:700;">BI Studio</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">/reports/bi</td>
+          <td style="padding:12px 14px;color:var(--muted);">Cross-filtering analytics & management reports</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-blue">Store Mgr+</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">Weekly for management reviews</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 14px;font-weight:700;">Audit Logs</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#0D9488;">/audit-logs</td>
+          <td style="padding:12px 14px;color:var(--muted);">Immutable action trail, compliance review</td>
+          <td style="padding:12px 14px;"><span class="mock-badge badge-red">Admin</span></td>
+          <td style="padding:12px 14px;color:var(--muted);">Monthly — spot checks</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <strong>Kapila Hotel IMS</strong> · Admin Manual · Last updated 22 June 2026 · For internal use only<br/>
+  <span style="font-size:11px;margin-top:4px;display:block;">Built with GitNexus code intelligence · 1796 symbols · 142 execution flows</span>
+</footer>
+
+</body>
+</html>

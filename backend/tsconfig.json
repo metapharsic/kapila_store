@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "lib": ["ES2022"],
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node16"
+  },
+  "include": [
+    "server.js",
+    "server.ts",
+    "config/**/*",
+    "controllers/**/*",
+    "routes/**/*",
+    "middleware/**/*",
+    "services/**/*",
+    "utils/**/*",
+    "db/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "data.db",
+    "*.log",
+    "test*.js",
+    "check_*.js",
+    "load_*.js"
+  ]
+}

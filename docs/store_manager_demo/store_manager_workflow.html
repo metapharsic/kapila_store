@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapila IMS: Store Manager Workflow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --heading-color: #0f172a;
+            --brand-color: #e8a838; /* Gold accent */
+            --brand-dark: #b47a18;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--brand-color);
+        }
+
+        h1 {
+            font-family: 'DM Serif Display', serif;
+            color: var(--heading-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            margin-bottom: 40px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .step-number {
+            background-color: var(--heading-color);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            font-family: 'DM Serif Display', serif;
+            color: var(--heading-color);
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .screenshot-container {
+            margin: 30px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background-color: #f1f5f9;
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--brand-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .feature-list strong {
+            color: var(--heading-color);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Kapila IMS: Store Manager Workflow</h1>
+        <p class="subtitle">A guided tour of the operational features and screens available to the Store Manager on a daily basis.</p>
+    </header>
+
+    <div class="section-card">
+        <div class="section-header">
+            <div class="step-number">1</div>
+            <h2>The Store Manager Dashboard</h2>
+        </div>
+        <p>The Store Manager's home screen is designed for rapid action. It highlights exactly what needs attention right now, stripping away high-level executive analytics in favor of ground operations.</p>
+        
+        <div class="screenshot-container">
+            <!-- Ensure image paths are relative or use absolute paths for the system -->
+            <img src="sm_home_dashboard_1782121560020.png" alt="Store Manager Home Dashboard">
+        </div>
+
+        <ul class="feature-list">
+            <li><strong>Offline Sync Status:</strong> Shows if any operations were performed offline and are waiting to sync with the database.</li>
+            <li><strong>Top KPIs:</strong> Instantly shows how many indents are pending, how many items are low on stock, and what is expiring in the next 3 days.</li>
+            <li><strong>Shift Handoff Notes:</strong> A persistent sticky note where the outgoing manager can leave instructions for the incoming shift manager.</li>
+            <li><strong>Activity Feed:</strong> A real-time timeline of what just happened (e.g., "North Indian requested 5kg Rice").</li>
+            <li><strong>Quick Modules:</strong> Massive buttons to quickly jump into core modules: <em>Available Stock</em>, <em>Purchase Order</em>, <em>Store Issuance</em>, and <em>Indent Request</em>.</li>
+        </ul>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <div class="step-number">2</div>
+            <h2>Managing Indent Requests</h2>
+        </div>
+        <p>Every morning and evening, departments submit "Indents" (material requests). The Store Manager reviews and approves these requests here.</p>
+        
+        <div class="screenshot-container">
+            <img src="sm_indent_approval_1782121581387.png" alt="Indent Approvals Screen">
+        </div>
+
+        <ul class="feature-list">
+            <li><strong>Auto-Indent Recommendations:</strong> The system flags if a department is requesting unusually high quantities compared to historical averages.</li>
+            <li><strong>Recipe Planner Integration:</strong> The manager can see exactly <em>why</em> a department needs 10kg of Rice (e.g., "They are producing 200 plates of Biryani").</li>
+            <li><strong>One-Click Approval:</strong> Reject, modify, or approve requests with a single click. Approved indents are immediately sent to the Issuance queue.</li>
+        </ul>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <div class="step-number">3</div>
+            <h2>Store Issuance (Fulfilling Requests)</h2>
+        </div>
+        <p>Once an indent is approved, the physical goods must be handed over to the department staff. This screen handles the actual inventory deduction.</p>
+        
+        <div class="screenshot-container">
+            <img src="sm_store_issuance_1782121592409.png" alt="Store Issuance Screen">
+        </div>
+
+        <ul class="feature-list">
+            <li><strong>Pre-filled Quantities:</strong> The issuance form is automatically filled out based on the approved indent. The manager just verifies the physical handover.</li>
+            <li><strong>Smart Unit Conversion:</strong> The system handles math automatically. If the chef requested "5 Liters" of oil, but the master stock measures in "Milliliters", the system accurately calculates the financial cost.</li>
+            <li><strong>Cost Tracking:</strong> Every issuance automatically calculates the monetary value of the goods leaving the store, tying inventory costs directly to the department's daily P&L.</li>
+        </ul>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <div class="step-number">4</div>
+            <h2>Receiving Purchases (GRN)</h2>
+        </div>
+        <p>When the supplier truck arrives, the Store Manager must ingest the new inventory and log the invoices.</p>
+
+        <ul class="feature-list">
+            <li><strong>AI Invoice Scanning:</strong> The manager can simply upload a photo of the physical invoice/receipt. The built-in AI will read the receipt, extract the items, quantities, and prices, and automatically populate the Purchase Order form.</li>
+            <li><strong>Local Fallback:</strong> If the hotel loses internet, the system falls back to an offline local scanner to ensure work never stops.</li>
+            <li><strong>Price Benchmarking:</strong> When entering a new price, the system immediately flags if the supplier is charging more than the historical average for that item.</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Generated by Kapila IMS • Zero-Omission Enterprise Architecture
+    </div>
+</div>
+
+</body>
+</html>

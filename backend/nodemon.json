@@ -1,0 +1,12 @@
+{
+  "watch": ["."],
+  "ext": "js,json,ts",
+  "ignore": [
+    "node_modules/*",
+    "logs/*",
+    "*.log",
+    "uploads/*",
+    "db/migrations/*.test.js"
+  ],
+  "delay": "500"
+}

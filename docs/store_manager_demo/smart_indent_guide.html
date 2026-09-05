@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Auto-Indent & Recipes — Feature Guide | Kapila Hotel IMS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.33.0/dist/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand:       #e8a838;
+    --brand-dark:  #BA7517;
+    --brand-light: #FFF3DC;
+    --dark-bar:    #1E293B;
+    --text-1:      #1E293B;
+    --text-2:      #475569;
+    --text-3:      #94A3B8;
+    --border:      #E5E7EB;
+    --surface:     #F8FAFC;
+    --white:       #ffffff;
+    --radius-md:   8px;
+    --radius-lg:   12px;
+    --green-bg:    #F0FDF4; --green-text: #065F46; --green-dot: #10B981;
+    --amber-bg:    #FFFBEB; --amber-text: #92400E; --amber-dot: #F59E0B;
+    --red-bg:      #FEF2F2; --red-text:   #991B1B; --red-dot:   #EF4444;
+    --blue-bg:     #DBEAFE; --blue-text:  #1D4ED8;
+    --purple-bg:   #EDE9FE; --purple-text:#6D28D9;
+    --teal-bg:     #D1FAE5; --teal-text:  #065F46;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F1F5F9; color: var(--text-1); }
+
+  /* ── Top nav ── */
+  .top-nav {
+    background: var(--dark-bar); padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px; position: sticky; top: 0; z-index: 200;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .top-nav-brand { display: flex; align-items: center; gap: 10px; }
+  .top-nav-brand .logo { width: 30px; height: 30px; background: var(--brand); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .top-nav-brand .logo i { font-size: 17px; color: var(--dark-bar); }
+  .top-nav-brand span { font-size: 14px; font-weight: 600; color: white; }
+  .top-nav-sub { font-size: 12px; color: var(--text-3); }
+  .back-link { font-size: 12px; color: var(--text-3); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+  .back-link:hover { color: var(--brand); }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--dark-bar); padding: 40px 32px 32px;
+    border-bottom: 3px solid var(--brand);
+  }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(232,168,56,.15); color: var(--brand); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(232,168,56,.3); margin-bottom: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  .hero h1 { font-size: 26px; font-weight: 800; color: white; margin-bottom: 8px; }
+  .hero p { font-size: 14px; color: var(--text-3); max-width: 580px; line-height: 1.6; margin-bottom: 20px; }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; color: #CBD5E1; font-size: 12px; }
+  .hero-chip i { font-size: 13px; color: var(--brand); }
+
+  /* ── Main layout ── */
+  .page-wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  /* ── TOC pills ── */
+  .toc-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+  .toc-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px; border-radius: 20px; background: white; border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-2); text-decoration: none; transition: all .15s; }
+  .toc-pill:hover, .toc-pill.active { background: var(--brand-light); border-color: var(--brand); color: var(--brand-dark); }
+  .toc-pill .num { width: 18px; height: 18px; background: var(--border); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--text-2); }
+  .toc-pill:hover .num, .toc-pill.active .num { background: var(--brand); color: white; }
+
+  /* ── Feature section ── */
+  .feature-section { margin-bottom: 48px; scroll-margin-top: 70px; }
+  .feature-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+  .feature-num { width: 36px; height: 36px; background: var(--brand); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--dark-bar); flex-shrink: 0; margin-top: 2px; }
+  .feature-header-text h2 { font-size: 19px; font-weight: 800; color: var(--text-1); }
+  .feature-header-text p { font-size: 13px; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── Mock browser frame ── */
+  .mock-frame { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+  .mock-chrome { background: #E2E8F0; padding: 8px 12px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); }
+  .mock-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .mock-url { flex: 1; background: white; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: var(--text-3); margin-left: 6px; }
+  .mock-body { padding: 16px; }
+
+  /* ── UI Components inside mocks ── */
+  .mini-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px; }
+  .mini-card:last-child { margin-bottom: 0; }
+  .card-label { font-size: 10px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border); background: white; color: var(--text-2); }
+  .pill.on { background: var(--brand); border-color: var(--brand); color: var(--dark-bar); font-weight: 700; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-green  { background: var(--green-bg);  color: var(--green-text); }
+  .badge-amber  { background: var(--amber-bg);  color: var(--amber-text); }
+  .badge-red    { background: var(--red-bg);    color: var(--red-text); }
+  .badge-blue   { background: var(--blue-bg);   color: var(--blue-text); }
+  .badge-gray   { background: #F1F5F9; color: var(--text-2); }
+
+  .ing-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 3px 7px; border-radius: 4px; margin-bottom: 3px; }
+  .ing-ok  { background: var(--green-bg); color: var(--green-text); }
+  .ing-low { background: var(--amber-bg); color: var(--amber-text); }
+  .ing-out { background: var(--red-bg);   color: var(--red-text); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; flex-shrink: 0; }
+  .dot-g { background: var(--green-dot); }
+  .dot-a { background: var(--amber-dot); }
+  .dot-r { background: var(--red-dot); }
+
+  .stepper-row { display: flex; align-items: center; gap: 4px; }
+  .step-btn { padding: 3px 8px; font-size: 11px; font-weight: 700; border: 1px solid var(--border); border-radius: 5px; background: white; color: var(--text-2); cursor: default; }
+  .step-input { width: 58px; padding: 5px 6px; font-size: 13px; font-weight: 700; border: 1px solid #CBD5E1; border-radius: 6px; text-align: center; background: white; color: var(--text-1); }
+  .presets { display: flex; gap: 5px; margin-top: 6px; }
+  .preset-btn { flex: 1; padding: 3px 0; font-size: 11px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--text-2); text-align: center; }
+  .preset-btn.sel { background: #FFF8E7; border-color: var(--brand); color: #92400E; font-weight: 700; }
+
+  .src-badge { font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; letter-spacing: .02em; }
+  .src-r  { background: var(--blue-bg);   color: var(--blue-text); }
+  .src-t  { background: var(--teal-bg);   color: var(--teal-text); }
+  .src-rt { background: var(--purple-bg); color: var(--purple-text); }
+
+  .trend-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #FCD34D; background: #FFFDF5; margin-bottom: 6px; }
+  .trend-name { font-size: 12px; font-weight: 600; color: var(--text-1); flex: 1; }
+  .trend-meta { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+
+  .sort-bar { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .search-input { flex: 1; padding: 5px 10px 5px 28px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--text-3); background: white; position: relative; }
+  .sort-btn { padding: 4px 10px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--text-3); }
+  .sort-btn.sel { background: #FFF8E7; border-color: var(--brand); color: #92400E; }
+
+  .live-preview { background: var(--green-bg); border: 1px solid #BBF7D0; border-radius: 10px; padding: 12px 14px; }
+  .live-preview-title { font-size: 11px; font-weight: 700; color: var(--green-text); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .lp-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+  .lp-name { display: flex; align-items: center; gap: 5px; color: var(--green-text); }
+  .lp-qty { font-family: monospace; font-weight: 700; color: #14532D; }
+
+  .compile-bar { background: var(--dark-bar); border-radius: var(--radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .compile-title { font-size: 13px; font-weight: 800; color: var(--brand); margin-bottom: 4px; }
+  .compile-info { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .warn-tag { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; }
+  .warn-red   { color: #EF4444; border: 1px solid rgba(239,68,68,.25); }
+  .warn-amber { color: #F59E0B; border: 1px solid rgba(245,158,11,.25); }
+  .cmp-btn { padding: 8px 18px; border-radius: 8px; background: var(--brand); border: none; font-size: 13px; font-weight: 800; color: var(--dark-bar); cursor: default; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(232,168,56,.4); }
+
+  .recent-shelf { margin-bottom: 12px; }
+  .shelf-label { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  .shelf-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .shelf-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); }
+  .shelf-chip.added { background: var(--green-bg); border-color: rgba(16,185,129,.3); color: var(--green-text); }
+
+  /* ── Steps panel ── */
+  .steps-panel { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
+  .steps-panel h3 { font-size: 13px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+  .step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .step:last-child { margin-bottom: 0; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--brand-light); color: var(--brand-dark); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-body { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+  .step-body strong { color: var(--text-1); font-weight: 700; }
+
+  .tip-box { background: #FFF8E7; border: 1px solid rgba(232,168,56,.4); border-radius: var(--radius-md); padding: 10px 14px; margin-top: 14px; font-size: 13px; color: #633806; line-height: 1.55; display: flex; gap: 8px; align-items: flex-start; }
+  .tip-box i { font-size: 16px; color: var(--brand); flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Section divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── Modal demo ── */
+  .modal-demo { background: rgba(0,0,0,0.45); border-radius: var(--radius-lg); padding: 16px; display: flex; align-items: center; justify-content: center; }
+  .modal-inner { background: white; border-radius: 14px; overflow: hidden; width: 100%; }
+  .modal-head  { background: var(--dark-bar); padding: 14px 18px; }
+  .modal-title { font-size: 14px; font-weight: 700; color: white; }
+  .modal-sub   { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+  .modal-body-inner  { padding: 12px 16px; }
+  table.indent-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.indent-tbl th { padding: 7px 8px; text-align: left; font-size: 10px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; background: var(--surface); border-bottom: 1px solid var(--border); }
+  table.indent-tbl td { padding: 7px 8px; border-bottom: 1px solid #F1F5F9; }
+  .modal-footer { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; }
+  .modal-footer-btns { display: flex; gap: 8px; }
+  .btn-outline { padding: 7px 14px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; font-size: 12px; color: var(--text-2); cursor: default; display: inline-flex; align-items: center; gap: 5px; }
+  .btn-primary { padding: 7px 16px; border-radius: 8px; background: var(--brand); border: none; font-size: 12px; font-weight: 700; color: var(--dark-bar); cursor: default; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(232,168,56,.35); }
+
+  /* ── Footer ── */
+  .page-footer { background: var(--dark-bar); color: var(--text-3); font-size: 12px; text-align: center; padding: 20px 32px; margin-top: 0; }
+  .page-footer strong { color: var(--brand); }
+
+  /* ── Range slider ── */
+  input[type=range] { width: 100%; accent-color: var(--brand); height: 4px; cursor: default; }
+</style>
+</head>
+<body>
+
+<!-- ─── Top nav ──────────────────────────────────────────────────────────── -->
+<nav class="top-nav">
+  <div class="top-nav-brand">
+    <div class="logo"><i class="ti ti-building-store"></i></div>
+    <div>
+      <span>Kapila Hotel IMS</span>
+      <div class="top-nav-sub">Smart Auto-Indent · Feature Guide</div>
+    </div>
+  </div>
+  <a href="index.html" class="back-link"><i class="ti ti-arrow-left"></i> All Docs</a>
+</nav>
+
+<!-- ─── Hero ─────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-badge"><i class="ti ti-sparkles"></i> Chef & Kitchen Staff</div>
+  <h1>Smart Auto-Indent & Recipes</h1>
+  <p>The Smart Indent tab uses your planned dishes and historical trends to build an indent automatically. This guide explains every feature so you can use it confidently each day.</p>
+  <div class="hero-chips">
+    <span class="hero-chip"><i class="ti ti-clock"></i> Recent recipes shelf</span>
+    <span class="hero-chip"><i class="ti ti-package"></i> Stock coverage badges</span>
+    <span class="hero-chip"><i class="ti ti-adjustments-horizontal"></i> Plate steppers</span>
+    <span class="hero-chip"><i class="ti ti-trending-up"></i> Trend sort &amp; search</span>
+    <span class="hero-chip"><i class="ti ti-eye"></i> Source badges</span>
+    <span class="hero-chip"><i class="ti ti-alert-triangle"></i> Stock warnings</span>
+    <span class="hero-chip"><i class="ti ti-send"></i> Compile preview modal</span>
+    <span class="hero-chip"><i class="ti ti-device-floppy"></i> Draft auto-save</span>
+  </div>
+</div>
+
+<!-- ─── Page body ─────────────────────────────────────────────────────────── -->
+<div class="page-wrap">
+
+  <!-- TOC -->
+  <div class="toc-row">
+    <a href="#recent"   class="toc-pill"><span class="num">1</span> Recent Recipes</a>
+    <a href="#coverage" class="toc-pill"><span class="num">2</span> Stock Coverage</a>
+    <a href="#steppers" class="toc-pill"><span class="num">3</span> Plate Steppers</a>
+    <a href="#trend"    class="toc-pill"><span class="num">4</span> Trend Sort &amp; Search</a>
+    <a href="#preview"  class="toc-pill"><span class="num">5</span> Source Badges</a>
+    <a href="#warnings" class="toc-pill"><span class="num">6</span> Stock Warnings</a>
+    <a href="#modal"    class="toc-pill"><span class="num">7</span> Compile Modal</a>
+    <a href="#draft"    class="toc-pill"><span class="num">8</span> Draft Auto-Save</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #1 Recent Recipes                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="recent">
+    <div class="feature-header">
+      <div class="feature-num">1</div>
+      <div class="feature-header-text">
+        <h2>Recent Recipes Shelf</h2>
+        <p>Your last 5 used dishes appear as one-click chips above the search box, so you never retype the same recipe twice.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body">
+          <div class="mini-card">
+            <div class="card-label"><i class="ti ti-sparkles" style="color:var(--brand)"></i> 1. Dish &amp; Recipe Planner</div>
+            <div class="pill-row">
+              <span class="pill on">All</span><span class="pill">Breakfast</span><span class="pill">Lunch</span><span class="pill">Snacks</span>
+            </div>
+            <div class="recent-shelf">
+              <div class="shelf-label"><i class="ti ti-clock" style="font-size:11px"></i> Recent</div>
+              <div class="shelf-chips">
+                <span class="shelf-chip added"><i class="ti ti-check" style="font-size:10px"></i> Idli &amp; Sambar</span>
+                <span class="shelf-chip"><i class="ti ti-star-filled" style="font-size:10px;color:var(--brand)"></i> Veg Pulao</span>
+                <span class="shelf-chip"><i class="ti ti-star-filled" style="font-size:10px;color:var(--brand)"></i> Poha</span>
+                <span class="shelf-chip"><i class="ti ti-star-filled" style="font-size:10px;color:var(--brand)"></i> Dal Fry</span>
+                <span class="shelf-chip"><i class="ti ti-star-filled" style="font-size:10px;color:var(--brand)"></i> Upma</span>
+              </div>
+            </div>
+            <input style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-3);background:white;outline:none" value="Search recipes to add to today's menu…" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> How to use</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>First time — use search.</strong> Type the dish name in the search box, find it in the dropdown, and click "+ Add". The dish is now remembered.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Next visit — one click.</strong> The shelf appears automatically above the search box. Click any chip to add that dish instantly.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Already added?</strong> The chip turns green with a checkmark. Clicking it again does nothing — it's already in today's plan.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> The last <strong>5 dishes</strong> you used are saved in your browser and persist across sessions. Monday's regular dishes are always one click away.</div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #2 Stock Coverage                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="coverage">
+    <div class="feature-header">
+      <div class="feature-num">2</div>
+      <div class="feature-header-text">
+        <h2>Stock Coverage Badge &amp; Colour-Coded Ingredients</h2>
+        <p>Each recipe card shows a live "X/Y in stock" badge and colour-codes every ingredient row based on current stock levels.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body">
+          <div class="mini-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text-1)">Idli &amp; Sambar</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+                  <span style="font-size:10px;color:var(--text-3)">Breakfast · base 100 plates</span>
+                  <span class="badge badge-amber">7/10 in stock</span>
+                </div>
+              </div>
+              <i class="ti ti-trash" style="color:#EF4444;font-size:15px"></i>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+              <div class="card-label">Scaled Ingredients (120 plates)</div>
+              <div class="ing-row ing-ok"><span><span class="dot dot-g"></span>Rice</span><span style="font-family:monospace;font-weight:700">12.00 kg</span></div>
+              <div class="ing-row ing-ok"><span><span class="dot dot-g"></span>Urad Dal</span><span style="font-family:monospace;font-weight:700">3.60 kg</span></div>
+              <div class="ing-row ing-ok"><span><span class="dot dot-g"></span>Chana Dal</span><span style="font-family:monospace;font-weight:700">2.40 kg</span></div>
+              <div class="ing-row ing-low"><span><span class="dot dot-a"></span>Mustard Seeds</span><span style="font-family:monospace;font-weight:700">0.12 kg</span></div>
+              <div class="ing-row ing-out"><span><span class="dot dot-r"></span>Curry Leaves</span><span style="font-family:monospace;font-weight:700">0.24 kg</span></div>
+              <div class="ing-row ing-ok"><span><span class="dot dot-g"></span>Tamarind</span><span style="font-family:monospace;font-weight:700">0.18 kg</span></div>
+            </div>
+            <div style="display:flex;gap:14px;margin-top:10px">
+              <span style="font-size:11px;color:var(--green-text);display:flex;align-items:center;gap:4px"><span class="dot dot-g" style="margin:0"></span> Sufficient</span>
+              <span style="font-size:11px;color:var(--amber-text);display:flex;align-items:center;gap:4px"><span class="dot dot-a" style="margin:0"></span> Partial</span>
+              <span style="font-size:11px;color:var(--red-text);display:flex;align-items:center;gap:4px"><span class="dot dot-r" style="margin:0"></span> Out of stock</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> How to read it</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Coverage badge</strong> — "7/10 in stock" means 7 of 10 ingredients are fully covered at the current plate count. Green = full, amber = partial, red = none.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Green row</strong> — the Store has enough of this ingredient. No action needed.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Amber row</strong> — stock exists but not enough for the current plate count. Consider reducing plates or checking with the Store.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Red row</strong> — zero stock. The Store cannot issue this item. Arrange a transfer or substitute before submitting.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> Colours recalculate <strong>live</strong> as you move the plate slider or use the steppers — drag left to see more rows turn green.</div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #3 Plate Steppers                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="steppers">
+    <div class="feature-header">
+      <div class="feature-num">3</div>
+      <div class="feature-header-text">
+        <h2>Plate Steppers (−25 −10 +10 +25)</h2>
+        <p>Fine-tune portion counts with one click. No need to drag the slider when the head count changes at the last minute.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body">
+          <div class="mini-card">
+            <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:12px">Veg Pulao</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:11px;font-weight:600;color:var(--text-2)">Portions / Plates</span>
+              <div class="stepper-row">
+                <button class="step-btn">-25</button>
+                <button class="step-btn">-10</button>
+                <input class="step-input" value="120" readonly>
+                <button class="step-btn">+10</button>
+                <button class="step-btn">+25</button>
+              </div>
+            </div>
+            <input type="range" min="1" max="500" value="120" readonly style="margin-bottom:10px">
+            <div class="presets">
+              <div class="preset-btn">50</div>
+              <div class="preset-btn">100</div>
+              <div class="preset-btn sel">100</div>
+              <div class="preset-btn">200</div>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-2)">
+            <i class="ti ti-info-circle" style="color:var(--brand);font-size:14px;vertical-align:-2px"></i>
+            &nbsp;All four controls — steppers, slider, input box, and presets — stay in sync. Change any one and the rest update immediately.
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> How to use</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>−25 / −10</strong> — click to reduce plates by 25 or 10. Ingredients rescale immediately.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>+10 / +25</strong> — click to increase. Each click is additive — click +10 three times to add 30 plates.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Type directly</strong> — click the centre number box and type any value from 1 to 500 for exact control.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Preset buttons</strong> — 50, 100, 150, 200 snap to a round number in one click. Highlighted in amber when active.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Drag slider</strong> — smooth continuous control. All other controls follow.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> The minimum is <strong>1 plate</strong>. The system will never allow 0 or negative — the stepper stops at 1.</div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #4 Trend Sort & Search                                                 -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="trend">
+    <div class="feature-header">
+      <div class="feature-num">4</div>
+      <div class="feature-header-text">
+        <h2>Trend Sort &amp; Search</h2>
+        <p>The Trend Predictor lists items from your department's indent history. Sort and filter the list to review what matters most.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body">
+          <div class="mini-card">
+            <div class="card-label"><i class="ti ti-trending-up" style="color:var(--brand)"></i> 2. Trend Predictor — Monday</div>
+            <div class="sort-bar">
+              <div style="flex:1;position:relative">
+                <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-3)"></i>
+                <input class="search-input" value="Filter items…" readonly>
+              </div>
+              <div style="display:flex;gap:3px">
+                <button class="sort-btn sel">Conf</button>
+                <button class="sort-btn">Qty</button>
+                <button class="sort-btn">A–Z</button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-2);margin-bottom:8px;display:flex;justify-content:space-between">
+              <span><strong>12</strong> of 15 selected</span>
+              <span style="color:var(--text-3)">sorted by Confidence</span>
+            </div>
+            <!-- HIGH items -->
+            <div class="trend-item">
+              <input type="checkbox" checked readonly style="flex-shrink:0">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                  <span class="trend-name">Sunflower Oil</span>
+                  <span class="badge badge-green" style="font-size:9px;padding:1px 5px">HIGH</span>
+                  <span style="color:#10B981;font-weight:700;font-size:13px">↑</span>
+                  <span style="font-size:10px;color:#10B981;font-weight:600">✓ 8 L</span>
+                </div>
+                <div class="trend-meta">87% of 4 Mondays · avg 6 L · last: 16 Jun</div>
+              </div>
+              <input style="width:54px;padding:4px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:white;color:var(--text-1)" value="6" readonly>
+              <span style="font-size:11px;color:var(--text-2);width:20px">L</span>
+            </div>
+            <!-- MED item -->
+            <div class="trend-item" style="background:#FAFAFA;border-color:var(--border)">
+              <input type="checkbox" checked readonly style="flex-shrink:0">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span class="trend-name">Turmeric Powder</span>
+                  <span class="badge badge-amber" style="font-size:9px;padding:1px 5px">MED</span>
+                  <span style="color:var(--text-3);font-weight:700">→</span>
+                  <span style="font-size:10px;color:#F59E0B;font-weight:600">⚠ 80 g</span>
+                </div>
+                <div class="trend-meta">62% of 4 Mondays · avg 120 g</div>
+              </div>
+              <input style="width:54px;padding:4px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:white;color:var(--text-1)" value="120" readonly>
+              <span style="font-size:11px;color:var(--text-2);width:20px">g</span>
+            </div>
+            <!-- LOW item unchecked -->
+            <div class="trend-item" style="background:#FAFAFA;border-color:var(--border);opacity:.65">
+              <input type="checkbox" readonly style="flex-shrink:0">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span class="trend-name">Dry Mango Powder</span>
+                  <span class="badge badge-red" style="font-size:9px;padding:1px 5px">LOW</span>
+                  <span style="color:#EF4444;font-weight:700">↓</span>
+                  <span style="font-size:10px;color:#EF4444;font-weight:600">✗ no stock</span>
+                </div>
+                <div class="trend-meta">28% of 4 Mondays · avg 40 g</div>
+              </div>
+              <input style="width:54px;padding:4px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:#F1F5F9;color:var(--text-3)" value="40" readonly>
+              <span style="font-size:11px;color:var(--text-2);width:20px">g</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> How to use</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Confidence (default sort)</strong> — HIGH → MED → LOW. Puts the most reliable items at the top so you review the best predictions first.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Qty sort</strong> — biggest volume items first. Useful for checking bulk ingredients like oil, flour, and dal.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>A–Z sort</strong> — alphabetical order. Fastest when you know the item name and want to find it immediately.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Filter box</strong> — type any part of an item name to narrow the list. The counter updates to show how many are visible vs selected.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Confidence badges</strong> — <span class="badge badge-green">HIGH</span> = item ordered in 75%+ of this weekday's history. <span class="badge badge-amber">MED</span> = 50–75%. <span class="badge badge-red">LOW</span> = below 50%.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> Sort and filter only affect what you <strong>see</strong>. All checked items compile regardless of display order — unchecking removes an item from the indent.</div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #5 Source Badges                                                       -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="preview">
+    <div class="feature-header">
+      <div class="feature-num">5</div>
+      <div class="feature-header-text">
+        <h2>Live Preview Source Badges</h2>
+        <p>The green "Live Compiled Total" panel at the bottom of the left column shows every merged ingredient with a badge indicating where it came from.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body">
+          <div class="live-preview">
+            <div class="live-preview-title">⚡ Live Compiled Total (16 items)</div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-rt">R+T</span> Sunflower Oil</div><span class="lp-qty">8 L</span></div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-r">R</span> Rice</div><span class="lp-qty">12.00 kg</span></div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-t">T</span> Garam Masala</div><span class="lp-qty">200 g</span></div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-rt">R+T</span> Salt</div><span class="lp-qty">0.80 kg</span></div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-r">R</span> Urad Dal</div><span class="lp-qty">3.60 kg</span></div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-t">T</span> Chilli Powder</div><span class="lp-qty">150 g</span></div>
+            <div class="lp-row"><div class="lp-name"><span class="src-badge src-r">R</span> Chana Dal</div><span class="lp-qty">2.40 kg</span></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2)"><span class="src-badge src-r">R</span> From recipe</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2)"><span class="src-badge src-t">T</span> From trend</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2)"><span class="src-badge src-rt">R+T</span> Both (quantities added)</span>
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> Reading the badges</h3>
+        <div class="step"><div class="step-num">R</div><div class="step-body"><strong>Recipe only</strong> — this ingredient comes exclusively from the dishes you added in the Recipe Planner panel. Quantity is scaled by your plate count.</div></div>
+        <div class="step"><div class="step-num">T</div><div class="step-body"><strong>Trend only</strong> — this item was pulled from your department's historical indent data. It is not part of any recipe you added today.</div></div>
+        <div class="step"><div class="step-num" style="font-size:9px;width:28px">R+T</div><div class="step-body"><strong>Both sources</strong> — the ingredient appears in a recipe AND in the trend history. The system adds both quantities together into one line item.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> Items marked <span class="src-badge src-rt" style="font-size:10px">R+T</span> deserve a second look — the combined quantity can be higher than expected. Review the total before compiling.</div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #6 Stock Warnings                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="warnings">
+    <div class="feature-header">
+      <div class="feature-num">6</div>
+      <div class="feature-header-text">
+        <h2>Stock Warnings in Compile Bar</h2>
+        <p>Red and amber warning tags appear in the compile bar before you submit, flagging items the Store may not be able to fully fulfil.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body" style="background:#0F172A">
+          <div class="compile-bar">
+            <div>
+              <div class="compile-title">Consolidated Indent</div>
+              <div class="compile-info">
+                18 items · 2 dishes + 9 trend · <span style="color:#475569">draft 2m ago</span>
+                &nbsp;<span class="warn-tag warn-red"><i class="ti ti-alert-triangle" style="font-size:11px"></i> 1 out of stock</span>
+                <span class="warn-tag warn-amber"><i class="ti ti-alert-triangle" style="font-size:11px"></i> 3 low stock</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button style="padding:7px 13px;border-radius:8px;border:1px solid #334155;background:transparent;font-size:12px;color:var(--text-3);cursor:default">↺ Reset</button>
+              <button class="cmp-btn"><i class="ti ti-refresh" style="font-size:14px"></i> Preview &amp; Compile</button>
+            </div>
+          </div>
+          <!-- Clean bar (no warnings) for comparison -->
+          <div style="margin-top:12px;font-size:11px;color:var(--text-3);text-align:center;margin-bottom:6px">— When all items are in stock —</div>
+          <div class="compile-bar">
+            <div>
+              <div class="compile-title">Consolidated Indent</div>
+              <div class="compile-info">14 items · 2 dishes + 8 trend · <span style="color:#475569">draft just now</span></div>
+            </div>
+            <button class="cmp-btn"><i class="ti ti-refresh" style="font-size:14px"></i> Preview &amp; Compile</button>
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> What each warning means</h3>
+        <div class="step"><div class="step-num"><i class="ti ti-alert-triangle" style="font-size:12px;color:#EF4444"></i></div><div class="step-body"><strong>Red — "N out of stock"</strong> — N items have zero remaining stock. The Store physically cannot issue them. Contact the Store Manager or substitute the item before submitting.</div></div>
+        <div class="step"><div class="step-num"><i class="ti ti-alert-triangle" style="font-size:12px;color:#F59E0B"></i></div><div class="step-body"><strong>Amber — "N low stock"</strong> — N items have some stock but less than your requested quantity. A partial issue may happen.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>No tags = clean</strong> — all items in your indent are fully covered by current stock. You can proceed with confidence.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Warnings don't block you.</strong> You can still click Preview &amp; Compile. The Store Manager will see the shortfalls in their approval screen.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> The <strong>draft timestamp</strong> ("draft 2m ago") next to the count confirms your last auto-save time. Your work is safe even if the browser closes.</div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #7 Compile Preview Modal                                               -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="modal">
+    <div class="feature-header">
+      <div class="feature-num">7</div>
+      <div class="feature-header-text">
+        <h2>Compile Preview Modal</h2>
+        <p>Clicking "Preview &amp; Compile" opens this modal for a final review before submission. Edit quantities, exclude items, and choose how to submit.</p>
+      </div>
+    </div>
+
+    <div class="modal-demo" style="margin-bottom:16px">
+      <div class="modal-inner">
+        <div class="modal-head">
+          <div class="modal-title">⚡ Compiled Indent Preview</div>
+          <div class="modal-sub">TIFFINS · 2025-11-03 · 14 items · Review, edit, then submit or load to manual</div>
+        </div>
+        <div class="modal-body-inner">
+          <table class="indent-tbl">
+            <thead>
+              <tr>
+                <th style="width:28px">✓</th>
+                <th>Item</th>
+                <th style="text-align:center;width:48px">Src</th>
+                <th style="text-align:right;width:80px">Qty</th>
+                <th style="width:44px">Unit</th>
+                <th>Stock Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" checked readonly></td>
+                <td><div style="font-weight:600;font-size:12px;color:var(--text-1)">Rice</div><div style="font-size:10px;color:var(--text-3)">KPL-001</div></td>
+                <td style="text-align:center"><span class="src-badge src-r">R</span></td>
+                <td style="text-align:right"><input style="width:62px;padding:3px 6px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:white;color:var(--text-1)" value="12" readonly></td>
+                <td style="font-size:12px;color:var(--text-2)">kg</td>
+                <td><span style="font-size:11px;font-weight:600;color:#10B981;background:#10B98115;padding:2px 8px;border-radius:20px">✓ 15 kg available</span></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" checked readonly></td>
+                <td><div style="font-weight:600;font-size:12px;color:var(--text-1)">Sunflower Oil</div><div style="font-size:10px;color:var(--text-3)">KPL-008</div></td>
+                <td style="text-align:center"><span class="src-badge src-rt">R+T</span></td>
+                <td style="text-align:right"><input style="width:62px;padding:3px 6px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:white;color:var(--text-1)" value="8" readonly></td>
+                <td style="font-size:12px;color:var(--text-2)">L</td>
+                <td><span style="font-size:11px;font-weight:600;color:#F59E0B;background:#F59E0B15;padding:2px 8px;border-radius:20px">⚠ Only 4 L in stock</span></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" checked readonly></td>
+                <td><div style="font-weight:600;font-size:12px;color:var(--text-1)">Curry Leaves</div><div style="font-size:10px;color:var(--text-3)">KPL-042</div></td>
+                <td style="text-align:center"><span class="src-badge src-r">R</span></td>
+                <td style="text-align:right"><input style="width:62px;padding:3px 6px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:white;color:var(--text-1)" value="0.24" readonly></td>
+                <td style="font-size:12px;color:var(--text-2)">kg</td>
+                <td><span style="font-size:11px;font-weight:600;color:#EF4444;background:#EF444415;padding:2px 8px;border-radius:20px">✗ Out of stock</span></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" checked readonly></td>
+                <td><div style="font-weight:600;font-size:12px;color:var(--text-1)">Garam Masala</div><div style="font-size:10px;color:var(--text-3)">KPL-017</div></td>
+                <td style="text-align:center"><span class="src-badge src-t">T</span></td>
+                <td style="text-align:right"><input style="width:62px;padding:3px 6px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:white;color:var(--text-1)" value="200" readonly></td>
+                <td style="font-size:12px;color:var(--text-2)">g</td>
+                <td><span style="font-size:11px;font-weight:600;color:#10B981;background:#10B98115;padding:2px 8px;border-radius:20px">✓ 500 g available</span></td>
+              </tr>
+              <tr style="opacity:.45">
+                <td><input type="checkbox" readonly></td>
+                <td><div style="font-weight:600;font-size:12px;color:var(--text-1)">Green Chilli</div><div style="font-size:10px;color:var(--text-3)">KPL-038</div></td>
+                <td style="text-align:center"><span class="src-badge src-r">R</span></td>
+                <td style="text-align:right"><input style="width:62px;padding:3px 6px;font-size:12px;font-weight:700;border:1px solid #CBD5E1;border-radius:4px;text-align:right;background:#F1F5F9;color:var(--text-3)" value="0.30" readonly></td>
+                <td style="font-size:12px;color:var(--text-2)">kg</td>
+                <td><span style="font-size:11px;font-weight:600;color:#10B981;background:#10B98115;padding:2px 8px;border-radius:20px">✓ 1 kg available</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <span style="font-size:12px;color:var(--text-2)"><strong style="color:var(--text-1)">4</strong> of 5 items selected</span>
+          <div class="modal-footer-btns">
+            <button class="btn-outline"><i class="ti ti-arrow-right"></i> Review in Manual Tab</button>
+            <button class="btn-primary"><i class="ti ti-send"></i> Compile &amp; Submit Directly</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps-panel">
+      <h3><i class="ti ti-list-check" style="font-size:14px"></i> How to use the modal</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Source column (Src)</strong> — R / T / R+T shows the origin of each line. Helps the Store Manager trace items.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Uncheck to exclude</strong> — untick any item to remove it from submission. It stays visible but greyed out.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Edit quantities</strong> — click any Qty box to type a new value. Stock status updates immediately.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Review in Manual Tab</strong> — loads all checked items into the manual entry form for further editing before submitting.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Compile &amp; Submit Directly</strong> — sends the indent straight to the Store Manager's approval queue.</div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Item count footer</strong> — shows how many items are checked vs total. Excludes unchecked items from the submission.</div></div>
+      </div>
+      <div class="tip-box"><i class="ti ti-bulb"></i> Items you <strong>exclude</strong> here are not submitted. The Store Manager only sees the checked items. Use exclusions for items you will source through a different channel.</div>
+    </div>
+  </section>
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- #8 Draft Auto-Save                                                     -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section class="feature-section" id="draft">
+    <div class="feature-header">
+      <div class="feature-num">8</div>
+      <div class="feature-header-text">
+        <h2>Draft Auto-Save</h2>
+        <p>Every change you make is saved automatically to your browser. If you close the tab or navigate away, your entire plan is restored when you return.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="mock-frame">
+        <div class="mock-chrome">
+          <div class="mock-dot" style="background:#EF4444"></div>
+          <div class="mock-dot" style="background:#F59E0B"></div>
+          <div class="mock-dot" style="background:#10B981"></div>
+          <div class="mock-url">Kapila IMS / Indent / Smart</div>
+        </div>
+        <div class="mock-body" style="background:#0F172A">
+          <div class="compile-bar" style="margin-bottom:12px">
+            <div>
+              <div class="compile-title">Consolidated Indent</div>
+              <div class="compile-info">18 items · 2 dishes + 9 trend · <span style="color:#475569">draft <strong style="color:#64748B">just now</strong></span></div>
+            </div>
+            <button class="cmp-btn"><i class="ti ti-refresh" style="font-size:14px"></i> Preview &amp; Compile</button>
+          </div>
+          <div style="background:#0F172A;border:1px solid #1E293B;border-radius:8px;padding:14px">
+            <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">What's saved in your draft</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <i class="ti ti-chef-hat" style="font-size:16px;color:#475569;margin-top:1px"></i>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#CBD5E1">Planned recipes + plate counts</div>
+                  <div style="font-size:11px;color:#475569">Veg Pulao (120 plates), Idli &amp; Sambar (80 plates)</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <i class="ti ti-trending-up" style="font-size:16px;color:#475569;margin-top:1px"></i>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#CBD5E1">Trend selections &amp; quantities</div>
+                  <div style="font-size:11px;color:#475569">12 items checked with your edited quantities</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <i class="ti ti-edit" style="font-size:16px;color:#475569;margin-top:1px"></i>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#CBD5E1">Custom quantity overrides</div>
+                  <div style="font-size:11px;color:#475569">Any values you changed from the default are preserved</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="steps-panel">
+        <h3><i class="ti ti-list-check" style="font-size:14px"></i> How draft saving works</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Always on.</strong> Every time you add a dish, move the slider, check/uncheck a trend item, or edit a quantity — the draft saves instantly.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Persists across sessions.</strong> Close the browser, restart your computer — your draft is still there when you reopen the Indent tab for that department.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Per-department isolation.</strong> The TIFFINS draft and the STAFF draft are stored separately. Switching departments never overwrites your work.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Timestamp in compile bar.</strong> "draft 2m ago" = last saved 2 minutes ago. "draft just now" = most recent change is captured.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Reset clears the draft.</strong> Clicking ↺ Reset wipes the draft for that department. You'll start with a blank plan next time.</div></div>
+        <div class="tip-box"><i class="ti ti-bulb"></i> Drafts are saved in your <strong>browser's localStorage</strong>. Clearing browser data or using a different device will not restore the draft — complete and submit your indent on the same device.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ─── Footer ────────────────────────────────────────────────────────────── -->
+<div class="page-footer">
+  <strong>Kapila Hotel IMS</strong> · Smart Auto-Indent Feature Guide · Internal Use Only
+</div>
+
+</body>
+</html>

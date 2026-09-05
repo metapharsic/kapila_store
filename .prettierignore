@@ -1,0 +1,6 @@
+node_modules
+dist
+build
+*.log
+db/schema.sql
+package-lock.json
