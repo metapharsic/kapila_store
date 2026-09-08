@@ -469,5 +469,147 @@ async function closeDay(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { list, create, updateStatus, remove, updateItems, getRecommendations, smartAutofill, voiceParse, closeDay };
+const CANONICAL_TEMPLATES = [
+  { dept: "TIFFINS", aliases: ["TIFFINS ", "TIFFINS"], displayName: "Tiffins & Breakfast", icon: "☕" },
+  { dept: "STAFF", aliases: ["STAFF ", "STAFF"], displayName: "Staff Meals", icon: "👥" },
+  { dept: "SI-MEALS", aliases: ["SI- MEALS ", "SI-MEALS", "SI MEALS"], displayName: "South Indian Meals", icon: "🍛" },
+  { dept: "NORTH INDIAN", aliases: ["NORTH INDIAN"], displayName: "North Indian Kitchen", icon: "🍲" },
+  { dept: "CHAT & SOFTY", aliases: ["CHAT, JP Disposal, Softy.", "CHAT & SOFTY", "CHAT"], displayName: "Chat & Softy / Disposables", icon: "🍦" },
+  { dept: "CHINESE & DOSA", aliases: ["CHINESE & DOSA"], displayName: "Chinese & Dosa Counter", icon: "🍜" },
+  { dept: "MOCKTAILS & CONTINENTAL", aliases: ["MOCKTAILS & Continental", "MOCKTAILS & CONTINENTAL"], displayName: "Mocktails & Continental", icon: "🍹" },
+  { dept: "RESTAURANT", aliases: [" Restaurant", "RESTAURANT"], displayName: "Restaurant Service", icon: "🍽️" },
+  { dept: "ROOM SERVICE", aliases: ["Room service", "ROOM SERVICE"], displayName: "Room Service", icon: "🛎️" },
+];
+
+async function getTemplates(req, res, next) {
+  try {
+    const { dept } = req.query;
+
+    const templateRows = await db("indent_templates")
+      .select("template_name")
+      .count("* as item_count")
+      .groupBy("template_name");
+
+    const countMap = {};
+    templateRows.forEach((r) => {
+      countMap[r.template_name] = parseInt(r.item_count, 10) || 0;
+    });
+
+    const results = CANONICAL_TEMPLATES.map((tmpl) => {
+      const activeTemplateName = tmpl.aliases.find((a) => countMap[a] !== undefined) || tmpl.aliases[0];
+      const itemCount = tmpl.aliases.reduce((sum, a) => sum + (countMap[a] || 0), 0);
+      return {
+        dept: tmpl.dept,
+        template_name: activeTemplateName,
+        displayName: tmpl.displayName,
+        icon: tmpl.icon,
+        item_count: itemCount,
+      };
+    });
+
+    if (dept) {
+      const filtered = results.filter((r) => r.dept.toLowerCase() === dept.trim().toLowerCase());
+      return res.json({ success: true, data: filtered });
+    }
+
+    res.json({ success: true, data: results });
+  } catch (err) { next(err); }
+}
+
+async function getTemplateByName(req, res, next) {
+  try {
+    const rawName = (req.params.name || "").trim();
+    const tmplDef = CANONICAL_TEMPLATES.find(
+      (t) =>
+        t.dept.toLowerCase() === rawName.toLowerCase() ||
+        t.aliases.some((a) => a.trim().toLowerCase() === rawName.toLowerCase())
+    );
+
+    const aliasesToSearch = tmplDef ? tmplDef.aliases : [rawName, `${rawName} `];
+
+    const templateItems = await db("indent_templates")
+      .whereIn("template_name", aliasesToSearch)
+      .orderBy("row_no", "asc");
+
+    if (!templateItems.length) {
+      return res.status(404).json({ success: false, error: `No indent template found for '${rawName}'.` });
+    }
+
+    // Pull stock aggregation for live remaining inventory
+    const stockAgg = await db("stock")
+      .select(
+        db.raw("LOWER(TRIM(name)) as lower_name"),
+        "item_code",
+        db.raw("SUM(remaining) as total_remaining"),
+        db.raw("MAX(unit) as unit"),
+        db.raw("MAX(price) as price"),
+        db.raw("MAX(min_alert_qty) as reorder_level")
+      )
+      .groupByRaw("LOWER(TRIM(name)), item_code");
+
+    const stockMapByName = {};
+    const stockMapByCode = {};
+
+    stockAgg.forEach((s) => {
+      const remaining = parseFloat(s.total_remaining) || 0;
+      const price = parseFloat(s.price) || 0;
+      const reorder_level = parseFloat(s.reorder_level) || 0;
+      const info = { remaining, unit: s.unit, price, reorder_level, item_code: s.item_code };
+      if (s.lower_name) stockMapByName[s.lower_name] = info;
+      if (s.item_code) stockMapByCode[s.item_code.toLowerCase().trim()] = info;
+    });
+
+    const enrichedItems = templateItems.map((item) => {
+      const codeKey = (item.item_code || "").toLowerCase().trim();
+      const nameKey = (item.item_name || "").toLowerCase().trim();
+      const stockInfo = stockMapByCode[codeKey] || stockMapByName[nameKey] || null;
+
+      const current_stock = stockInfo ? stockInfo.remaining : 0;
+      const stock_unit = stockInfo?.unit || item.default_unit;
+      const price = stockInfo?.price || 0;
+      const reorder_level = stockInfo?.reorder_level || 0;
+      const is_low_stock = stockInfo ? current_stock <= reorder_level : false;
+
+      return {
+        id: item.id,
+        row_no: item.row_no,
+        item_name: item.item_name,
+        item_code: item.item_code || stockInfo?.item_code || null,
+        default_unit: item.default_unit,
+        current_stock,
+        stock_unit,
+        price,
+        reorder_level,
+        is_low_stock,
+        has_stock_match: !!stockInfo,
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        dept: tmplDef ? tmplDef.dept : rawName,
+        displayName: tmplDef ? tmplDef.displayName : rawName,
+        icon: tmplDef ? tmplDef.icon : "📋",
+        template_name: templateItems[0].template_name,
+        item_count: enrichedItems.length,
+        items: enrichedItems,
+      },
+    });
+  } catch (err) { next(err); }
+}
+
+module.exports = { 
+  list, 
+  create, 
+  updateStatus, 
+  remove, 
+  updateItems, 
+  getRecommendations, 
+  smartAutofill, 
+  voiceParse, 
+  closeDay,
+  getTemplates,
+  getTemplateByName
+};
 

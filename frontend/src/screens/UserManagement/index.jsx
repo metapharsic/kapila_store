@@ -5,7 +5,9 @@ import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
 import StoreLiveMonitorCard from "../../components/StoreLiveMonitorCard";
-import { COLORS } from "../../styles/colors";
+import Pill from "../../components/ui/Pill";
+import AvatarRow from "../../components/ui/AvatarRow";
+import { COLORS, RADIUS, SPACING } from "../../styles/colors";
 import { useAuth } from "../../context/AuthContext";
 
 const emptyForm = {
@@ -20,7 +22,7 @@ const emptyForm = {
 };
 
 export default function UserManagementScreen() {
-  const { refreshSession } = useAuth();
+  const { refreshSession, hasPermission } = useAuth();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -36,6 +38,16 @@ export default function UserManagementScreen() {
   const [allPermissions, setAllPermissions] = useState([]);
   const [matrixEdits, setMatrixEdits] = useState({});
   const [savingMatrix, setSavingMatrix] = useState(false);
+
+  // System Reset (Danger Zone)
+  const [resetGroups, setResetGroups] = useState([]);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [selectedResetGroups, setSelectedResetGroups] = useState([]);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [confirmTextInput, setConfirmTextInput] = useState("");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(null);
 
   const selectedRoleNames = useMemo(() => new Set(form.role_ids.map(Number)), [form.role_ids]);
 
@@ -172,91 +184,266 @@ export default function UserManagementScreen() {
     }
   };
 
+
+  const canSystemReset = hasPermission("system.reset");
+
+  const loadResetGroups = async () => {
+    setResetLoading(true);
+    setResetError("");
+    try {
+      const res = await api.systemReset.listGroups();
+      setResetGroups(res.data || []);
+    } catch (err) {
+      setResetError(err.message);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (canSystemReset) {
+      loadResetGroups().catch((err) => setResetError(err.message));
+    }
+  }, [canSystemReset]);
+
+  const toggleResetGroup = (key) => {
+    setSelectedResetGroups((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const openResetConfirm = () => {
+    setConfirmTextInput("");
+    setResetError("");
+    setShowResetConfirm(true);
+  };
+
+  const submitReset = async () => {
+    if (confirmTextInput !== "RESET") return;
+    setResetSubmitting(true);
+    setResetError("");
+    try {
+      const groupsToReset = resetGroups.filter((g) => selectedResetGroups.includes(g.key));
+      await api.systemReset.reset(selectedResetGroups, confirmTextInput);
+      setShowResetConfirm(false);
+      setSelectedResetGroups([]);
+      setResetSuccess(groupsToReset);
+      await loadResetGroups();
+    } catch (err) {
+      setResetError(err.message);
+    } finally {
+      setResetSubmitting(false);
+    }
+  };
+
   return (
-    <Section title="User Management" sub="Create users, assign roles, departments, and account status">
-      {error && <div style={{ color: COLORS.danger, marginBottom: 12 }}>{error}</div>}
-      <StoreLiveMonitorCard />
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 360px) 1fr", gap: 18, alignItems: "start" }}>
-        <Card>
-          <h3 style={{ marginTop: 0, color: COLORS.text }}>{editing ? "Edit User" : "Create User"}</h3>
-          <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          {!editing && <Input label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />}
-          <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-          {!editing && <Input label="Employee Code" value={form.employee_code} onChange={(e) => setForm({ ...form, employee_code: e.target.value })} />}
-          {!editing && <Input label="Temporary Password" value={form.temporary_password} onChange={(e) => setForm({ ...form, temporary_password: e.target.value })} />}
+    <Section title="User Management" sub="Create users, assign roles and departments, and manage account status">
+      {error && (
+        <div style={{ color: COLORS.danger, marginBottom: SPACING.md, fontSize: 13 }}>{error}</div>
+      )}
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={label}>Roles</div>
-            <button onClick={openRoleMatrix} style={{ background: "none", border: "none", color: COLORS.accent, cursor: "pointer", fontSize: 11, fontWeight: 600 }}>View Permissions Matrix</button>
-          </div>
-          <div style={chipGrid}>
-            {roles.map((role) => (
-              <button key={role.id} onClick={() => toggleArray("role_ids", role.id)} style={chip(selectedRoleNames.has(role.id))}>
-                {role.name}
-              </button>
-            ))}
-          </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: SPACING.xxl }}>
+        <StoreLiveMonitorCard />
 
-          <div style={label}>Departments (Data Scoping)</div>
-          <div style={chipGrid}>
-            {departments.map((dept) => (
-              <button key={dept.id} onClick={() => toggleArray("department_ids", dept.id)} style={chip(form.department_ids.map(Number).includes(dept.id))}>
-                {dept.name}
-              </button>
-            ))}
-          </div>
+        {/* Primary workflow: create/edit user + user list, side by side */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(280px, 360px) 1fr",
+            gap: SPACING.xl,
+            alignItems: "start",
+          }}
+        >
+          <Card>
+            <h3 style={{ marginTop: 0, marginBottom: SPACING.lg, color: COLORS.text }}>
+              {editing ? "Edit User" : "Create User"}
+            </h3>
 
-          <label style={{ display: "flex", gap: 8, alignItems: "center", margin: "14px 0", color: COLORS.text }}>
-            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
-            Active user
-          </label>
+            {/* Identity fields */}
+            <div style={sectionLabel}>Identity</div>
+            <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            {!editing && (
+              <Input label="Email *" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            )}
+            <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            {!editing && (
+              <Input
+                label="Employee Code"
+                value={form.employee_code}
+                onChange={(e) => setForm({ ...form, employee_code: e.target.value })}
+              />
+            )}
+            {!editing && (
+              <Input
+                label="Temporary Password *"
+                value={form.temporary_password}
+                onChange={(e) => setForm({ ...form, temporary_password: e.target.value })}
+              />
+            )}
 
-          <div style={{ display: "flex", gap: 10 }}>
-            <Btn onClick={submit} style={{ flex: 1 }}>{editing ? "Save Changes" : "Create User"}</Btn>
-            {editing && <Btn variant="ghost" onClick={reset}>Cancel</Btn>}
-          </div>
-        </Card>
+            {/* Access fields */}
+            <div style={{ ...sectionLabel, marginTop: SPACING.lg }}>Access</div>
 
-        <Card style={{ padding: 0, overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", color: COLORS.text, fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: COLORS.surface }}>
-                {["User", "Role", "Department", "Status", "Last Login", "Actions"].map((h) => <th key={h} style={th}>{h}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} style={{ borderTop: `1px solid ${COLORS.border}` }}>
-                  <td style={td}>
-                    <div style={{ fontWeight: 700 }}>{user.name}</div>
-                    <div style={{ color: COLORS.muted, fontSize: 12 }}>{user.email}</div>
-                  </td>
-                  <td style={td}>{(user.roles || []).map((r) => r.name).join(", ") || "-"}</td>
-                  <td style={td}>{(user.departments || []).map((d) => d.name).join(", ") || "All / unassigned"}</td>
-                  <td style={td}>{user.is_active ? "Active" : "Inactive"}</td>
-                  <td style={td}>{user.last_login_at ? new Date(user.last_login_at).toLocaleString('en-IN') : "-"}</td>
-                  <td style={td}>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <Btn small variant="ghost" onClick={() => startEdit(user)}>Edit</Btn>
-                      <Btn small variant="ghost" onClick={() => viewActivity(user)}>Activity Log</Btn>
-                      <Btn small variant="ghost" onClick={() => resetPassword(user)}>Reset Password</Btn>
-                      <Btn small variant={user.is_active ? "danger" : "success"} onClick={() => toggleActive(user)}>
-                        {user.is_active ? "Deactivate" : "Activate"}
-                      </Btn>
-                    </div>
-                  </td>
-                </tr>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={label}>Roles</div>
+              <button onClick={openRoleMatrix} style={linkBtn}>View Permissions Matrix</button>
+            </div>
+            <div style={chipGrid}>
+              {roles.map((role) => (
+                <button key={role.id} onClick={() => toggleArray("role_ids", role.id)} style={chip(selectedRoleNames.has(role.id))}>
+                  {role.name}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </Card>
+            </div>
+
+            <div style={label}>Departments (Data Scoping)</div>
+            <div style={chipGrid}>
+              {departments.map((dept) => (
+                <button
+                  key={dept.id}
+                  onClick={() => toggleArray("department_ids", dept.id)}
+                  style={chip(form.department_ids.map(Number).includes(dept.id))}
+                >
+                  {dept.name}
+                </button>
+              ))}
+            </div>
+
+            <label style={{ display: "flex", gap: SPACING.sm, alignItems: "center", margin: `${SPACING.lg}px 0`, color: COLORS.text, fontSize: 13 }}>
+              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+              Active user
+            </label>
+
+            <div style={{ display: "flex", gap: SPACING.sm }}>
+              <Btn onClick={submit} style={{ flex: 1 }}>{editing ? "Save Changes" : "Create User"}</Btn>
+              {editing && <Btn variant="ghost" onClick={reset}>Cancel</Btn>}
+            </div>
+          </Card>
+
+          <Card style={{ padding: 0, overflow: "hidden" }}>
+            <div className="resp-table-wrap">
+              <table style={{ width: "100%", borderCollapse: "collapse", color: COLORS.text, fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: COLORS.surface }}>
+                    {["User", "Role", "Department", "Status", "Last Login", "Actions"].map((h) => (
+                      <th key={h} style={th}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} style={{ borderTop: `1px solid ${COLORS.border}` }}>
+                      <td style={td}>
+                        <AvatarRow name={user.name} label={user.email} />
+                      </td>
+                      <td style={td}>{(user.roles || []).map((r) => r.name).join(", ") || "-"}</td>
+                      <td style={td}>{(user.departments || []).map((d) => d.name).join(", ") || "All / unassigned"}</td>
+                      <td style={td}>
+                        <Pill variant={user.is_active ? "success" : "neutral"}>
+                          {user.is_active ? "Active" : "Inactive"}
+                        </Pill>
+                      </td>
+                      <td style={td}>{user.last_login_at ? new Date(user.last_login_at).toLocaleString('en-IN') : "-"}</td>
+                      <td style={td}>
+                        <div style={{ display: "flex", gap: SPACING.xs, flexWrap: "wrap" }}>
+                          <Btn small variant="ghost" onClick={() => startEdit(user)}>Edit</Btn>
+                          <Btn small variant="ghost" onClick={() => viewActivity(user)}>Activity Log</Btn>
+                          <Btn small variant="ghost" onClick={() => resetPassword(user)}>Reset Password</Btn>
+                          <Btn small variant={user.is_active ? "danger" : "success"} onClick={() => toggleActive(user)}>
+                            {user.is_active ? "Deactivate" : "Activate"}
+                          </Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        {/* Danger Zone — pushed to the bottom, visually separated from routine management */}
+        {canSystemReset && (
+          <Card style={{ border: `2px solid ${COLORS.danger}`, background: `${COLORS.danger}0d` }}>
+            <h3 style={{ marginTop: 0, marginBottom: SPACING.xs, color: COLORS.danger, display: "flex", alignItems: "center", gap: SPACING.sm }}>
+              <span aria-hidden>&#9888;</span> Danger Zone — System Reset
+            </h3>
+            <p style={{ color: COLORS.muted, fontSize: 12, marginTop: 0, marginBottom: SPACING.lg }}>
+              Permanently wipes the selected data groups from the system. This action cannot be undone. Only visible to admins with the "system.reset" permission.
+            </p>
+
+            {resetError && <div style={{ color: COLORS.danger, marginBottom: SPACING.md, fontSize: 13 }}>{resetError}</div>}
+
+            {resetSuccess && (
+              <div style={{ background: `${COLORS.success}22`, border: `1px solid ${COLORS.success}`, borderRadius: RADIUS.sm, padding: SPACING.md, marginBottom: SPACING.lg }}>
+                <div style={{ fontWeight: 700, color: COLORS.success, marginBottom: SPACING.xs }}>Reset completed successfully</div>
+                <div style={{ fontSize: 12, color: COLORS.text, marginBottom: SPACING.sm }}>
+                  The following data groups were wiped: {resetSuccess.map((g) => g.label).join(", ")}
+                </div>
+                <Btn small variant="success" onClick={() => window.location.reload()}>Reload Page</Btn>
+              </div>
+            )}
+
+            {resetLoading ? (
+              <p style={{ color: COLORS.muted }}>Loading resettable data groups...</p>
+            ) : (
+              <div style={{ display: "grid", gap: SPACING.md }}>
+                {resetGroups.map((group) => (
+                  <label
+                    key={group.key}
+                    style={{
+                      display: "flex",
+                      gap: SPACING.md,
+                      alignItems: "center",
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: RADIUS.md,
+                      padding: SPACING.lg,
+                      cursor: "pointer",
+                      background: COLORS.surface,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedResetGroups.includes(group.key)}
+                      onChange={() => toggleResetGroup(group.key)}
+                      style={{ flexShrink: 0, width: 18, height: 18, padding: 0, background: "auto" }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: SPACING.sm, flexWrap: "wrap" }}>
+                        <span style={{ fontWeight: 700, color: COLORS.text }}>{group.label}</span>
+                        <Pill variant="danger">
+                          {group.totalRows} row{group.totalRows === 1 ? "" : "s"}
+                        </Pill>
+                      </div>
+                      <div style={{ color: COLORS.muted, fontSize: 12, margin: `${SPACING.xs}px 0` }}>{group.description}</div>
+                      <div style={{ color: COLORS.muted, fontSize: 11 }}>
+                        Tables: {(group.tables || []).map((t) => (typeof t === "string" ? t : t.table)).join(", ")}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+                {resetGroups.length === 0 && <p style={{ color: COLORS.muted, fontSize: 12 }}>No resettable data groups found.</p>}
+              </div>
+            )}
+
+            <div style={{ marginTop: SPACING.lg }}>
+              <Btn
+                variant="danger"
+                disabled={selectedResetGroups.length === 0}
+                onClick={openResetConfirm}
+              >
+                Reset Selected
+              </Btn>
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Activity Log Modal */}
       {activityUser && (
         <div style={modalOverlay} onClick={() => setActivityUser(null)}>
           <div style={modalContent} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: SPACING.xl }}>
               <h3 style={{ margin: 0, color: COLORS.text }}>Activity Log: {activityUser.name}</h3>
               <button onClick={() => setActivityUser(null)} style={closeBtn}>&times;</button>
             </div>
@@ -272,7 +459,9 @@ export default function UserManagementScreen() {
                           <td style={td}><span style={{ color: COLORS.accent, fontWeight: 600 }}>{log.action}</span></td>
                           <td style={td}>{log.resource} {log.resource_id ? `#${log.resource_id}` : ""}</td>
                           <td style={td}>
-                            {log.department_name && <span style={{ background: COLORS.border, padding: "2px 6px", borderRadius: 4, marginRight: 6 }}>{log.department_name}</span>}
+                            {log.department_name && (
+                              <Pill variant="neutral" style={{ borderRadius: RADIUS.sm }}>{log.department_name}</Pill>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -288,34 +477,34 @@ export default function UserManagementScreen() {
       {/* Permissions Matrix Modal */}
       {showRoleMatrix && (
         <div style={modalOverlay} onClick={() => setShowRoleMatrix(false)}>
-          <div style={{...modalContent, maxWidth: 800}} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div style={{ ...modalContent, maxWidth: 800 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: SPACING.xl }}>
               <h3 style={{ margin: 0, color: COLORS.text }}>Role Permissions Matrix</h3>
               <button onClick={() => setShowRoleMatrix(false)} style={closeBtn}>&times;</button>
             </div>
-            <div style={{ maxHeight: 500, overflowY: "auto", marginBottom: 20 }}>
+            <div style={{ maxHeight: 500, overflowY: "auto", marginBottom: SPACING.xl }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, color: COLORS.text }}>
                 <thead>
                   <tr style={{ background: COLORS.surface }}>
-                    <th style={{...th, minWidth: 200}}>Permission</th>
-                    {roles.map(r => <th key={r.id} style={{...th, textAlign: "center"}}>{r.name}</th>)}
+                    <th style={{ ...th, minWidth: 200 }}>Permission</th>
+                    {roles.map(r => <th key={r.id} style={{ ...th, textAlign: "center" }}>{r.name}</th>)}
                   </tr>
                 </thead>
                 <tbody>
                   {allPermissions.map(perm => (
                     <tr key={perm.id} style={{ borderBottom: `1px solid ${COLORS.border}55` }}>
-                      <td style={{...td, fontWeight: 500}}>
+                      <td style={{ ...td, fontWeight: 500 }}>
                         {perm.label}
-                        <div style={{fontSize: 10, color: COLORS.muted}}>{perm.key}</div>
+                        <div style={{ fontSize: 10, color: COLORS.muted }}>{perm.key}</div>
                       </td>
                       {roles.map(r => {
                         const isChecked = matrixEdits[r.id]?.has(perm.id);
                         const disabled = r.key === 'admin';
                         return (
-                          <td key={r.id} style={{...td, textAlign: "center"}}>
-                            <input 
-                              type="checkbox" 
-                              checked={!!isChecked} 
+                          <td key={r.id} style={{ ...td, textAlign: "center" }}>
+                            <input
+                              type="checkbox"
+                              checked={!!isChecked}
                               disabled={disabled}
                               onChange={() => toggleMatrixPermission(r.id, perm.id)}
                             />
@@ -327,32 +516,85 @@ export default function UserManagementScreen() {
                 </tbody>
               </table>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: SPACING.sm }}>
               <Btn variant="ghost" onClick={() => setShowRoleMatrix(false)}>Cancel</Btn>
               <Btn onClick={saveMatrix} disabled={savingMatrix}>{savingMatrix ? "Saving..." : "Save Permissions"}</Btn>
             </div>
           </div>
         </div>
       )}
+
+      {/* System Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div style={modalOverlay} onClick={() => !resetSubmitting && setShowResetConfirm(false)}>
+          <div style={{ ...modalContent, border: `2px solid ${COLORS.danger}` }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: SPACING.lg }}>
+              <h3 style={{ margin: 0, color: COLORS.danger }}>Confirm System Reset</h3>
+              <button onClick={() => setShowResetConfirm(false)} style={closeBtn}>&times;</button>
+            </div>
+
+            <p style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
+              You are about to PERMANENTLY DELETE all data in the following groups:
+            </p>
+            <ul style={{ color: COLORS.text, fontSize: 13, paddingLeft: SPACING.xl }}>
+              {resetGroups.filter((g) => selectedResetGroups.includes(g.key)).map((g) => (
+                <li key={g.key} style={{ marginBottom: SPACING.sm }}>
+                  <strong>{g.label}</strong> ({g.totalRows} rows)
+                  <div style={{ color: COLORS.muted, fontSize: 11 }}>Tables: {(g.tables || []).map((t) => (typeof t === "string" ? t : t.table)).join(", ")}</div>
+                </li>
+              ))}
+            </ul>
+            <p style={{ color: COLORS.danger, fontSize: 12, fontWeight: 600 }}>
+              This action cannot be undone. Type RESET below to confirm.
+            </p>
+            <Input
+              label='Type "RESET" to confirm'
+              value={confirmTextInput}
+              onChange={(e) => setConfirmTextInput(e.target.value)}
+            />
+            {resetError && <div style={{ color: COLORS.danger, fontSize: 12, marginTop: SPACING.sm }}>{resetError}</div>}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: SPACING.sm, marginTop: SPACING.lg }}>
+              <Btn variant="ghost" onClick={() => setShowResetConfirm(false)} disabled={resetSubmitting}>Cancel</Btn>
+              <Btn
+                variant="danger"
+                onClick={submitReset}
+                disabled={confirmTextInput !== "RESET" || resetSubmitting}
+              >
+                {resetSubmitting ? "Resetting..." : "Confirm Reset"}
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
+
     </Section>
   );
 }
 
-const label = { color: COLORS.muted, fontSize: 12, fontWeight: 700, margin: "12px 0 8px" };
-const chipGrid = { display: "flex", flexWrap: "wrap", gap: 8 };
+const sectionLabel = {
+  color: COLORS.muted,
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+  marginBottom: SPACING.sm,
+};
+const label = { color: COLORS.muted, fontSize: 12, fontWeight: 700, margin: `${SPACING.md}px 0 ${SPACING.sm}px` };
+const linkBtn = { background: "none", border: "none", color: COLORS.accent, cursor: "pointer", fontSize: 11, fontWeight: 600 };
+const chipGrid = { display: "flex", flexWrap: "wrap", gap: SPACING.sm };
 const chip = (active) => ({
   border: `1px solid ${active ? COLORS.brand || COLORS.accent : COLORS.border}`,
   background: active ? `${COLORS.brand || COLORS.accent}22` : COLORS.surface,
   color: active ? COLORS.brand || COLORS.accent : COLORS.text,
-  borderRadius: 8,
+  borderRadius: RADIUS.sm,
   padding: "7px 10px",
   cursor: "pointer",
   fontSize: 12,
 });
-const th = { textAlign: "left", padding: "12px 14px", color: COLORS.muted, fontSize: 11, textTransform: "uppercase" };
-const td = { padding: "12px 14px", verticalAlign: "top" };
+const th = { textAlign: "left", padding: `${SPACING.md}px ${SPACING.lg}px`, color: COLORS.muted, fontSize: 11, textTransform: "uppercase" };
+const td = { padding: `${SPACING.md}px ${SPACING.lg}px`, verticalAlign: "middle" };
 
 // Modal Styles
-const modalOverlay = { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 };
-const modalContent = { background: COLORS.bg, borderRadius: 12, padding: 24, width: "100%", maxWidth: 600, border: `1px solid ${COLORS.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
+const modalOverlay = { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: SPACING.xl };
+const modalContent = { background: COLORS.bg, borderRadius: RADIUS.md, padding: SPACING.xxl, width: "100%", maxWidth: 600, border: `1px solid ${COLORS.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
 const closeBtn = { background: "none", border: "none", color: COLORS.muted, fontSize: 24, cursor: "pointer", padding: 0, lineHeight: 1 };

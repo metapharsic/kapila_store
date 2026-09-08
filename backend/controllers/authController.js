@@ -43,16 +43,22 @@ async function login(req, res, next) {
         return res.status(401).json({ success: false, error: "Invalid Employee Code or PIN" });
       }
     } else {
-      // Standard Email + Password login
-      userRow = await db("users").whereRaw("LOWER(email) = LOWER(?)", [(email || "").trim()]).first();
+      // Standard Database-backed Password login (supports email, employee_code, or username)
+      const identifier = (req.body.username || req.body.email || req.body.employee_code || "").trim();
+      userRow = await db("users")
+        .where((qb) => {
+          qb.whereRaw("LOWER(email) = LOWER(?)", [identifier])
+            .orWhereRaw("LOWER(employee_code) = LOWER(?)", [identifier]);
+        })
+        .first();
 
       if (!userRow || !userRow.is_active || !(await comparePassword(password || "", userRow.password_hash))) {
         await auditLog(req, {
           action: "auth.login_failed",
           resource: "auth",
-          metadata: { email },
+          metadata: { identifier },
         });
-        return res.status(401).json({ success: false, error: "Invalid email or password" });
+        return res.status(401).json({ success: false, error: "Invalid username/email or password" });
       }
     }
 

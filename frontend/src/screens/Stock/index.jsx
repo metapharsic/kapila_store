@@ -10,7 +10,7 @@ import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import {
   LayoutList, Download, RefreshCw, BarChart2, ShoppingBag, Filter,
-  AlertOctagon, PackagePlus, FileSpreadsheet
+  AlertOctagon, PackagePlus, FileSpreadsheet, UploadCloud
 } from "lucide-react";
 
 import { today } from "../../utils/dates";
@@ -23,6 +23,7 @@ import InsightsTab from "./InsightsTab";
 import PrintPreviewModal from "./PrintPreviewModal";
 import QuickAdjustmentModal from "./QuickAdjustmentModal";
 import AddItemDrawer from "./AddItemDrawer";
+import StockImportModal from "../../components/StockImportModal";
 import EditItemDrawer from "./EditItemDrawer";
 import ExportReportModal from "../../components/ExportReportModal";
 
@@ -35,7 +36,7 @@ export default function StockScreen() {
   const { stocks, refreshStockNames, reorderAlerts, refreshReorderAlerts } = useAppContext();
   const { hasPermission, roles } = useAuth();
   const canEditStock = hasPermission("stock.edit") || hasPermission("stock.delete");
-  const isStoreManager = roles.some((r) => r.key === "store_manager");
+  const isStoreManager = roles.some((r) => r.key === "store_manager") || hasPermission("stock.create");
   const [msg, setMsg]   = useState("");
   const [filters, setFilters] = useState({ low_stock: "", expiry_status: "", supplier: "", active_only: "", category: "" });
   const [stats, setStats]     = useState({ total_spend: 0, store_value: 0, low_stock_value: 0 });
@@ -342,6 +343,7 @@ export default function StockScreen() {
 
   const [alertsExpanded, setAlertsExpanded] = useState(false);
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
 
   return (
@@ -469,6 +471,11 @@ export default function StockScreen() {
               {isStoreManager && (
                 <Btn small onClick={() => setAddDrawerOpen(true)} title="Add a new item to stock">
                   <PackagePlus size={14} style={{ marginRight: 4 }} /> Add Item
+                </Btn>
+              )}
+              {isStoreManager && (
+                <Btn small variant="ghost" onClick={() => setImportModalOpen(true)} title="Bulk import stock from Excel or PDF">
+                  <UploadCloud size={14} style={{ marginRight: 4 }} /> Import Excel/PDF
                 </Btn>
               )}
               <Btn small variant="ghost" onClick={exportCSV} title="Export current view to CSV">
@@ -720,6 +727,17 @@ export default function StockScreen() {
         }}
       />
       <ExportReportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
+      <StockImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImported={() => {
+          load({ page: 1 });
+          refreshStockNames();
+          refreshActiveTab();
+          setMsg("Stock import complete ✓");
+          setTimeout(() => setMsg(""), 3000);
+        }}
+      />
       {msg && <p style={{ display: "none" }}>{msg}</p>}
     </div>
   );

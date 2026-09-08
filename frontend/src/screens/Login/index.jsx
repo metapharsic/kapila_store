@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import kapilaLogo from "../../assets/kapila-logo.png";
 import { COLORS, globalCss } from "../../styles/colors";
 import { useAuth } from "../../context/AuthContext";
 import { 
-  Shield, KeyRound, UserCheck, Clock, Monitor, Lock, 
-  AlertCircle, Sparkles, CheckCircle2, Delete, RotateCcw,
-  Store, ChefHat, ShieldCheck, Cpu
+  Lock, AlertCircle, CheckCircle2, 
+  Store, ChefHat, ShieldCheck, Cpu, Eye, EyeOff,
+  LogIn, Sparkles
 } from "lucide-react";
 
-const QUICK_USERS = [
+const QUICK_ROLES = [
   { 
     label: "Store Keeper", 
     code: "KPL-STORE", 
@@ -30,7 +30,7 @@ const QUICK_USERS = [
     bg: "rgba(16, 185, 129, 0.12)"
   },
   { 
-    label: "General Admin", 
+    label: "Kapila Admin", 
     code: "KPL-ADMIN", 
     email: "admin@kapila.local", 
     dept: "Management", 
@@ -41,91 +41,63 @@ const QUICK_USERS = [
   },
 ];
 
+const DEFAULT_PASSWORD = "ChangeMe123!";
+
 const AGENT_BADGES = [
   { name: "SecOps", status: "ONLINE", color: "#10b981" },
   { name: "StoreOps", status: "SYNCED", color: "#10b981" },
-  { name: "AdminMonitor", status: "STREAMING", color: "#3b82f6" },
   { name: "DataArchitect", status: "HEALTHY", color: "#10b981" },
+  { name: "AdminMonitor", status: "STREAMING", color: "#3b82f6" },
   { name: "UIX Sentinel", status: "ACTIVE", color: "#e8a838" },
 ];
 
 export default function LoginScreen() {
   const { login, sessionTerminatedNotice, clearTerminationNotice } = useAuth();
-  const [activeTab, setActiveTab] = useState("kiosk"); // 'kiosk' | 'admin'
 
-  // Admin / Email mode
-  const [email, setEmail] = useState("admin@kapila.local");
-  const [password, setPassword] = useState("");
-
-  // Kiosk / Store Mode
-  const [selectedUserCode, setSelectedUserCode] = useState("KPL-STORE");
-  const [pin, setPin] = useState("");
-  const [shiftType, setShiftType] = useState("Morning");
-  const [terminalCode, setTerminalCode] = useState("STORE-MAIN-TAB-01");
+  const [selectedRoleCode, setSelectedRoleCode] = useState("KPL-STORE");
+  const [identifier, setIdentifier] = useState("store@kapila.com");
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour >= 6 && hour < 14) setShiftType("Morning");
-    else if (hour >= 14 && hour < 22) setShiftType("Evening");
-    else setShiftType("Night");
-  }, []);
-
-  const handleAdminSubmit = async (e) => {
-    e?.preventDefault();
+  const handleSelectRole = (role) => {
+    setSelectedRoleCode(role.code);
+    setIdentifier(role.email);
+    setPassword(DEFAULT_PASSWORD);
     setError("");
-    setLoading(true);
-    try {
-      await login({ email: email.trim(), password });
-    } catch (err) {
-      setError(err.message || "Invalid credentials");
-    } finally {
-      setLoading(false);
-    }
   };
 
-  const handleKioskSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e?.preventDefault();
-    if (!pin || pin.length < 4) {
-      setError("Please enter your 4-digit security PIN (Default: 1234)");
+    if (!identifier.trim()) {
+      setError("Please enter your email or employee ID");
       return;
     }
+    if (!password) {
+      setError("Please enter your password");
+      return;
+    }
+
     setError("");
     setLoading(true);
     try {
       await login({
-        employee_code: selectedUserCode,
-        pin: pin.trim(),
-        shift_type: shiftType,
-        terminal_code: terminalCode,
-      });
+        email: identifier.trim(),
+        employee_code: identifier.trim(),
+        username: identifier.trim(),
+        password,
+      }, rememberMe);
     } catch (err) {
-      setError(err.message || "Invalid PIN. Default Store PIN is 1234");
+      setError(err.message || "Invalid credentials. Please verify your account and password.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeypadPress = (digit) => {
-    if (pin.length < 6) {
-      const newPin = pin + digit;
-      setPin(newPin);
-      setError("");
-    }
-  };
-
-  const handleBackspace = () => {
-    setPin(pin.slice(0, -1));
-  };
-
-  const handleClear = () => {
-    setPin("");
-    setError("");
-  };
-
-  const selectedUser = QUICK_USERS.find(u => u.code === selectedUserCode) || QUICK_USERS[0];
+  const selectedRole = QUICK_ROLES.find(r => r.code === selectedRoleCode) || QUICK_ROLES[0];
 
   return (
     <>
@@ -141,20 +113,20 @@ export default function LoginScreen() {
         fontFamily: "var(--font-sans)",
         color: "#f1f5f9",
       }}>
-        {/* Main Card Container */}
+        {/* Main Login Card */}
         <div style={{
           width: "100%",
-          maxWidth: 480,
+          maxWidth: 460,
           background: "rgba(15, 23, 42, 0.88)",
           border: "1px solid rgba(232, 168, 56, 0.25)",
           borderRadius: 16,
-          padding: "32px 28px",
+          padding: "32px 28px 24px",
           boxShadow: "0 25px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(232, 168, 56, 0.06)",
           backdropFilter: "blur(16px)",
           position: "relative",
           overflow: "hidden",
         }}>
-          {/* Subtle Gold Ambient Glow Bar */}
+          {/* Gold Ambient Glow Bar */}
           <div style={{
             position: "absolute",
             top: 0,
@@ -164,8 +136,8 @@ export default function LoginScreen() {
             background: "linear-gradient(90deg, transparent 0%, #e8a838 50%, transparent 100%)",
           }} />
 
-          {/* Logo & Luxury Header */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
+          {/* Logo & Header */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 22 }}>
             <div style={{
               background: "rgba(255, 255, 255, 0.04)",
               padding: "8px 16px",
@@ -176,13 +148,13 @@ export default function LoginScreen() {
               alignItems: "center",
               justifyContent: "center",
             }}>
-              <img src={kapilaLogo} alt="Kapila IMS" style={{ height: 42, objectFit: "contain" }} />
+              <img src={kapilaLogo} alt="Kapila IMS" style={{ height: 44, objectFit: "contain" }} />
             </div>
 
             <h1 style={{
-              margin: "6px 0 2px",
+              margin: "4px 0 2px",
               color: "#ffffff",
-              fontSize: 26,
+              fontSize: 24,
               fontFamily: "var(--font-display)",
               letterSpacing: "0.5px",
               textAlign: "center",
@@ -200,425 +172,273 @@ export default function LoginScreen() {
               background: "rgba(239, 68, 68, 0.15)",
               border: "1px solid rgba(239, 68, 68, 0.4)",
               borderRadius: 10,
-              padding: "12px 14px",
-              marginBottom: 18,
+              padding: "10px 12px",
+              marginBottom: 16,
               display: "flex",
-              alignItems: "flex-start",
+              alignItems: "center",
               gap: 10,
               color: "#fca5a5",
               fontSize: 13,
             }}>
-              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2, color: "#ef4444" }} />
-              <div style={{ flex: 1 }}>
-                <strong style={{ color: "#ffffff" }}>Security Notice:</strong> {sessionTerminatedNotice}
-              </div>
+              <AlertCircle size={16} style={{ flexShrink: 0, color: "#ef4444" }} />
+              <div style={{ flex: 1 }}>{sessionTerminatedNotice}</div>
               <button
                 onClick={clearTerminationNotice}
-                style={{ background: "transparent", border: "none", color: "#fca5a5", cursor: "pointer", fontSize: 16 }}
+                style={{ background: "transparent", border: "none", color: "#fca5a5", cursor: "pointer", fontSize: 14 }}
               >
                 ✕
               </button>
             </div>
           )}
 
-          {/* Mode Switch Tabs */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            background: "rgba(0, 0, 0, 0.35)",
-            borderRadius: 10,
-            padding: 4,
-            marginBottom: 20,
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-          }}>
-            <button
-              type="button"
-              onClick={() => { setActiveTab("kiosk"); setError(""); }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                padding: "10px 14px",
-                borderRadius: 8,
-                border: "none",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                background: activeTab === "kiosk" ? "linear-gradient(135deg, #e8a838 0%, #d49424 100%)" : "transparent",
-                color: activeTab === "kiosk" ? "#0f172a" : "#94a3b8",
-                boxShadow: activeTab === "kiosk" ? "0 4px 12px rgba(232, 168, 56, 0.3)" : "none",
-              }}
-            >
-              <KeyRound size={16} /> Store Kiosk (PIN)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setActiveTab("admin"); setError(""); }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                padding: "10px 14px",
-                borderRadius: 8,
-                border: "none",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                background: activeTab === "admin" ? "linear-gradient(135deg, #e8a838 0%, #d49424 100%)" : "transparent",
-                color: activeTab === "admin" ? "#0f172a" : "#94a3b8",
-                boxShadow: activeTab === "admin" ? "0 4px 12px rgba(232, 168, 56, 0.3)" : "none",
-              }}
-            >
-              <Shield size={16} /> Management Sign In
-            </button>
+          {/* 1-Tap Quick Role Selector */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <label style={sectionLabelStyle}>Select Staff Account</label>
+              <span style={{ fontSize: 11, color: "#e8a838", fontWeight: 600 }}>1-Tap Auto-fill</span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+              {QUICK_ROLES.map((role) => {
+                const isSelected = selectedRoleCode === role.code;
+                return (
+                  <button
+                    key={role.code}
+                    type="button"
+                    onClick={() => handleSelectRole(role)}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "10px 6px",
+                      borderRadius: 10,
+                      border: `1.5px solid ${isSelected ? "#e8a838" : "rgba(255, 255, 255, 0.08)"}`,
+                      background: isSelected ? "rgba(232, 168, 56, 0.12)" : "rgba(255, 255, 255, 0.03)",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      boxShadow: isSelected ? "0 0 14px rgba(232, 168, 56, 0.2)" : "none",
+                      color: isSelected ? "#ffffff" : "#94a3b8",
+                      outline: "none",
+                    }}
+                  >
+                    <div style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: role.bg,
+                      color: role.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 6,
+                    }}>
+                      {role.icon}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: isSelected ? "#ffffff" : "#cbd5e1", textAlign: "center" }}>
+                      {role.label}
+                    </span>
+                    <span style={{ fontSize: 10, color: isSelected ? "#e8a838" : "#64748b", fontWeight: 600 }}>
+                      {role.code}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* KIOSK / STORE OPERATIONS LOGIN MODE */}
-          {activeTab === "kiosk" ? (
-            <div>
-              {/* Step 1: Select Staff Role */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <label style={sectionLabelStyle}>1. Select On-Duty Staff Account</label>
-                  <span style={{ fontSize: 11, color: "#e8a838", fontWeight: 700 }}>Tap below</span>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
-                  {QUICK_USERS.map((u) => {
-                    const isSelected = selectedUserCode === u.code;
-                    return (
-                      <div
-                        key={u.code}
-                        onClick={() => { setSelectedUserCode(u.code); setError(""); }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: "10px 14px",
-                          borderRadius: 10,
-                          border: `1.5px solid ${isSelected ? "#e8a838" : "rgba(255, 255, 255, 0.08)"}`,
-                          background: isSelected ? "rgba(232, 168, 56, 0.12)" : "rgba(255, 255, 255, 0.03)",
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                          boxShadow: isSelected ? "0 0 16px rgba(232, 168, 56, 0.15)" : "none",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: "50%",
-                            background: u.bg,
-                            color: u.color,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            border: `1px solid ${isSelected ? "#e8a838" : "rgba(255, 255, 255, 0.1)"}`,
-                          }}>
-                            {u.icon}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: isSelected ? "#ffffff" : "#cbd5e1" }}>
-                              {u.label} <span style={{ fontSize: 12, color: isSelected ? "#e8a838" : "#64748b", fontWeight: 600 }}>({u.code})</span>
-                            </div>
-                            <div style={{ fontSize: 12, color: "#94a3b8" }}>{u.dept} • {u.role}</div>
-                          </div>
-                        </div>
-
-                        {isSelected ? (
-                          <CheckCircle2 size={20} color="#e8a838" />
-                        ) : (
-                          <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>Select</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Shift & Terminal Selector */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-                <div>
-                  <label style={sectionLabelStyle}><Clock size={12} style={{ verticalAlign: -1 }} /> Shift</label>
-                  <select
-                    value={shiftType}
-                    onChange={(e) => setShiftType(e.target.value)}
-                    style={selectStyle}
-                  >
-                    <option value="Morning">Morning Shift</option>
-                    <option value="Evening">Evening Shift</option>
-                    <option value="Night">Night Shift</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={sectionLabelStyle}><Monitor size={12} style={{ verticalAlign: -1 }} /> Terminal</label>
-                  <select
-                    value={terminalCode}
-                    onChange={(e) => setTerminalCode(e.target.value)}
-                    style={selectStyle}
-                  >
-                    <option value="STORE-MAIN-TAB-01">Store Room Tab 1</option>
-                    <option value="STORE-BACK-PC-02">Store Room PC 2</option>
-                    <option value="KITCHEN-TAB-01">Main Kitchen Tab</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* PIN Code Display & Help Hint */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 6 }}>
-                  <label style={sectionLabelStyle}>2. Enter 4-Digit Security PIN</label>
-                  <button
-                    type="button"
-                    onClick={() => { setPin("1234"); setError(""); }}
-                    style={{
-                      fontSize: 11,
-                      color: "#e8a838",
-                      background: "rgba(232, 168, 56, 0.14)",
-                      padding: "3px 9px",
-                      borderRadius: 6,
-                      fontWeight: 700,
-                      border: "1px solid rgba(232, 168, 56, 0.3)",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      transition: "all 0.15s ease",
-                    }}
-                    title="Click to auto-fill default PIN"
-                  >
-                    💡 Default PIN: 1234 for Store Manager (Tap to fill)
-                  </button>
-                </div>
-
-                {/* Visual PIN Dots / Box */}
-                <div
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (/^[0-9]$/.test(e.key)) {
-                      handleKeypadPress(e.key);
-                    } else if (e.key === "Backspace") {
-                      handleBackspace();
-                    } else if (e.key === "Enter") {
-                      handleKioskSubmit();
-                    }
+          {/* Simple Login Form */}
+          <form onSubmit={handleSubmit}>
+            {/* User Identifier Input */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={sectionLabelStyle}>Account Email or Employee ID</label>
+              <div style={{ position: "relative", marginTop: 6 }}>
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    setError("");
                   }}
+                  style={textInputStyle}
+                  placeholder="e.g. store@kapila.com or KPL-STORE"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Password Input with Show/Hide Toggle */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <label style={sectionLabelStyle}>Password</label>
+                <button
+                  type="button"
+                  onClick={() => { setPassword(DEFAULT_PASSWORD); setError(""); }}
                   style={{
+                    fontSize: 11,
+                    color: "#e8a838",
+                    background: "rgba(232, 168, 56, 0.12)",
+                    padding: "2px 8px",
+                    borderRadius: 5,
+                    fontWeight: 600,
+                    border: "1px solid rgba(232, 168, 56, 0.3)",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                  title="Restore default test password"
+                >
+                  <Sparkles size={11} /> Reset to Default
+                </button>
+              </div>
+
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
+                  style={{ ...textInputStyle, paddingRight: 40 }}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "transparent",
+                    border: "none",
+                    color: "#94a3b8",
+                    cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    gap: 12,
-                    padding: "12px 16px",
-                    background: "rgba(0, 0, 0, 0.4)",
-                    borderRadius: 12,
-                    border: "1px solid rgba(232, 168, 56, 0.3)",
-                    marginBottom: 12,
-                    cursor: "pointer",
-                    outline: "none",
+                    padding: 4,
                   }}
+                  title={showPassword ? "Hide password" : "Show password"}
                 >
-                  {[0, 1, 2, 3].map((idx) => {
-                    const hasDigit = pin.length > idx;
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          background: hasDigit ? "#e8a838" : "rgba(255, 255, 255, 0.15)",
-                          boxShadow: hasDigit ? "0 0 10px rgba(232, 168, 56, 0.6)" : "none",
-                          transition: "all 0.15s ease",
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-
-                {/* Touchscreen Kiosk Keypad */}
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: 8,
-                  marginBottom: 14,
-                }}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => handleKeypadPress(String(n))}
-                      style={keypadButtonStyle}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    style={{ ...keypadButtonStyle, color: "#94a3b8", fontSize: 13 }}
-                  >
-                    <RotateCcw size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleKeypadPress("0")}
-                    style={keypadButtonStyle}
-                  >
-                    0
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleBackspace}
-                    style={{ ...keypadButtonStyle, color: "#fca5a5" }}
-                  >
-                    <Delete size={18} />
-                  </button>
-                </div>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-
-              {error && (
-                <div style={{
-                  color: "#ef4444",
-                  fontSize: 13,
-                  marginBottom: 12,
-                  background: "rgba(239, 68, 68, 0.1)",
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(239, 68, 68, 0.25)",
-                }}>
-                  {error}
-                </div>
-              )}
-
-              {/* Submit Action Button */}
-              <button
-                type="button"
-                onClick={handleKioskSubmit}
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  height: 48,
-                  borderRadius: 10,
-                  border: "none",
-                  background: "linear-gradient(135deg, #e8a838 0%, #d49424 100%)",
-                  color: "#0f172a",
-                  fontSize: 15,
-                  fontWeight: 800,
-                  cursor: loading ? "not-allowed" : "pointer",
-                  boxShadow: "0 6px 20px rgba(232, 168, 56, 0.3)",
-                  transition: "all 0.2s",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  letterSpacing: "0.02em",
-                }}
-              >
-                {loading ? (
-                  "Authenticating Storekeeper..."
-                ) : (
-                  <>
-                    <KeyRound size={18} /> Open {selectedUser.label} Session
-                  </>
-                )}
-              </button>
             </div>
-          ) : (
-            /* MANAGEMENT / OFFICE EMAIL LOGIN MODE */
-            <form onSubmit={handleAdminSubmit}>
-              <div style={{ marginBottom: 14 }}>
-                <label style={sectionLabelStyle}>Management Email</label>
-                <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={textInputStyle}
-                  autoComplete="email"
-                  placeholder="admin@kapila.local"
-                />
-              </div>
 
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 6 }}>
-                  <label style={sectionLabelStyle}>Password</label>
-                  <button
-                    type="button"
-                    onClick={() => { setPassword("ChangeMe123!"); setError(""); }}
-                    style={{
-                      fontSize: 11,
-                      color: "#e8a838",
-                      background: "rgba(232, 168, 56, 0.14)",
-                      padding: "3px 9px",
-                      borderRadius: 6,
-                      fontWeight: 700,
-                      border: "1px solid rgba(232, 168, 56, 0.3)",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                    title="Click to auto-fill default password"
-                  >
-                    💡 Default: ChangeMe123! (Tap to fill)
-                  </button>
-                </div>
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  type="password"
-                  style={textInputStyle}
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                />
-              </div>
+            {/* Default Password Active Notice */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "rgba(232, 168, 56, 0.08)",
+              border: "1px solid rgba(232, 168, 56, 0.2)",
+              borderRadius: 8,
+              padding: "7px 12px",
+              marginBottom: 16,
+              fontSize: 12,
+              color: "#cbd5e1",
+            }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
+                <span>Default trial password: <strong style={{ color: "#e8a838" }}>ChangeMe123!</strong></span>
+              </span>
+              <span style={{ fontSize: 10, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                DB Validated
+              </span>
+            </div>
 
-              {error && (
-                <div style={{
-                  color: "#ef4444",
-                  fontSize: 13,
-                  marginBottom: 12,
-                  background: "rgba(239, 68, 68, 0.1)",
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(239, 68, 68, 0.25)",
-                }}>
-                  {error}
-                </div>
+            {/* Remember Me Checkbox (7-Day Persistent Session) */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <label style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 13,
+                color: "#cbd5e1",
+                cursor: "pointer",
+                userSelect: "none",
+              }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{
+                    accentColor: "#e8a838",
+                    width: 16,
+                    height: 16,
+                    cursor: "pointer",
+                  }}
+                />
+                <span>Stay signed in for 7 days</span>
+              </label>
+            </div>
+
+            {/* Error Message Alert */}
+            {error && (
+              <div style={{
+                color: "#ef4444",
+                fontSize: 13,
+                marginBottom: 14,
+                background: "rgba(239, 68, 68, 0.1)",
+                padding: "9px 12px",
+                borderRadius: 8,
+                border: "1px solid rgba(239, 68, 68, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}>
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Submit Action Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                height: 48,
+                borderRadius: 10,
+                border: "none",
+                background: "linear-gradient(135deg, #e8a838 0%, #d49424 100%)",
+                color: "#0f172a",
+                fontSize: 15,
+                fontWeight: 800,
+                cursor: loading ? "not-allowed" : "pointer",
+                boxShadow: "0 6px 20px rgba(232, 168, 56, 0.3)",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                letterSpacing: "0.02em",
+                opacity: loading ? 0.75 : 1,
+              }}
+            >
+              {loading ? (
+                "Verifying with Database..."
+              ) : (
+                <>
+                  <LogIn size={18} /> Sign In as {selectedRole.label}
+                </>
               )}
+            </button>
+          </form>
 
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  height: 48,
-                  borderRadius: 10,
-                  border: "none",
-                  background: "linear-gradient(135deg, #e8a838 0%, #d49424 100%)",
-                  color: "#0f172a",
-                  fontSize: 15,
-                  fontWeight: 800,
-                  cursor: loading ? "not-allowed" : "pointer",
-                  boxShadow: "0 6px 20px rgba(232, 168, 56, 0.3)",
-                  transition: "all 0.2s",
-                }}
-              >
-                {loading ? "Signing in..." : "Sign in to Management Console"}
-              </button>
-            </form>
-          )}
-
-          {/* Multi-Agent Swarm Real-Time Footer */}
+          {/* Multi-Agent Swarm Real-Time Status Strip */}
           <div style={{
-            marginTop: 24,
-            paddingTop: 16,
+            marginTop: 20,
+            paddingTop: 14,
             borderTop: "1px solid rgba(255, 255, 255, 0.08)",
             display: "flex",
             flexDirection: "column",
-            gap: 8,
+            gap: 7,
           }}>
             <div style={{
               display: "flex",
@@ -628,23 +448,19 @@ export default function LoginScreen() {
               color: "#94a3b8",
             }}>
               <span style={{ display: "flex", alignItems: "center", gap: 5, fontWeight: 700, color: "#e8a838" }}>
-                <Cpu size={13} /> Multi-Agent Swarm Status
+                <Cpu size={12} /> Multi-Agent Swarm
               </span>
-              <span style={{ color: "#10b981", fontWeight: 800 }}>ALL AGENTS ACTIVE</span>
+              <span style={{ color: "#10b981", fontWeight: 800, fontSize: 10 }}>ALL AGENTS ONLINE</span>
             </div>
 
-            <div style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 6,
-            }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
               {AGENT_BADGES.map((b) => (
                 <span
                   key={b.name}
                   style={{
                     fontSize: 10,
-                    padding: "3px 8px",
-                    borderRadius: 6,
+                    padding: "2px 7px",
+                    borderRadius: 5,
                     background: "rgba(255, 255, 255, 0.04)",
                     border: "1px solid rgba(255, 255, 255, 0.08)",
                     color: "#cbd5e1",
@@ -674,46 +490,16 @@ const sectionLabelStyle = {
   display: "block",
 };
 
-const selectStyle = {
-  width: "100%",
-  height: 40,
-  marginTop: 6,
-  borderRadius: 8,
-  border: "1px solid rgba(255, 255, 255, 0.12)",
-  background: "#0f172a",
-  color: "#ffffff",
-  padding: "0 10px",
-  fontSize: 13,
-  fontWeight: 600,
-  outline: "none",
-};
-
 const textInputStyle = {
   width: "100%",
   height: 44,
-  marginTop: 6,
   borderRadius: 8,
   border: "1px solid rgba(255, 255, 255, 0.12)",
-  background: "#0f172a",
+  background: "#0b1220",
   color: "#ffffff",
   padding: "0 14px",
   fontSize: 14,
   outline: "none",
   boxSizing: "border-box",
-};
-
-const keypadButtonStyle = {
-  height: 44,
-  borderRadius: 8,
-  border: "1px solid rgba(255, 255, 255, 0.08)",
-  background: "rgba(255, 255, 255, 0.04)",
-  color: "#ffffff",
-  fontSize: 18,
-  fontWeight: 700,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  transition: "all 0.1s ease",
-  userSelect: "none",
+  transition: "border-color 0.15s ease",
 };

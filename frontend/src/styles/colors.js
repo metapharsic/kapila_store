@@ -37,6 +37,36 @@ export const COLORS = {
   card:       "var(--color-bg-card)",
 };
 
+// --- Design tokens: radius / shadow / spacing scales ---
+// Use these across shared UI components (Card, Pill, AvatarRow, etc.)
+// instead of hardcoding pixel values, so the whole app stays on one scale.
+export const RADIUS = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  full: 9999,
+};
+
+export const SHADOW = {
+  sm: "0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.06)",
+  md: "0 4px 6px rgba(15,23,42,0.04), 0 2px 4px rgba(15,23,42,0.06)",
+  lg: "0 10px 24px rgba(15,23,42,0.08), 0 4px 8px rgba(15,23,42,0.05)",
+};
+
+// Single spacing scale (px) — pick values from here for gap/padding/margin.
+export const SPACING = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, xxxl: 32 };
+
+// Soft, low-saturation backgrounds for status pills/chips (paired with a
+// matching solid text color) so chips never need a hard border.
+export const PILL_VARIANTS = {
+  success: { bg: "#ECFDF5", fg: "#047857" },
+  warning: { bg: "#FEF3C7", fg: "#B45309" },
+  danger:  { bg: "#FEF2F2", fg: "#B91C1C" },
+  info:    { bg: "#EFF6FF", fg: "#1D4ED8" },
+  neutral: { bg: "#F1F5F9", fg: "#475569" },
+};
+
 export const DEPARTMENTS = [
   "TIFFINS", "STAFF", "SI-MEALS", "NORTH INDIAN", "CHAT & SOFTY", 
   "CHINESE & DOSA", "MOCKTAILS & CONTINENTAL", "RESTAURANT", "ROOM SERVICE"
@@ -111,8 +141,11 @@ export const globalCss = `
     --radius-sm:            8px;
     --radius-md:            12px;
     --radius-lg:            16px;
+    --radius-xl:            20px;
+    --radius-full:          9999px;
     --shadow-card:          0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
     --shadow-card-hover:    0 4px 6px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-card-lg:       0 10px 24px rgba(15,23,42,0.08), 0 4px 8px rgba(15,23,42,0.05);
     --shadow-sidebar:       1px 0 3px rgba(0,0,0,0.04);
   }
 

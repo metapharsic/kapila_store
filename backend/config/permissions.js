@@ -94,6 +94,7 @@ const PERMISSIONS = [
   ["audit.create", "audit", "create", "Create stock audits"],
   ["audit.enter_counts", "audit", "enter_counts", "Enter stock audit counts"],
   ["audit.finalise", "audit", "finalise", "Finalise stock audits"],
+  ["system.reset", "system", "reset", "Reset (truncate) selected system data groups"],
 ].map(([key, resource, action, label]) => ({ key, resource, action, label }));
 
 const all = PERMISSIONS.map((p) => p.key);
@@ -109,6 +110,7 @@ const ROLE_PERMISSION_KEYS = {
     "production.delete", "leftovers.delete", "issuances.delete", "indents.delete",
     "audit.finalise", "indents.approve",
     "purchase_orders.approve", "transfers.approve", "reorder_points.approve", "reconciliation.approve",
+    "system.reset",
   ].includes(key)),
   store_manager: [
     "dashboard.view",

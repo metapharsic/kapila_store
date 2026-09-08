@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { COLORS } from "../styles/colors";
 import {
   FileSpreadsheet, CheckCircle2, Loader2, Download, X,
-  ShieldCheck, Database, Cpu, Sparkles, Server, Laptop
 } from "lucide-react";
 import { reports } from "../api";
 
@@ -11,53 +10,11 @@ export default function ExportReportModal({ isOpen, onClose }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
-  const [agentStep, setAgentStep] = useState(0);
-
-  const agents = [
-    {
-      id: "architect",
-      name: "Agent 1: Architect",
-      icon: <ShieldCheck size={16} color="#0284C7" />,
-      desc: "7-Sheet enterprise workbook schema & RBAC permissions matrix",
-    },
-    {
-      id: "data",
-      name: "Agent 2: Data Agent",
-      icon: <Database size={16} color="#16A34A" />,
-      desc: "Live Knex aggregation across 5,600+ stock items, batches, and issuances",
-    },
-    {
-      id: "backend",
-      name: "Agent 3: Backend Core",
-      icon: <Cpu size={16} color="#9333EA" />,
-      desc: "ExcelJS workbook compiler with native SUM formulas & auto-fit columns",
-    },
-    {
-      id: "ai",
-      name: "Agent 5: AI Store Advisor",
-      icon: <Sparkles size={16} color="#D97706" />,
-      desc: "Executive store health score, capital allocation, and spoilage prevention",
-    },
-    {
-      id: "devops",
-      name: "Agent 6: DevOps & QA",
-      icon: <Server size={16} color="#EA580C" />,
-      desc: "Binary stream packaging, audit logging, and payload integrity verification",
-    },
-    {
-      id: "frontend",
-      name: "Agent 4: Frontend UI",
-      icon: <Laptop size={16} color="#2563EB" />,
-      desc: "Blob streaming, browser attachment dispatch, and user notification",
-    },
-  ];
 
   useEffect(() => {
     if (isOpen) {
       setSuccess(false);
       setError("");
-      setAgentStep(0);
-      // Fetch metadata preview
       reports.previewInventoryMetadata()
         .then((res) => {
           if (res.success) setPreview(res.data);
@@ -72,18 +29,8 @@ export default function ExportReportModal({ isOpen, onClose }) {
     setLoading(true);
     setError("");
     setSuccess(false);
-    setAgentStep(1);
-
     try {
-      // Step through agent milestones for visual clarity
-      setTimeout(() => setAgentStep(2), 300);
-      setTimeout(() => setAgentStep(3), 600);
-      setTimeout(() => setAgentStep(4), 900);
-      setTimeout(() => setAgentStep(5), 1200);
-
       await reports.downloadInventoryExcel();
-
-      setAgentStep(6);
       setSuccess(true);
     } catch (err) {
       setError(err.message || "Failed to generate Excel report");
@@ -148,10 +95,10 @@ export default function ExportReportModal({ isOpen, onClose }) {
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em" }}>
-                Enterprise Inventory Excel Report Unit
+                Inventory Excel Report
               </h2>
               <p style={{ margin: 0, fontSize: 12, color: "#94A3B8" }}>
-                Multi-Agent Pipeline • 7 Formatted Sheets • Live Store Data
+                7 Formatted Sheets • Live Store Data
               </p>
             </div>
           </div>
@@ -232,57 +179,6 @@ export default function ExportReportModal({ isOpen, onClose }) {
                   {s}
                 </span>
               ))}
-            </div>
-          </div>
-
-          {/* Multi-Agent Status Pipeline */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 10, textTransform: "uppercase" }}>
-              Multi-Agent Orchestration Status:
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {agents.map((ag, idx) => {
-                const isDone = agentStep > idx || success;
-                const isCurrent = agentStep === idx + 1 && loading;
-                return (
-                  <div
-                    key={ag.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      backgroundColor: isCurrent ? "#FEF3C7" : isDone ? "#F0FDF4" : "#F8FAFC",
-                      border: `1px solid ${isCurrent ? "#F59E0B" : isDone ? "#BBF7D0" : "#E2E8F0"}`,
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      {ag.icon}
-                      <div>
-                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1E293B" }}>
-                          {ag.name}
-                        </div>
-                        <div style={{ fontSize: 11, color: "#64748B" }}>{ag.desc}</div>
-                      </div>
-                    </div>
-                    <div>
-                      {isDone ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: "#16A34A" }}>
-                          <CheckCircle2 size={14} /> Ready
-                        </span>
-                      ) : isCurrent ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: "#D97706" }}>
-                          <Loader2 size={14} className="animate-spin" /> Processing
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: 11, color: "#94A3B8" }}>Queued</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
 

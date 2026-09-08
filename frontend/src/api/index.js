@@ -29,6 +29,8 @@ export const indents = {
   updateItems:     (id, items) => api.patch(`/indents/${id}/items`, { items }),
   remove:          (id) => api.delete(`/indents/${id}`),
   closeDay:        (body) => api.post("/indents/day-close", body),
+  templates:       (params) => api.get("/indents/templates", params),
+  templateDetails: (name) => api.get(`/indents/templates/${encodeURIComponent(name)}`),
 };
 
 export const issuances = {
@@ -170,6 +172,13 @@ export const approvedDelivery = {
   commit: (body)     => api.post("/approved-delivery/commit", body),
 };
 
+export const stockImport = {
+  // multipart upload: file (.xlsx/.xls/.pdf) — preview only, no DB writes
+  preview: (formData) => api.postUpload("/stock-import/preview", formData),
+  // JSON commit after user review: { rows, mode }
+  commit:  (rows, mode) => api.post("/stock-import/commit", { rows, mode }),
+};
+
 export const auth = {
   login: (body) => api.post("/auth/login", body),
   heartbeat: (sessionId) => api.post("/auth/heartbeat", { sessionId }),
@@ -237,3 +246,8 @@ export const reports = {
   previewInventoryMetadata: (params) => api.get("/reports/inventory-preview", params),
 };
 
+
+export const systemReset = {
+  listGroups: () => api.get("/system-reset/groups"),
+  reset: (groups, confirmText) => api.post("/system-reset", { groups, confirmText }),
+};

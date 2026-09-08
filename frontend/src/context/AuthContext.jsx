@@ -27,6 +27,7 @@ export function AuthProvider({ children }) {
     sessionStorage.removeItem("kapila_active_session");
     sessionStorage.removeItem("kapila_session_id");
     if (terminationReason) {
+      localStorage.removeItem("kapila_remember_me");
       setSessionTerminatedNotice(terminationReason);
     }
   }, []);
@@ -48,7 +49,9 @@ export function AuthProvider({ children }) {
       // Default to false if performance API is unavailable
     }
 
-    if (isReloadOrHistory && sessionStorage.getItem("kapila_active_session") === "true") {
+    const hasActiveSession = sessionStorage.getItem("kapila_active_session") === "true" || localStorage.getItem("kapila_remember_me") === "true";
+
+    if (hasActiveSession || isReloadOrHistory) {
       api.auth.refresh()
         .then((res) => applySession(res.data))
         .catch(() => {
@@ -83,7 +86,7 @@ export function AuthProvider({ children }) {
     return () => clearInterval(interval);
   }, [user, clearSession]);
 
-  const login = async (credentials) => {
+  const login = async (credentials, rememberMe = true) => {
     setSessionTerminatedNotice("");
     let body = {};
     if (typeof credentials === "string") {
@@ -96,6 +99,11 @@ export function AuthProvider({ children }) {
     const res = await api.auth.login(body);
     applySession(res.data);
     sessionStorage.setItem("kapila_active_session", "true");
+    if (rememberMe) {
+      localStorage.setItem("kapila_remember_me", "true");
+    } else {
+      localStorage.removeItem("kapila_remember_me");
+    }
     return res.data.user;
   };
 
@@ -103,6 +111,7 @@ export function AuthProvider({ children }) {
     try {
       await api.auth.logout({ sessionId: user?.sessionId });
     } finally {
+      localStorage.removeItem("kapila_remember_me");
       clearSession();
     }
   };
