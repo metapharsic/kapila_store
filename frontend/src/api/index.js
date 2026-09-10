@@ -355,4 +355,13 @@ export const nightAudit = {
   exportExcel: () => api.download("/night-audit/export-excel", {}, `Kapila_Food_Cost_Night_Audit_Report_${new Date().toISOString().slice(0, 10)}.xlsx`),
 };
 
+export const systemConfig = {
+  getConfig:    ()           => api.get("/system/config"),
+  checkUpdates: ()           => api.post("/system/check-updates"),
+  pullUpdates:  ()           => api.post("/system/pull-updates"),
+  applyPatches: (patch_ids)  => api.post("/system/apply-patches", { patch_ids }),
+  pushUpdates:  (commit_message) => api.post("/system/push-updates", { commit_message }),
+};
+
+
 

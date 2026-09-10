@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Package, Factory, Building2, Receipt, Inbox, Bell, 
   Scale, ArrowLeftRight, CalendarRange, ClipboardList, Send, ChefHat, 
   ArchiveRestore, Trash2, Search, Users, ShieldCheck, LogOut, BarChart3,
-  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield
+  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield, GitPullRequest
 } from "lucide-react";
 
 import Dashboard      from "./screens/Dashboard";
@@ -35,6 +35,7 @@ import MaintenanceScreen from "./screens/Maintenance";
 import GateAndUtilitiesScreen from "./screens/GateAndUtilities";
 import FoodSafetyAndWasteScreen from "./screens/FoodSafetyAndWaste";
 import StaffAndNightAuditScreen from "./screens/StaffAndNightAudit";
+import SystemConfigScreen from "./screens/SystemConfig";
 
 
 import StoreManagerHome from "./screens/StoreManagerHome";
@@ -90,10 +91,11 @@ const NAV_CATEGORIES = [
   {
     title: "Administration",
     items: [
-      { id: "suppliers",    label: "Suppliers Master", permission: "suppliers.view", icon: <Factory size={16} /> },
-      { id: "departments",  label: "Departments",     permission: "departments.view", icon: <Building2 size={16} /> },
-      { id: "users",        label: "User Management", permission: "users.view", icon: <Users size={16} /> },
-      { id: "audit_logs",   label: "Audit Logs",      permission: "audit_logs.view", icon: <ShieldCheck size={16} /> },
+      { id: "suppliers",     label: "Suppliers Master", permission: "suppliers.view", icon: <Factory size={16} /> },
+      { id: "departments",   label: "Departments",     permission: "departments.view", icon: <Building2 size={16} /> },
+      { id: "users",         label: "User Management", permission: "users.view", icon: <Users size={16} /> },
+      { id: "audit_logs",    label: "Audit Logs",      permission: "audit_logs.view", icon: <ShieldCheck size={16} /> },
+      { id: "system_config", label: "System Config & Sync", permission: "users.view", icon: <GitPullRequest size={16} /> },
     ]
   }
 ];
@@ -242,6 +244,7 @@ function Inner() {
     maintenance: <ProtectedScreen permission="maintenance.view"><MaintenanceScreen /></ProtectedScreen>,
     gate_utilities: <ProtectedScreen permission={["security.view", "utility.view"]}><GateAndUtilitiesScreen /></ProtectedScreen>,
     staff_audit: <ProtectedScreen permission={["staff.view", "night_audit.view"]}><StaffAndNightAuditScreen /></ProtectedScreen>,
+    system_config: <ProtectedScreen permission="users.view"><SystemConfigScreen /></ProtectedScreen>,
   };
 
   const handleNavigation = (id) => {
