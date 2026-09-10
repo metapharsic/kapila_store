@@ -82,4 +82,41 @@ describe("System Configuration & GitHub Patch Management", () => {
       .first();
     expect(audit).toBeDefined();
   });
+
+  it("stores and queries enriched patch metadata with commit numbers, file lists, and functionality", async () => {
+    const testHash = "b7c8d9e";
+    await db("system_patches").where("commit_hash", testHash).del();
+
+    const filesList = [
+      { path: "frontend/src/screens/SystemConfig/index.jsx", status: "MODIFIED", area: "System Configuration & Auto-Sync" },
+      { path: "backend/controllers/systemConfigController.js", status: "MODIFIED", area: "System Config Controller" }
+    ];
+    const funcs = ["System Configuration & GitHub Auto-Sync Engine", "Interactive Responsive UI/UX & Modal Feedback Flow"];
+
+    const [inserted] = await db("system_patches").insert({
+      commit_hash: testHash,
+      full_hash: "b7c8d9e1234567890abcdef1234567890abcdef1",
+      commit_number: 7,
+      commit_timestamp: "2026-09-11 05:25:00 +0530",
+      commit_message: "feat: enriched push/pull with progress and files",
+      author: "Test Engineer",
+      commit_date: "2026-09-11",
+      files_changed_count: 2,
+      files_list: JSON.stringify(filesList),
+      functionalities: JSON.stringify(funcs),
+      status: "PENDING",
+      pulled_at: db.fn.now(),
+    }).returning("id");
+
+    const patchId = typeof inserted === "object" ? inserted.id : inserted;
+    const patch = await db("system_patches").where("id", patchId).first();
+
+    expect(patch.commit_number).toBe(7);
+    expect(patch.full_hash).toContain("b7c8d9e");
+    expect(patch.commit_timestamp).toBeDefined();
+    expect(patch.files_changed_count).toBe(2);
+
+    // Clean up
+    await db("system_patches").where("id", patchId).del();
+  });
 });

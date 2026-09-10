@@ -360,7 +360,8 @@ export const systemConfig = {
   checkUpdates: ()           => api.post("/system/check-updates"),
   pullUpdates:  ()           => api.post("/system/pull-updates"),
   applyPatches: (patch_ids)  => api.post("/system/apply-patches", { patch_ids }),
-  pushUpdates:  (commit_message) => api.post("/system/push-updates", { commit_message }),
+  pushUpdates:  (commit_message, functional_category) => 
+    api.post("/system/push-updates", typeof commit_message === "object" ? commit_message : { commit_message, functional_category }),
 };
 
 
