@@ -7,9 +7,10 @@ import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS, UNITS } from "../../styles/colors";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
-import * as api from "../../api";
-import { Plus, ArrowLeft, FileText, Truck, CheckCircle, XCircle, Clock, ChevronRight, Mic, FileImage, Loader, Camera, Scale } from "lucide-react";
+import { Plus, ArrowLeft, FileText, Truck, CheckCircle, XCircle, Clock, ChevronRight, Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle } from "lucide-react";
 import RateComparisonModal from "./RateComparisonModal";
+import PrintPOModal from "./PrintPOModal";
+import P2PAgentStatusBar from "../../components/agents/P2PAgentStatusBar";
 import { PO_STATUS_CONFIG, PO_STATUSES } from "../../utils/poStatus";
 
 const LIMIT = 20;
@@ -37,7 +38,7 @@ const emptyItem = { item_code: "", name: "", qty: "", unit: UNITS[0], unit_price
 const fmt = (n) => parseFloat(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 });
 
 export default function PurchaseOrdersScreen() {
-  const { stocks, setCurrentScreen } = useAppContext();
+  const { stocks, setCurrentScreen, poPreFill, setPoPreFill, setGrnPreFill } = useAppContext();
   const [view, setView]         = useState("list"); // "list" | "create" | "detail"
   const [detail, setDetail]     = useState(null);
   const [supplierList, setSupplierList] = useState([]);
@@ -55,6 +56,7 @@ export default function PurchaseOrdersScreen() {
   const [scanningBill, setScanningBill] = useState(false);
   const [showVoicePanel, setShowVoicePanel] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const { listening, interimText, startRecording, stopRecording } = useLocalSpeech();
 
@@ -70,6 +72,34 @@ export default function PurchaseOrdersScreen() {
       .then((r) => setSupplierList(r.data || []))
       .catch(() => {});
   }, []);
+
+  // Cross-module pipeline: Auto-populate PO from Reorder Points or Suppliers screen
+  useEffect(() => {
+    if (poPreFill) {
+      setView("create");
+      if (poPreFill.supplier_id) {
+        setForm((f) => ({
+          ...f,
+          supplier_id: poPreFill.supplier_id.toString(),
+          notes: poPreFill.notes || f.notes || "Drafted from Reorder Sentinel"
+        }));
+      }
+      if (poPreFill.items && poPreFill.items.length > 0) {
+        setLineItems(
+          poPreFill.items.map((it) => ({
+            item_code: it.item_code || "",
+            name: it.name || "",
+            qty: it.qty?.toString() || "1",
+            unit: it.unit || UNITS[0],
+            unit_price: it.unit_price?.toString() || it.price?.toString() || ""
+          }))
+        );
+      }
+      setMsg({ text: "Auto-drafted PO from cross-module pipeline ✓", color: COLORS.accent });
+      setTimeout(() => setMsg(""), 3500);
+      if (setPoPreFill) setPoPreFill(null);
+    }
+  }, [poPreFill, setPoPreFill]);
 
   const flash = (text, color = COLORS.success) => {
     setMsg({ text, color });
@@ -360,11 +390,33 @@ export default function PurchaseOrdersScreen() {
     );
   };
 
+  const shareDetailViaWhatsApp = (po) => {
+    const lines = (po.items || []).map(
+      (it, idx) => `${idx + 1}. *${it.name}* (${it.qty} ${it.unit}) @ ₹${parseFloat(it.unit_price || 0).toFixed(2)} = ₹${parseFloat(it.total_price || 0).toFixed(2)}`
+    ).join("\n");
+    const text = `*HOTEL KAPILA — PURCHASE ORDER*\n*PO:* ${po.po_number}\n*Supplier:* ${po.supplier_name}\n*Date:* ${new Date(po.date).toLocaleDateString("en-IN")}\n----------------------------\n${lines}\n----------------------------\n*Grand Total: ₹${fmt(po.total_amount)}*\n${po.notes ? `*Notes:* ${po.notes}\n` : ""}\nAuthorized by Hotel Kapila Procurement`;
+    const phone = po.supplier_phone ? po.supplier_phone.replace(/[^0-9]/g, "") : "";
+    const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  };
+
+  const copyDetailToClipboard = (po) => {
+    const lines = (po.items || []).map(
+      (it, idx) => `${idx + 1}. *${it.name}* (${it.qty} ${it.unit}) @ ₹${parseFloat(it.unit_price || 0).toFixed(2)} = ₹${parseFloat(it.total_price || 0).toFixed(2)}`
+    ).join("\n");
+    const text = `*HOTEL KAPILA — PURCHASE ORDER*\n*PO:* ${po.po_number}\n*Supplier:* ${po.supplier_name}\n*Date:* ${new Date(po.date).toLocaleDateString("en-IN")}\n----------------------------\n${lines}\n----------------------------\n*Grand Total: ₹${fmt(po.total_amount)}*\n${po.notes ? `*Notes:* ${po.notes}\n` : ""}\nAuthorized by Hotel Kapila Procurement`;
+    navigator.clipboard.writeText(text);
+    flash("Purchase Order copied to clipboard ✓");
+  };
+
   // ── DETAIL VIEW ────────────────────────────────────────
   if (view === "detail" && detail) {
     const sc = STATUS_CONFIG[detail.status] || STATUS_CONFIG.Draft;
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        {/* Swarm Telemetry */}
+        <P2PAgentStatusBar activeModule="po" />
+
         {/* Detail Header */}
         <div style={{
           display: "flex", alignItems: "center", gap: 12,
@@ -385,7 +437,7 @@ export default function PurchaseOrdersScreen() {
             <h1 style={{ fontSize: 20, fontWeight: 700, color: COLORS.text }}>{detail.po_number}</h1>
             <p style={{ fontSize: 12, color: COLORS.muted }}>{detail.supplier_name} · {new Date(detail.date).toLocaleDateString()}</p>
           </div>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <StatusBadge status={detail.status} />
             {detail.status === "Draft" && (
               <Btn small onClick={() => changeStatus(detail.id, "Pending")}>Submit for Approval</Btn>
@@ -393,10 +445,27 @@ export default function PurchaseOrdersScreen() {
             {detail.status === "Approved" && (
               <Btn small onClick={() => changeStatus(detail.id, "Sent")}>Mark Sent</Btn>
             )}
-            {detail.status === "Sent" && (
-              <Btn small onClick={() => (setCurrentScreen ? setCurrentScreen("grn") : null)}>Receive via GRN</Btn>
+            {["Approved", "Sent"].includes(detail.status) && (
+              <Btn
+                small
+                onClick={() => {
+                  if (setGrnPreFill) setGrnPreFill(detail);
+                  if (setCurrentScreen) setCurrentScreen("grn");
+                }}
+                style={{ background: COLORS.accent, color: "#18181b", fontWeight: 700 }}
+              >
+                Receive via GRN
+              </Btn>
             )}
-            <Btn small variant="ghost" onClick={() => window.print()}>Print / Export</Btn>
+            <Btn small variant="ghost" onClick={() => shareDetailViaWhatsApp(detail)} icon={<Share2 size={13} />}>
+              WhatsApp
+            </Btn>
+            <Btn small variant="ghost" onClick={() => copyDetailToClipboard(detail)} icon={<Copy size={13} />}>
+              Copy PO
+            </Btn>
+            <Btn small variant="ghost" onClick={() => setPrintModalOpen(true)} icon={<Printer size={13} />}>
+              Print / PDF
+            </Btn>
             {["Draft", "Sent"].includes(detail.status) && (
               <Btn small variant="danger" onClick={() => deletePO(detail.id)}>Delete PO</Btn>
             )}
@@ -459,6 +528,9 @@ export default function PurchaseOrdersScreen() {
             </table>
           </div>
         </Card>
+
+        {/* Print PO Modal */}
+        <PrintPOModal open={printModalOpen} onClose={() => setPrintModalOpen(false)} po={detail} />
       </div>
     );
   }
@@ -478,6 +550,9 @@ export default function PurchaseOrdersScreen() {
           <p style={{ fontSize: 13, color: COLORS.muted, marginTop: 2 }}>Track POs from draft to delivery</p>
         </div>
       </div>
+
+      {/* Swarm Telemetry */}
+      <P2PAgentStatusBar activeModule="po" />
 
       <style>{`
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -757,6 +832,26 @@ export default function PurchaseOrdersScreen() {
             </p>
           </div>
         </div>
+
+        {grandTotal > 10000 && (
+          <div
+            style={{
+              background: "rgba(232, 168, 56, 0.12)",
+              border: `1px solid ${COLORS.accent}66`,
+              borderRadius: 8,
+              padding: "10px 14px",
+              marginBottom: 16,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <AlertTriangle size={18} color={COLORS.accent} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: COLORS.accent, fontWeight: 600 }}>
+              Threshold Notice: Orders exceeding ₹10,000 (currently ₹{fmt(grandTotal)}) require managerial authorization and will be automatically routed to the Approvals Queue upon submission.
+            </span>
+          </div>
+        )}
 
         <div style={{ display: "flex", gap: 10, paddingTop: 16, borderTop: `1px solid ${COLORS.border}`, flexWrap: "wrap" }}>
           <Btn onClick={submit} loading={submitting} style={{ flex: 1 }}>Create Purchase Order</Btn>

@@ -119,12 +119,14 @@ export const grn = {
 };
 
 export const transfers = {
-  list:   (params) => api.get("/transfers", params),
-  getOne: (id)     => api.get(`/transfers/${id}`),
-  create: (body)   => api.post("/transfers", body),
-  accept: (id, body) => api.patch(`/transfers/${id}/accept`, body),
-  reject: (id, body) => api.patch(`/transfers/${id}/reject`, body),
-  remove: (id)     => api.delete(`/transfers/${id}`),
+  list:           (params)   => api.get("/transfers", params),
+  getOne:         (id)       => api.get(`/transfers/${id}`),
+  create:         (body)     => api.post("/transfers", body),
+  accept:         (id, body) => api.patch(`/transfers/${id}/accept`, body),
+  reject:         (id, body) => api.patch(`/transfers/${id}/reject`, body),
+  remove:         (id)       => api.delete(`/transfers/${id}`),
+  availableStock: (params)   => api.get("/transfers/available-stock", params),
+  summary:        ()         => api.get("/transfers/summary"),
 };
 
 export const reorderPoints = {

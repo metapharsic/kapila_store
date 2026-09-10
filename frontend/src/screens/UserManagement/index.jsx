@@ -5,10 +5,12 @@ import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
 import StoreLiveMonitorCard from "../../components/StoreLiveMonitorCard";
+import MasterDataAgentStatusBar from "../../components/agents/MasterDataAgentStatusBar";
 import Pill from "../../components/ui/Pill";
 import AvatarRow from "../../components/ui/AvatarRow";
 import { COLORS, RADIUS, SPACING } from "../../styles/colors";
 import { useAuth } from "../../context/AuthContext";
+import { Users, ShieldCheck, UserCheck, Building2, Search, Filter } from "lucide-react";
 
 const emptyForm = {
   name: "",
@@ -39,6 +41,11 @@ export default function UserManagementScreen() {
   const [matrixEdits, setMatrixEdits] = useState({});
   const [savingMatrix, setSavingMatrix] = useState(false);
 
+  // Search & Filter state
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   // System Reset (Danger Zone)
   const [resetGroups, setResetGroups] = useState([]);
   const [resetLoading, setResetLoading] = useState(false);
@@ -50,6 +57,40 @@ export default function UserManagementScreen() {
   const [resetSuccess, setResetSuccess] = useState(null);
 
   const selectedRoleNames = useMemo(() => new Set(form.role_ids.map(Number)), [form.role_ids]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const q = search.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.employee_code && u.employee_code.toLowerCase().includes(q));
+
+      const matchesRole =
+        roleFilter === "all" ||
+        (u.roles || []).some((r) => String(r.id) === String(roleFilter));
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" ? u.is_active : !u.is_active);
+
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [users, search, roleFilter, statusFilter]);
+
+  const activeUsersCount = useMemo(() => {
+    return users.filter((u) => u.is_active).length;
+  }, [users]);
+
+  const getRoleBadgeStyle = (roleName = "") => {
+    const lower = roleName.toLowerCase();
+    if (lower.includes("admin")) return { bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.4)", text: "#ef4444" };
+    if (lower.includes("manager")) return { bg: "rgba(232, 168, 56, 0.15)", border: "rgba(232, 168, 56, 0.4)", text: COLORS.accent };
+    if (lower.includes("chef")) return { bg: "rgba(59, 130, 246, 0.15)", border: "rgba(59, 130, 246, 0.4)", text: "#3b82f6" };
+    if (lower.includes("keeper") || lower.includes("store")) return { bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.4)", text: COLORS.success };
+    return { bg: "rgba(139, 92, 246, 0.15)", border: "rgba(139, 92, 246, 0.4)", text: "#a78bfa" };
+  };
 
   const load = async () => {
     const [usersRes, rolesRes, deptRes, permsRes] = await Promise.all([
@@ -238,6 +279,71 @@ export default function UserManagementScreen() {
 
   return (
     <Section title="User Management" sub="Create users, assign roles and departments, and manage account status">
+      {/* Multi-Agent Governance Bar */}
+      <MasterDataAgentStatusBar entityType="users" />
+
+      {/* RBAC & Identity Health KPIs */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: SPACING.md,
+          marginBottom: SPACING.xl,
+        }}
+      >
+        <Card style={{ padding: "14px 18px", border: `1px solid ${COLORS.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+              Total Accounts
+            </span>
+            <Users size={16} color={COLORS.accent} />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: COLORS.text, marginTop: 4 }}>
+            {users.length}
+          </div>
+          <span style={{ fontSize: 11, color: COLORS.muted }}>Registered operational staff</span>
+        </Card>
+
+        <Card style={{ padding: "14px 18px", border: `1px solid ${COLORS.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+              Active Operators
+            </span>
+            <UserCheck size={16} color={COLORS.success} />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: COLORS.success, marginTop: 4 }}>
+            {activeUsersCount} / {users.length}
+          </div>
+          <span style={{ fontSize: 11, color: COLORS.muted }}>Active login & shift access</span>
+        </Card>
+
+        <Card style={{ padding: "14px 18px", border: `1px solid ${COLORS.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+              Security Roles
+            </span>
+            <ShieldCheck size={16} color="#3b82f6" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#3b82f6", marginTop: 4 }}>
+            {roles.length}
+          </div>
+          <span style={{ fontSize: 11, color: COLORS.muted }}>RBAC privilege tiers configured</span>
+        </Card>
+
+        <Card style={{ padding: "14px 18px", border: `1px solid ${COLORS.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+              Scoped Departments
+            </span>
+            <Building2 size={16} color="#8b5cf6" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#8b5cf6", marginTop: 4 }}>
+            {departments.length}
+          </div>
+          <span style={{ fontSize: 11, color: COLORS.muted }}>Data isolation units</span>
+        </Card>
+      </div>
+
       {error && (
         <div style={{ color: COLORS.danger, marginBottom: SPACING.md, fontSize: 13 }}>{error}</div>
       )}
@@ -321,41 +427,178 @@ export default function UserManagementScreen() {
           </Card>
 
           <Card style={{ padding: 0, overflow: "hidden" }}>
+            {/* Search and Filters Toolbar */}
+            <div
+              style={{
+                padding: "14px 20px",
+                borderBottom: `1px solid ${COLORS.border}`,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 12,
+                background: COLORS.surface,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 12, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
+                  User Directory
+                </span>
+                <span style={{ color: COLORS.accent, fontSize: 11, background: `${COLORS.accent}15`, padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
+                  {filteredUsers.length} of {users.length}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                {/* Search Bar */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: COLORS.bg,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: RADIUS.sm,
+                    padding: "4px 8px",
+                    width: 170,
+                  }}
+                >
+                  <Search size={13} color={COLORS.muted} />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search users…"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: COLORS.text,
+                      fontSize: 12,
+                      width: "100%",
+                    }}
+                  />
+                </div>
+
+                {/* Role filter dropdown */}
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  style={{
+                    background: COLORS.bg,
+                    border: `1px solid ${COLORS.border}`,
+                    color: COLORS.text,
+                    fontSize: 12,
+                    padding: "4px 8px",
+                    borderRadius: RADIUS.sm,
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="all">All Roles</option>
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Status filter dropdown */}
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  style={{
+                    background: COLORS.bg,
+                    border: `1px solid ${COLORS.border}`,
+                    color: COLORS.text,
+                    fontSize: 12,
+                    padding: "4px 8px",
+                    borderRadius: RADIUS.sm,
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active Only</option>
+                  <option value="inactive">Inactive Only</option>
+                </select>
+              </div>
+            </div>
+
             <div className="resp-table-wrap">
               <table style={{ width: "100%", borderCollapse: "collapse", color: COLORS.text, fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: COLORS.surface }}>
+                  <tr style={{ background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
                     {["User", "Role", "Department", "Status", "Last Login", "Actions"].map((h) => (
                       <th key={h} style={th}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} style={{ borderTop: `1px solid ${COLORS.border}` }}>
-                      <td style={td}>
-                        <AvatarRow name={user.name} label={user.email} />
-                      </td>
-                      <td style={td}>{(user.roles || []).map((r) => r.name).join(", ") || "-"}</td>
-                      <td style={td}>{(user.departments || []).map((d) => d.name).join(", ") || "All / unassigned"}</td>
-                      <td style={td}>
-                        <Pill variant={user.is_active ? "success" : "neutral"}>
-                          {user.is_active ? "Active" : "Inactive"}
-                        </Pill>
-                      </td>
-                      <td style={td}>{user.last_login_at ? new Date(user.last_login_at).toLocaleString('en-IN') : "-"}</td>
-                      <td style={td}>
-                        <div style={{ display: "flex", gap: SPACING.xs, flexWrap: "wrap" }}>
-                          <Btn small variant="ghost" onClick={() => startEdit(user)}>Edit</Btn>
-                          <Btn small variant="ghost" onClick={() => viewActivity(user)}>Activity Log</Btn>
-                          <Btn small variant="ghost" onClick={() => resetPassword(user)}>Reset Password</Btn>
-                          <Btn small variant={user.is_active ? "danger" : "success"} onClick={() => toggleActive(user)}>
-                            {user.is_active ? "Deactivate" : "Activate"}
-                          </Btn>
-                        </div>
+                  {filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", padding: 32, color: COLORS.muted }}>
+                        No users match the search and filter criteria.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <tr
+                        key={user.id}
+                        style={{ borderTop: `1px solid ${COLORS.border}22` }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.surface; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <td style={td}>
+                          <AvatarRow name={user.name} label={user.email} />
+                        </td>
+                        <td style={td}>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            {(user.roles || []).length > 0 ? (
+                              user.roles.map((r) => {
+                                const badge = getRoleBadgeStyle(r.name);
+                                return (
+                                  <span
+                                    key={r.id}
+                                    style={{
+                                      background: badge.bg,
+                                      border: `1px solid ${badge.border}`,
+                                      color: badge.text,
+                                      padding: "2px 7px",
+                                      borderRadius: 4,
+                                      fontSize: 11,
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {r.name}
+                                  </span>
+                                );
+                              })
+                            ) : (
+                              <span style={{ color: COLORS.muted, fontStyle: "italic", fontSize: 11 }}>—</span>
+                            )}
+                          </div>
+                        </td>
+                        <td style={td}>{(user.departments || []).map((d) => d.name).join(", ") || "All / unassigned"}</td>
+                        <td style={td}>
+                          <Pill variant={user.is_active ? "success" : "neutral"}>
+                            {user.is_active ? "Active" : "Inactive"}
+                          </Pill>
+                        </td>
+                        <td style={td}>{user.last_login_at ? new Date(user.last_login_at).toLocaleString('en-IN') : "-"}</td>
+                        <td style={td}>
+                          <div style={{ display: "flex", gap: SPACING.xs, flexWrap: "wrap" }}>
+                            <Btn small variant="ghost" onClick={() => startEdit(user)}>Edit</Btn>
+                            <Btn small variant="ghost" onClick={() => viewActivity(user)}>Activity Log</Btn>
+                            <Btn small variant="ghost" onClick={() => resetPassword(user)}>Reset Password</Btn>
+                            <Btn small variant={user.is_active ? "danger" : "success"} onClick={() => toggleActive(user)}>
+                              {user.is_active ? "Deactivate" : "Activate"}
+                            </Btn>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

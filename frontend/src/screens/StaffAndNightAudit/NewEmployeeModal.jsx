@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { COLORS } from "../../styles/colors";
 import { staff } from "../../api";
-import { UserPlus, AlertTriangle, X, Check, Briefcase, Phone, Mail, IndianRupee } from "lucide-react";
+import { UserPlus, AlertTriangle, X, Check } from "lucide-react";
 
 const DEPARTMENTS = [
   "TIFFINS",
@@ -25,7 +25,7 @@ export default function NewEmployeeModal({ isOpen, onClose, onSuccess }) {
   const [department, setDepartment] = useState("TIFFINS");
   const [designation, setDesignation] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [email] = useState("");
   const [aadhaarLast4, setAadhaarLast4] = useState("");
   const [joiningDate, setJoiningDate] = useState(todayStr);
   const [salaryType, setSalaryType] = useState("MONTHLY");

@@ -11,19 +11,23 @@ import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
 import * as api from "../../api";
 import SupplierDocUpload from "./SupplierDocUpload";
+import PrintGRNModal from "./PrintGRNModal";
+import P2PAgentStatusBar from "../../components/agents/P2PAgentStatusBar";
+import { Printer, CheckCheck, AlertTriangle } from "lucide-react";
 
 const LIMIT = 20;
 import { today } from "../../utils/dates";
 const emptyItem = { item_code: "", name: "", qty_ordered: "", qty_received: "", qty_accepted: "", qty_rejected: "0", unit: UNITS[0], unit_price: "", landed_cost: "", batch_no: "", expiry_date: "", discrepancy_reason: "" };
 
 export default function GoodsReceiptScreen() {
-  const { stocks, refreshStockNames } = useAppContext();
+  const { stocks, refreshStockNames, grnPreFill, setGrnPreFill } = useAppContext();
   const [view, setView]         = useState("list"); // "list" | "create" | "detail"
   const [detail, setDetail]     = useState(null);
   const [supplierList, setSupplierList] = useState([]);
   const [poList, setPoList]     = useState([]);
   const [msg, setMsg]           = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
 
   // Form
   const [form, setForm]         = useState({ po_id: "", supplier_id: "", date: today(), invoice_no: "", received_by: "", remarks: "" });
@@ -68,6 +72,57 @@ export default function GoodsReceiptScreen() {
       setLineItems(poItems.length > 0 ? poItems : [{ ...emptyItem }]);
     }).catch(() => {});
   }, [form.po_id]);
+
+  // Cross-module pipeline: Auto-populate GRN when routed from Purchase Orders
+  useEffect(() => {
+    if (grnPreFill) {
+      setView("create");
+      setForm((prev) => ({
+        ...prev,
+        supplier_id: grnPreFill.supplier_id ? grnPreFill.supplier_id.toString() : prev.supplier_id,
+        po_id: grnPreFill.id ? grnPreFill.id.toString() : prev.po_id,
+        remarks: grnPreFill.notes ? `Ref PO #${grnPreFill.po_number}: ${grnPreFill.notes}` : (prev.remarks || `Inward receipt for ${grnPreFill.po_number}`)
+      }));
+      if (grnPreFill.items && grnPreFill.items.length > 0) {
+        const todayCode = new Date().toISOString().slice(2, 10).replace(/-/g, "");
+        const prefilled = grnPreFill.items.map((it, idx) => ({
+          item_code: it.item_code || "",
+          name: it.name || "",
+          qty_ordered: String(it.qty || ""),
+          qty_received: String(it.qty || ""),
+          qty_accepted: String(it.qty || ""),
+          qty_rejected: "0",
+          unit: it.unit || UNITS[0],
+          unit_price: String(it.unit_price || ""),
+          landed_cost: String((parseFloat(it.qty || 0) * parseFloat(it.unit_price || 0)).toFixed(2)),
+          batch_no: `BAT-${todayCode}-${String(idx + 1).padStart(2, "0")}`,
+          expiry_date: "",
+          discrepancy_reason: ""
+        }));
+        setLineItems(prefilled);
+      }
+      flash(`Receiving goods against PO ${grnPreFill.po_number} ✓`, COLORS.success);
+      if (setGrnPreFill) setGrnPreFill(null);
+    }
+  }, [grnPreFill, setGrnPreFill]);
+
+  const matchAllOrdered = () => {
+    setLineItems((prev) =>
+      prev.map((it) => {
+        const ord = it.qty_ordered || it.qty_received || "0";
+        const price = parseFloat(it.unit_price) || 0;
+        return {
+          ...it,
+          qty_received: ord,
+          qty_accepted: ord,
+          qty_rejected: "0",
+          landed_cost: (parseFloat(ord) * price).toFixed(2),
+          discrepancy_reason: "",
+        };
+      })
+    );
+    flash("Matched all received quantities to ordered quantities ✓");
+  };
 
   const flash = (text, color = COLORS.success) => {
     setMsg({ text, color });
@@ -184,6 +239,9 @@ export default function GoodsReceiptScreen() {
     const totalRejected = (detail.items || []).reduce((s, it) => s + (it.qty_rejected || 0), 0);
     return (
       <Section title={`GRN — ${detail.grn_number}`} sub={`${detail.supplier_name} · ${detail.date}`}>
+        {/* Swarm Telemetry */}
+        <P2PAgentStatusBar activeModule="grn" />
+
         <div style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
           {detail.po_number && (
             <span style={{ background: COLORS.accent + "22", color: COLORS.accent, padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
@@ -197,6 +255,9 @@ export default function GoodsReceiptScreen() {
           )}
           <span style={{ color: COLORS.muted, fontSize: 13 }}>₹{parseFloat(detail.total_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
           <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            <Btn small variant="ghost" onClick={() => setPrintModalOpen(true)} icon={<Printer size={13} />}>
+              Print Receipt Note
+            </Btn>
             <Btn small variant="danger" onClick={() => deleteGRN(detail.id)}>Delete GRN</Btn>
             <Btn small variant="ghost" onClick={() => setView("list")}>← Back</Btn>
           </div>
@@ -258,6 +319,9 @@ export default function GoodsReceiptScreen() {
             </tfoot>
           </table>
         </Card>
+
+        {/* Print GRN Modal */}
+        <PrintGRNModal open={printModalOpen} onClose={() => setPrintModalOpen(false)} grn={detail} />
       </Section>
     );
   }
@@ -268,6 +332,9 @@ export default function GoodsReceiptScreen() {
   if (view === "create") {
     return (
       <Section title="New Goods Receipt Note" sub="Record goods received — auto-updates stock on save">
+        {/* Swarm Telemetry */}
+        <P2PAgentStatusBar activeModule="grn" />
+
         <Card style={{ maxWidth: 960 }}>
           {msg && <p style={{ color: msg.color, fontSize: 12, marginBottom: 12 }}>{msg.text}</p>}
 
@@ -300,10 +367,23 @@ export default function GoodsReceiptScreen() {
           </div>
 
           {/* Line Items */}
-          <p style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
-            Items Received
-            {form.po_id && <span style={{ color: COLORS.accent, marginLeft: 8 }}>← pre-filled from PO</span>}
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+            <p style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>
+              Items Received
+              {form.po_id && <span style={{ color: COLORS.accent, marginLeft: 8 }}>← pre-filled from PO</span>}
+            </p>
+            {lineItems.some((it) => it.qty_ordered) && (
+              <Btn
+                small
+                variant="ghost"
+                onClick={matchAllOrdered}
+                icon={<CheckCheck size={12} />}
+                style={{ fontSize: 11, padding: "3px 8px", color: COLORS.success, borderColor: COLORS.success + "66" }}
+              >
+                Match All Ordered
+              </Btn>
+            )}
+          </div>
           <div className="resp-table-wrap">
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 900 }}>
               <thead>
@@ -419,6 +499,9 @@ export default function GoodsReceiptScreen() {
   // ──────────────────────────────────────────────────────
   return (
     <Section title="Goods Receipt Notes" sub="Track all goods received from suppliers — auto-batches stock">
+      {/* Swarm Telemetry */}
+      <P2PAgentStatusBar activeModule="grn" />
+
       <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
         <SearchBar onSearch={(v) => load({ page: 1, q: v })} placeholder="Search GRN#, supplier, invoice…" />
         <select onChange={(e) => load({ page: 1, supplier_id: e.target.value })}

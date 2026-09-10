@@ -15,6 +15,7 @@ import * as api from "../../api";
 import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { today } from "../../utils/dates";
+import ProductionAgentStatusBar from "../../components/agents/ProductionAgentStatusBar";
 
 const CATEGORIES = ["Starter", "Main Course", "Dessert", "Beverage"];
 
@@ -445,6 +446,9 @@ export default function ProductionPlannerScreen() {
 
       {error && <ErrorMsg error={error} />}
 
+      {/* Swarm Telemetry */}
+      <ProductionAgentStatusBar />
+
       {/* Tabs Menu */}
       <div style={{ display: "flex", borderBottom: `1px solid ${COLORS.border}`, marginBottom: 24, gap: 8 }}>
         <button 
@@ -764,31 +768,54 @@ export default function ProductionPlannerScreen() {
                     onChange={(e) => setSelectedDate(e.target.value)} 
                   />
 
-                  {/* Scaled ingredients preview */}
+                  {/* Scaled ingredients preview with live store availability */}
                   <div>
-                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: COLORS.muted, marginBottom: 8 }}>Scaled Ingredients Preview</p>
-                    <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 6, maxHeight: 180, overflowY: "auto" }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: COLORS.muted, marginBottom: 8 }}>
+                      Scaled Ingredients & Store Stock Check
+                    </p>
+                    <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 6, maxHeight: 200, overflowY: "auto" }}>
                       <table style={{ fontSize: 12 }}>
                         <thead>
                           <tr>
                             <th style={{ padding: "8px 12px" }}>Ingredient</th>
-                            <th style={{ padding: "8px 12px" }}>Scaled Qty</th>
-                            <th style={{ padding: "8px 12px" }}>Unit</th>
+                            <th style={{ padding: "8px 12px" }}>Needed</th>
+                            <th style={{ padding: "8px 12px" }}>Store Stock</th>
+                            <th style={{ padding: "8px 12px" }}>Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {scaledIngredients.length === 0 ? (
                             <tr>
-                              <td colSpan="3" style={{ textAlign: "center", color: COLORS.muted, padding: 12 }}>Enter target plates count to preview quantities</td>
+                              <td colSpan="4" style={{ textAlign: "center", color: COLORS.muted, padding: 12 }}>Enter target plates count to preview quantities</td>
                             </tr>
                           ) : (
-                            scaledIngredients.map((item, idx) => (
-                              <tr key={idx}>
-                                <td style={{ padding: "8px 12px", fontWeight: 600 }}>{item.name}</td>
-                                <td style={{ padding: "8px 12px" }}>{item.qty}</td>
-                                <td style={{ padding: "8px 12px" }}>{item.unit}</td>
-                              </tr>
-                            ))
+                            scaledIngredients.map((item, idx) => {
+                              const match = stocks.find((s) => s.name?.toLowerCase() === item.name?.toLowerCase());
+                              const onHand = match ? parseFloat(match.remaining ?? match.qty ?? 0) : null;
+                              const isShortfall = onHand !== null && onHand < item.qty;
+                              return (
+                                <tr key={idx}>
+                                  <td style={{ padding: "8px 12px", fontWeight: 600 }}>{item.name}</td>
+                                  <td style={{ padding: "8px 12px" }}>{item.qty} {item.unit}</td>
+                                  <td style={{ padding: "8px 12px", color: COLORS.text }}>
+                                    {onHand !== null ? `${onHand.toFixed(1)} ${item.unit}` : "—"}
+                                  </td>
+                                  <td style={{ padding: "8px 12px" }}>
+                                    {onHand === null ? (
+                                      <span style={{ color: COLORS.muted, fontSize: 11 }}>Unmatched</span>
+                                    ) : isShortfall ? (
+                                      <span style={{ color: COLORS.coral, fontWeight: 700, fontSize: 11 }}>
+                                        ⚠️ Short ({(item.qty - onHand).toFixed(1)} {item.unit})
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: COLORS.success, fontWeight: 600, fontSize: 11 }}>
+                                        ✓ In Stock
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })
                           )}
                         </tbody>
                       </table>

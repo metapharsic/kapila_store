@@ -47,7 +47,10 @@ async function recordEntry(trx, {
     "ADJUSTMENT_ADD",
     "ADJUSTMENT_DEDUCT",
     "RETURN_TO_VENDOR",
-    "OPENING_BALANCE"
+    "OPENING_BALANCE",
+    "TRANSFER_OUT",
+    "TRANSFER_IN",
+    "TRANSFER_LOSS"
   ];
   if (!ALLOWED_TYPES.includes(transaction_type)) {
     throw new Error(`[stockLedgerService] Invalid transaction_type '${transaction_type}'. Allowed types: ${ALLOWED_TYPES.join(", ")}`);
@@ -76,7 +79,7 @@ async function recordEntry(trx, {
       before = parseFloat(latestLedgerRow.balance_qty_after);
     } else {
       // If no prior ledger entry exists for this SKU:
-      if (["INWARD_GRN", "INWARD_PURCHASE", "OPENING_BALANCE"].includes(transaction_type)) {
+      if (["INWARD_GRN", "INWARD_PURCHASE", "OPENING_BALANCE", "TRANSFER_IN"].includes(transaction_type)) {
         before = 0;
       } else {
         const stockAggregate = await runner("stock")
@@ -94,7 +97,8 @@ async function recordEntry(trx, {
       "INWARD_GRN",
       "INWARD_PURCHASE",
       "ADJUSTMENT_ADD",
-      "OPENING_BALANCE"
+      "OPENING_BALANCE",
+      "TRANSFER_IN"
     ].includes(transaction_type);
 
     if (isInflow) {

@@ -10,16 +10,18 @@ import { COLORS } from "../../styles/colors";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
 import * as api from "../../api";
+import ReorderAgentStatusBar from "../../components/agents/ReorderAgentStatusBar";
 
 const LIMIT = 30;
 const empty = { item_code: "", name: "", min_qty: "", reorder_qty: "", lead_time_days: "3", preferred_supplier_id: "", notes: "" };
 
 export default function ReorderPointsScreen() {
-  const { stocks }       = useAppContext();
+  const { stocks, setCurrentScreen, setPoPreFill } = useAppContext();
   const [form, setForm]  = useState(empty);
   const [editing, setEditing] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
   const [alerts, setAlerts]   = useState([]);
+  const [filterMode, setFilterMode] = useState("all"); // "all" | "breached" | "active"
   const [msg, setMsg]    = useState("");
 
   const { items, total, page, loading, error, fetch } = usePaginatedApi(api.reorderPoints.list);
@@ -113,8 +115,34 @@ export default function ReorderPointsScreen() {
     } catch (e) { flash(e.message, COLORS.coral); }
   };
 
+  const draftInteractivePO = (r) => {
+    const itemStock = stocks.find(
+      (s) => s.item_code === r.item_code || s.name.toLowerCase() === r.name.toLowerCase()
+    );
+    if (setPoPreFill) {
+      setPoPreFill({
+        supplier_id: r.preferred_supplier_id || null,
+        notes: `Drafted from Reorder Sentinel for ${r.name} (Safety Buffer: ${r.min_qty}, Order: ${r.reorder_qty})`,
+        items: [
+          {
+            item_code: r.item_code,
+            name: r.name,
+            qty: r.reorder_qty,
+            unit: itemStock?.unit || "kg",
+            unit_price: itemStock?.price || "",
+          },
+        ],
+      });
+    }
+    flash(`Routing to Purchase Orders for ${r.name} ✓`, COLORS.accent);
+    if (setCurrentScreen) setCurrentScreen("pos");
+  };
+
   const autoDraftPO = async (r) => {
-    if (!r.preferred_supplier_id) return flash("No preferred supplier set for this item.", COLORS.coral);
+    if (!r.preferred_supplier_id) {
+      draftInteractivePO(r);
+      return;
+    }
     try {
       await api.purchaseOrders.autoDraft(r.preferred_supplier_id);
       flash("Auto-draft PO created for low stock items ✓");
@@ -123,18 +151,60 @@ export default function ReorderPointsScreen() {
 
   return (
     <Section title="Reorder Points" sub="Set minimum stock thresholds — get alerts before you run out">
+      {/* Swarm Telemetry */}
+      <ReorderAgentStatusBar />
 
-      {/* Alert banner */}
+      {/* Alert banner with 1-Click Interactive PO Drafting */}
       {alerts.length > 0 && (
-        <div style={{ background: COLORS.coral + "18", border: `1px solid ${COLORS.coral}44`, borderRadius: 10, padding: "14px 20px", marginBottom: 20 }}>
-          <p style={{ color: COLORS.coral, fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
-            ⚠ {alerts.length} item{alerts.length > 1 ? "s" : ""} below reorder threshold
-          </p>
+        <div style={{ background: "rgba(239, 68, 68, 0.12)", border: `1px solid ${COLORS.coral}66`, borderRadius: 10, padding: "14px 18px", marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+            <p style={{ color: COLORS.coral, fontWeight: 700, fontSize: 13, margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
+              <span>⚠️</span>
+              <span>Agent Stockout Sentinel: {alerts.length} item{alerts.length > 1 ? "s" : ""} breached safety thresholds!</span>
+            </p>
+            <span style={{ fontSize: 11, color: COLORS.muted }}>Click "Draft PO →" to pre-fill vendor and order</span>
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {alerts.map((a) => (
-              <span key={a.id} style={{ background: COLORS.coral + "22", color: COLORS.coral, padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 500 }}>
-                {a.name} — {a.current_stock.toFixed(1)} / {a.min_qty} {a.unit}
-              </span>
+              <div
+                key={a.id}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: COLORS.surface,
+                  border: `1px solid ${COLORS.coral}88`,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              >
+                <div>
+                  <strong style={{ color: COLORS.text }}>{a.name}</strong>
+                  <span style={{ color: COLORS.coral, marginLeft: 6, fontWeight: 700 }}>
+                    {parseFloat(a.current_stock || 0).toFixed(1)} / {a.min_qty} {a.unit}
+                  </span>
+                </div>
+                <button
+                  onClick={() => draftInteractivePO(a)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 3,
+                    background: COLORS.accent,
+                    color: "#18181b",
+                    border: "none",
+                    borderRadius: 4,
+                    padding: "3px 8px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  title="Draft Purchase Order with pre-filled vendor and reorder quantity"
+                >
+                  Draft PO →
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -189,8 +259,35 @@ export default function ReorderPointsScreen() {
 
         {/* List */}
         <Card style={{ padding: 0, overflow: "hidden" }}>
-          <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <SearchBar onSearch={(v) => load({ page: 1, q: v })} placeholder="Search item…" />
+            <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+              {[
+                ["all", "All Rules"],
+                ["breached", `Breached (${alerts.length})`],
+                ["active", "Active Only"],
+              ].map(([key, label]) => {
+                const isActive = filterMode === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setFilterMode(key)}
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: 16,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      border: `1px solid ${isActive ? COLORS.accent : COLORS.border}`,
+                      background: isActive ? COLORS.accent + "22" : "transparent",
+                      color: isActive ? COLORS.accent : COLORS.muted,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
             <span style={{ color: COLORS.muted, fontSize: 12, whiteSpace: "nowrap" }}>{total} rules</span>
           </div>
 
@@ -211,7 +308,13 @@ export default function ReorderPointsScreen() {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((r) => {
+                  {items
+                    .filter((r) => {
+                      if (filterMode === "breached") return r.needs_reorder;
+                      if (filterMode === "active") return r.is_active;
+                      return true;
+                    })
+                    .map((r) => {
                     const needsReorder = r.needs_reorder;
                     return (
                       <tr key={r.id} style={{ borderBottom: `1px solid ${COLORS.border}22`, opacity: r.is_active ? 1 : 0.45 }}
@@ -234,8 +337,14 @@ export default function ReorderPointsScreen() {
                         </td>
                         <td style={{ padding: "10px 14px" }}>
                           <div style={{ display: "flex", gap: 5 }}>
-                            {needsReorder && r.preferred_supplier_id && (
-                              <Btn small variant="success" onClick={() => autoDraftPO(r)}>Draft PO</Btn>
+                            {needsReorder && (
+                              <Btn
+                                small
+                                onClick={() => draftInteractivePO(r)}
+                                style={{ background: COLORS.accent, color: "#18181b", fontWeight: 700, fontSize: 11 }}
+                              >
+                                Draft PO
+                              </Btn>
                             )}
                             <Btn small variant="ghost" onClick={() => startEdit(r)}>Edit</Btn>
                             <Btn small variant="ghost" onClick={() => toggleActive(r)} style={{ fontSize: 11 }}>

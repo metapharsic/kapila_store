@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { COLORS } from "../../styles/colors";
 import { staff } from "../../api";
-import { Clock, AlertTriangle, X, Check, Calendar, UserCheck } from "lucide-react";
+import { Clock, AlertTriangle, X, Check } from "lucide-react";
 
 export default function RecordAttendanceModal({ isOpen, onClose, onSuccess, employees = [], initialDate = "" }) {
   const todayStr = initialDate || new Date().toISOString().slice(0, 10);
@@ -21,7 +21,7 @@ export default function RecordAttendanceModal({ isOpen, onClose, onSuccess, empl
 
   useEffect(() => {
     if (employees.length > 0 && !employeeId) {
-      setEmployeeId(employees[0].id);
+      queueMicrotask(() => setEmployeeId(employees[0].id));
     }
   }, [employees, employeeId]);
 

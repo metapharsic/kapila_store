@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { COLORS } from "../../styles/colors";
 import { staff, nightAudit } from "../../api";
-import { 
-  Users, Clock, Calendar, Moon, Plus, Download, Search, RefreshCw, 
-  CheckCircle2, XCircle, AlertTriangle, IndianRupee, TrendingDown, 
-  TrendingUp, FileSpreadsheet, Check, X, ShieldCheck, Briefcase
+import {
+  Users, Clock, Calendar, Moon, Plus, Search, RefreshCw,
+  IndianRupee, TrendingDown,
+  TrendingUp, FileSpreadsheet, Check, X
 } from "lucide-react";
 
 import NewEmployeeModal from "./NewEmployeeModal";
@@ -62,11 +62,7 @@ export default function StaffAndNightAuditScreen() {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [activeTab, deptFilter, attendanceDate, attendanceShiftFilter, leaveStatusFilter]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       if (activeTab === "staff_directory") {
@@ -113,7 +109,11 @@ export default function StaffAndNightAuditScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, deptFilter, staffSearch, attendanceDate, attendanceShiftFilter, leaveStatusFilter, employees.length]);
+
+  useEffect(() => {
+    queueMicrotask(() => loadData());
+  }, [loadData]);
 
   const handleReviewLeave = async (id, status) => {
     try {
@@ -144,6 +144,31 @@ export default function StaffAndNightAuditScreen() {
 
   return (
     <div style={{ padding: "24px", color: COLORS.text, maxWidth: "1600px", margin: "0 auto" }}>
+      {msg && (
+        <div
+          style={{
+            marginBottom: "16px",
+            padding: "10px 14px",
+            borderRadius: "8px",
+            backgroundColor: "rgba(220, 53, 69, 0.15)",
+            border: "1px solid #dc3545",
+            color: "#ff6b6b",
+            fontSize: "0.85rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px"
+          }}
+        >
+          <span>{msg}</span>
+          <button
+            onClick={() => setMsg("")}
+            style={{ background: "transparent", border: "none", color: "#ff6b6b", cursor: "pointer" }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
       {/* Top Header Section */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
         <div>

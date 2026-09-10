@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { COLORS } from "../../styles/colors";
 import { nightAudit } from "../../api";
-import { Moon, AlertTriangle, X, Check, Lock, IndianRupee, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { Moon, AlertTriangle, X, Lock, TrendingUp, TrendingDown } from "lucide-react";
+
+function getYesterdayStr() {
+  return new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+}
 
 export default function ExecuteNightAuditModal({ isOpen, onClose, onSuccess }) {
-  const yesterdayStr = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  const [auditDate, setAuditDate] = useState(yesterdayStr);
+  const [auditDate, setAuditDate] = useState(getYesterdayStr);
   const [foodRevenue, setFoodRevenue] = useState("135000");
   const [rolloverNotes, setRolloverNotes] = useState("Daily store inventory closed. Material issuances and food waste balances frozen.");
 
@@ -14,15 +17,7 @@ export default function ExecuteNightAuditModal({ isOpen, onClose, onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (isOpen) {
-      loadPreview();
-    }
-  }, [isOpen, auditDate, foodRevenue]);
-
-  if (!isOpen) return null;
-
-  const loadPreview = async () => {
+  const loadPreview = useCallback(async () => {
     setLoadingPreview(true);
     setError("");
     try {
@@ -36,7 +31,15 @@ export default function ExecuteNightAuditModal({ isOpen, onClose, onSuccess }) {
     } finally {
       setLoadingPreview(false);
     }
-  };
+  }, [auditDate, foodRevenue]);
+
+  useEffect(() => {
+    if (isOpen) {
+      queueMicrotask(() => loadPreview());
+    }
+  }, [isOpen, loadPreview]);
+
+  if (!isOpen) return null;
 
   const handleExecute = async (e) => {
     e.preventDefault();

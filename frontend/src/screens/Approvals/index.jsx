@@ -6,15 +6,32 @@ import Input from "../../components/Input";
 import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS } from "../../styles/colors";
 import * as api from "../../api";
-import { Check, X, ShieldAlert, Clock, ArrowRight, User, Calendar } from "lucide-react";
+import ApprovalsAgentStatusBar from "../../components/agents/ApprovalsAgentStatusBar";
+import { Check, X, ShieldAlert, Clock, ArrowRight, User, Calendar, ShieldCheck, AlertTriangle, TrendingUp } from "lucide-react";
 
 export default function ApprovalsScreen() {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [actionNotes, setActionNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const getSlaInfo = (createdAt) => {
+    const elapsedHours = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60);
+    if (elapsedHours > 24) {
+      return { text: `Overdue (${Math.floor(elapsedHours)}h)`, color: COLORS.coral, bg: "rgba(239, 68, 68, 0.15)" };
+    } else if (elapsedHours > 4) {
+      return { text: `Pending (${Math.floor(elapsedHours)}h)`, color: COLORS.accent, bg: "rgba(232, 168, 56, 0.15)" };
+    }
+    return { text: `On Track (<4h)`, color: COLORS.success, bg: "rgba(16, 185, 129, 0.15)" };
+  };
+
+  const flash = (text, color = COLORS.success) => {
+    setMsg({ text, color });
+    setTimeout(() => setMsg(""), 3500);
+  };
 
   const fetchPending = async () => {
     try {
@@ -56,6 +73,7 @@ export default function ApprovalsScreen() {
       }
 
       if (res.success) {
+        flash(action === "approve" ? "Transaction successfully authorized & approved ✓" : "Transaction rejected and returned to requester ✗", action === "approve" ? COLORS.success : COLORS.coral);
         setActionNotes("");
         setSelectedRequest(null);
         await fetchPending();
@@ -72,6 +90,10 @@ export default function ApprovalsScreen() {
 
   return (
     <Section title="Approvals Queue" subtitle="Manage and approve transactions based on threshold limits">
+      {/* Swarm Telemetry */}
+      <ApprovalsAgentStatusBar />
+
+      {msg && <p style={{ color: msg.color, fontSize: 13, fontWeight: 600, marginBottom: 12 }}>{msg.text}</p>}
       {error && <ErrorMsg msg={error} />}
 
       <div style={{ display: "grid", gridTemplateColumns: selectedRequest ? "1fr 1.2fr" : "1fr", gap: 24, minHeight: 400 }}>
@@ -90,6 +112,7 @@ export default function ApprovalsScreen() {
                 const poNumber = req.details?.po_number || "";
                 const totalText = req.details?.total_amount ? `₹${parseFloat(req.details.total_amount).toLocaleString()}` : "";
                 const supplierText = req.details?.supplier_name || req.details?.dept || "System";
+                const sla = getSlaInfo(req.created_at);
                 
                 return (
                   <div
@@ -122,8 +145,8 @@ export default function ApprovalsScreen() {
                       <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                         <Clock size={12} /> Stage {req.current_sequence}
                       </span>
-                      <span>
-                        {new Date(req.created_at).toLocaleDateString()}
+                      <span style={{ background: sla.bg, color: sla.color, padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>
+                        {sla.text}
                       </span>
                     </div>
                   </div>
@@ -226,6 +249,30 @@ export default function ApprovalsScreen() {
                 </div>
               </div>
             )}
+
+            {/* Policy & Ledger Safeguard Info */}
+            <div
+              style={{
+                background: "rgba(232, 168, 56, 0.08)",
+                border: `1px solid ${COLORS.accent}44`,
+                borderRadius: 8,
+                padding: "12px 14px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: COLORS.accent, fontWeight: 700, fontSize: 12 }}>
+                <ShieldCheck size={15} />
+                <span>Agent Policy Auditor & Veritas Ledger Safeguard</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 11, color: COLORS.muted, lineHeight: 1.4 }}>
+                • <strong>Escalation Threshold:</strong> Financial valuation {selectedRequest.details?.total_amount ? `(₹${parseFloat(selectedRequest.details.total_amount).toLocaleString()})` : ""} satisfies hotel authorization requirements.
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: COLORS.muted, lineHeight: 1.4 }}>
+                • <strong>Ledger Impact:</strong> Authorizing this request stamps an immutable audit entry, advancing state to <strong>Approved</strong> to unlock downstream vendor issuance and GRN inward processing.
+              </p>
+            </div>
 
             {/* Notes & Actions Form */}
             <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>

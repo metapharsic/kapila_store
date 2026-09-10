@@ -37,6 +37,9 @@ export function AppProvider({ children }) {
     } catch {}
   }, []);
 
+  const [poPreFill, setPoPreFill] = useState(null);
+  const [grnPreFill, setGrnPreFill] = useState(null);
+
   return (
     <AppContext.Provider value={{
       stockNames,
@@ -50,6 +53,10 @@ export function AppProvider({ children }) {
       setIndentPreFill,
       indentSmartPreFill,
       setIndentSmartPreFill,
+      poPreFill,
+      setPoPreFill,
+      grnPreFill,
+      setGrnPreFill,
       setNavBlocker
     }}>
       {children}

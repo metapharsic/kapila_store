@@ -9,13 +9,16 @@ import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS } from "../../styles/colors";
 import { poStatusStyle } from "../../utils/poStatus";
 import { usePaginatedApi } from "../../hooks/useApi";
+import { useAppContext } from "../../context/AppContext";
 import * as api from "../../api";
+import MasterDataAgentStatusBar from "../../components/agents/MasterDataAgentStatusBar";
 import { Users, Phone, Building2, ChevronDown, ChevronRight, Activity, TrendingUp, Search, PlusCircle, Trash2, Edit2, AlertTriangle, X, Receipt } from "lucide-react";
 
 const LIMIT = 20;
 const empty = { name: "", contact_name: "", phone: "", email: "", gstin: "", address: "" };
 
 export default function SuppliersScreen() {
+  const { setCurrentScreen, setPoPreFill } = useAppContext();
   const [form, setForm]     = useState(empty);
   const [editing, setEditing] = useState(null); // supplier id being edited
   const [msg, setMsg]       = useState("");
@@ -121,8 +124,22 @@ export default function SuppliersScreen() {
     } catch (e) { flash(e.message, COLORS.coral); }
   };
 
+  const createPOForSupplier = (supplier) => {
+    if (!supplier) return;
+    if (setPoPreFill) {
+      setPoPreFill({
+        supplier_id: supplier.id,
+        notes: `Initiated from Supplier Master: ${supplier.name}`
+      });
+    }
+    flash(`Routing to Purchase Orders for ${supplier.name} ✓`, COLORS.accent);
+    if (setCurrentScreen) setCurrentScreen("pos");
+  };
+
   return (
     <Section title="Suppliers" sub="Manage vendor master — contacts, GSTIN, address" style={{ backgroundColor: "#F8FAFC" }}>
+      {/* Swarm Telemetry */}
+      <MasterDataAgentStatusBar entityType="suppliers" />
       
       {/* KPI Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
@@ -277,6 +294,13 @@ export default function SuppliersScreen() {
                             <td style={{ padding: "16px" }}>
                               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                                 <button 
+                                  onClick={(e) => { e.stopPropagation(); createPOForSupplier(s); }}
+                                  style={{ background: "rgba(232, 168, 56, 0.15)", border: `1px solid ${COLORS.accent}88`, padding: "8px 12px", borderRadius: 6, cursor: "pointer", color: COLORS.accent, display: "flex", alignItems: "center", gap: 6, fontWeight: 700, fontSize: 13 }}
+                                  title="Create Purchase Order for this supplier"
+                                >
+                                  <Receipt size={14} /> New PO
+                                </button>
+                                <button 
                                   onClick={(e) => { e.stopPropagation(); startEdit(s); }}
                                   style={{ background: "none", border: "1px solid #CBD5E1", padding: "8px 12px", borderRadius: 6, cursor: "pointer", color: "#475569", display: "flex", alignItems: "center", gap: 6, fontWeight: 500, fontSize: 13 }}
                                 >
@@ -307,20 +331,28 @@ export default function SuppliersScreen() {
                                   ) : (
                                     <div>
                                       {/* Header & Metrics */}
-                                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, borderBottom: `1px solid #E2E8F0`, paddingBottom: 16 }}>
+                                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, borderBottom: `1px solid #E2E8F0`, paddingBottom: 16, flexWrap: "wrap", gap: 12 }}>
                                         <div>
                                           <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                                             <Activity size={18} color="#8B5CF6" /> {performanceData.supplier.name} Dashboard
                                           </h4>
                                           <p style={{ fontSize: 12, color: "#64748B", margin: 0, marginTop: 4 }}>Vendor ID: SUP-{performanceData.supplier.id} · Registered GSTIN: {performanceData.supplier.gstin || "N/A"}</p>
                                         </div>
-                                        <Btn 
-                                          onClick={handleGenerateAutoDraft} 
-                                          disabled={poDrafting}
-                                          style={{ background: "#10B981", color: "#fff", display: "flex", alignItems: "center", gap: 8, border: "none" }}
-                                        >
-                                          {poDrafting ? "⏳ Auto-Drafting…" : "⚡ Auto-Draft PO (Low Stock)"}
-                                        </Btn>
+                                        <div style={{ display: "flex", gap: 8 }}>
+                                          <Btn 
+                                            onClick={() => createPOForSupplier(performanceData.supplier)}
+                                            style={{ background: COLORS.accent, color: "#18181b", fontWeight: 700, display: "flex", alignItems: "center", gap: 6, border: "none" }}
+                                          >
+                                            <Receipt size={14} /> Create PO
+                                          </Btn>
+                                          <Btn 
+                                            onClick={handleGenerateAutoDraft} 
+                                            disabled={poDrafting}
+                                            style={{ background: "#10B981", color: "#fff", display: "flex", alignItems: "center", gap: 8, border: "none" }}
+                                          >
+                                            {poDrafting ? "⏳ Auto-Drafting…" : "⚡ Auto-Draft PO (Low Stock)"}
+                                          </Btn>
+                                        </div>
                                       </div>
 
                                       {/* Stats Widgets */}

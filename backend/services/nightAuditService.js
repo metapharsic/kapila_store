@@ -196,12 +196,44 @@ async function executeNightAudit(data, user = {}, trxOrDb = db) {
         .where("id", existing.id)
         .update(payload)
         .returning("*");
+
+      await trx("audit_logs").insert({
+        actor_user_id: user.id || null,
+        actor_name: user.name || user.username || payload.auditor_name || null,
+        action: "night_audit.update",
+        resource: "night_audit",
+        resource_id: updated.id,
+        metadata: JSON.stringify({
+          audit_date: auditDate,
+          audit_status: auditStatus,
+          food_cost_percentage: actualPct,
+          variance_pct: variance,
+        }),
+        created_at: new Date(),
+      });
+
       return updated;
     } else {
       payload.created_at = new Date();
       const [inserted] = await trx("daily_night_audit_logs")
         .insert(payload)
         .returning("*");
+
+      await trx("audit_logs").insert({
+        actor_user_id: user.id || null,
+        actor_name: user.name || user.username || payload.auditor_name || null,
+        action: existing ? "night_audit.update" : "night_audit.execute",
+        resource: "night_audit",
+        resource_id: inserted.id,
+        metadata: JSON.stringify({
+          audit_date: auditDate,
+          audit_status: auditStatus,
+          food_cost_percentage: actualPct,
+          variance_pct: variance,
+        }),
+        created_at: new Date(),
+      });
+
       return inserted;
     }
   });
