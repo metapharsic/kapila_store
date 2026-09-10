@@ -18,6 +18,13 @@ const schemas: Record<string, z.ZodObject<any> | z.ZodEffects<any>> = {
     min_alert_qty: z.number().positive().optional().nullable(),
     item_code: z.string().min(1).max(20).optional().nullable(),
     category: z.string().max(60).optional().nullable(),
+    rack_location: z.string().max(100).optional().nullable(),
+    storage_zone: z.string().max(100).optional().nullable(),
+    invoice_no: z.string().max(100).optional().nullable(),
+    purchase_time: z.string().optional().nullable(),
+    batch_no: z.string().max(50).optional().nullable(),
+    supplier_id: z.number().int().positive().optional().nullable(),
+    notes: z.string().max(1000).optional().nullable(),
   }),
   indent: z.object({
     dept: z.string().min(1).max(100),

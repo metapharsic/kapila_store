@@ -401,7 +401,7 @@ async function autoIssueFromIndent(indentId) {
       })
       .andWhere("remaining", ">", 0);
     const stockUnit = batches[0]?.unit || it.unit;
-    const multiplier = getConversionMultiplier(it.unit || stockUnit, stockUnit) ?? 1;
+    const multiplier = getConversionMultiplier(it.unit || stockUnit, stockUnit, it.name) ?? 1;
     const available = batches.reduce((s, b) => s + parseFloat(b.remaining), 0);
     if (available >= remainingQty * multiplier) {
       const unitPrice = parseFloat(batches[0]?.price || 0);

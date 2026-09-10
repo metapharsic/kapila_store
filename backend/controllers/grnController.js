@@ -1,6 +1,7 @@
 const db = require("../db");
 const { publish } = require("../services/kafkaProducer");
 const { auditLog } = require("../services/auditService");
+const stockLedgerService = require("../services/stockLedgerService");
 
 // Helper to generate a unique GRN number: GRN-YYYYMMDD-XXXX
 async function generateGRNNumber(dateStr) {
@@ -183,21 +184,44 @@ async function create(req, res, next) {
         // 3. Add accepted quantities into stock as a tracked batch
         if (it.qty_accepted > 0) {
           const generatedBatch = it.batch_no || `BAT-${date.replace(/-/g, "")}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          const unitRate = it.qty_accepted > 0 ? (it.landed_cost / it.qty_accepted) : it.unit_price;
           
-          await trx("stock").insert({
+          const [stockBatch] = await trx("stock").insert({
             name: it.name,
             qty: it.qty_accepted,
             remaining: it.qty_accepted,
             unit: it.unit,
             date: date,
-            price: it.qty_accepted > 0 ? (it.landed_cost / it.qty_accepted) : it.unit_price,
+            price: unitRate,
             supplier: supplier.name,
             supplier_id: supplier.id,
             expiry_date: it.expiry_date || null,
             min_alert_qty: null,
             item_code: it.item_code,
             batch_no: generatedBatch,
-            grn_item_id: savedItem.id
+            grn_item_id: savedItem.id,
+            invoice_no: invoice_no || null
+          }).returning("*");
+
+          await stockLedgerService.recordEntry(trx, {
+            stock_id: stockBatch.id,
+            item_code: stockBatch.item_code,
+            item_name: stockBatch.name,
+            category: stockBatch.category,
+            transaction_type: "INWARD_GRN",
+            qty: parseFloat(stockBatch.qty),
+            unit: stockBatch.unit,
+            unit_price: parseFloat(stockBatch.price) || 0,
+            batch_no: stockBatch.batch_no,
+            department: "CENTRAL STORE",
+            supplier: supplier.name,
+            invoice_no: invoice_no || null,
+            reference_doc_type: "GRN",
+            reference_doc_id: grn.id,
+            reference_doc_no: grn.grn_number,
+            reason: po_id ? `Received against PO #${po_id}` : "Direct Inward GRN",
+            notes: remarks || null,
+            created_by: received_by || req.user?.name || "Storekeeper"
           });
         }
       }

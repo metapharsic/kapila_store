@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as api from "../../api";
 import Card from "../../components/Card";
 import Btn from "../../components/Btn";
+import MultiAgentStatusBar from "../../components/MultiAgentStatusBar";
 import { ClipboardList, CheckSquare, AlertTriangle, Sparkles, Check, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function BulkIssuanceScreen({ onBack }) {
@@ -78,9 +79,9 @@ export default function BulkIssuanceScreen({ onBack }) {
 
     setIssuing(true);
     try {
-      const res = await api.issuances.bulkIssue(Array.from(selectedIds));
+      const res = await api.issuances.bulkIssue(Array.from(selectedIds), "LIFO");
       if (res.success) {
-        alert(res.message || "Bulk issuance completed successfully!");
+        alert(res.message || "Bulk issuance completed successfully with LIFO stock deduction!");
         loadPreview();
       }
     } catch (err) {
@@ -106,6 +107,11 @@ export default function BulkIssuanceScreen({ onBack }) {
           Back to Dashboard
         </Btn>
       </div>
+
+      {/* Multi-Agent Swarm Status Bar & LIFO Strategy note */}
+      <MultiAgentStatusBar
+        customNote="Bulk auto-issuance operates on LIFO strategy: newest inventory lots drain first with invoice traceability"
+      />
 
       {loading ? (
         <div style={{ textAlign: "center", padding: "40px", color: "#64748B" }}>

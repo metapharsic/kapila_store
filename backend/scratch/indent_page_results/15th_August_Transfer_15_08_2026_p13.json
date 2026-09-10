@@ -1,0 +1,38 @@
+{
+  "date": "2026-08-15",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "ROOM SERVICE",
+  "items": [
+    {
+      "name": "Soaps",
+      "qty": 30,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Shampoo",
+      "qty": 16,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Muskmelon",
+      "qty": 5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dental Kit",
+      "qty": 20,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "15th_August_Transfer_15_08_2026_p13.jpg",
+  "normalized_dept": "ROOM SERVICE"
+}

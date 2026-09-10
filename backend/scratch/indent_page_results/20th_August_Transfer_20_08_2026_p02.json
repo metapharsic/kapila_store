@@ -1,0 +1,38 @@
+{
+  "date": "2026-08-20",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "RESTAURANT",
+  "items": [
+    {
+      "name": "Milk",
+      "qty": 14,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gold Milk",
+      "qty": 9,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Boost",
+      "qty": 5,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "20th_August_Transfer_20_08_2026_p02.jpg",
+  "normalized_dept": "RESTAURANT"
+}

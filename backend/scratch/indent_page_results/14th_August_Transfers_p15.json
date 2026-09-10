@@ -1,0 +1,52 @@
+{
+  "date": "2026-08-14",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "RESTAURANT",
+  "items": [
+    {
+      "name": "Butter 500 Gm",
+      "qty": 4,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dry Coconut",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Maida",
+      "qty": 5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pineapple Syrup",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Custod Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p15.jpg",
+  "normalized_dept": "RESTAURANT"
+}

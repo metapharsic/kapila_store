@@ -1,0 +1,157 @@
+{
+  "date": "2026-08-17",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "RESTAURANT",
+  "items": [
+    {
+      "name": "Thums Up",
+      "qty": 10,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sprite",
+      "qty": 3,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sprite 250Ml",
+      "qty": 0.2,
+      "unit": "l",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Paper Rolls",
+      "qty": 8,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Napkins",
+      "qty": 680,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mineral Water 1L",
+      "qty": 0.8,
+      "unit": "l",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cherries",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Somp",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Somp White",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tooth Pick",
+      "qty": 2,
+      "unit": "box",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Wooden Spoons Big",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tea Powder",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coffee Powder",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk",
+      "qty": 16,
+      "unit": "l",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gold Milk",
+      "qty": 8,
+      "unit": "l",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tea Cups Small",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cleaning Cloth",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gulkanda",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coffee Powder",
+      "qty": 0.05,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cling Wrap",
+      "qty": 1,
+      "unit": "Kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "17th_August_Transfer_17_08_2026_p01.jpg",
+  "normalized_dept": "RESTAURANT"
+}

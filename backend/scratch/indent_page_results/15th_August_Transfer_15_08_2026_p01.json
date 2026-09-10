@@ -1,0 +1,325 @@
+{
+  "date": "2026-08-15",
+  "voucher_no": "150826",
+  "from_dept": "Central Store",
+  "to_dept": "RESTAURANT",
+  "items": [
+    {
+      "name": "Ramjadu",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sponge",
+      "qty": 15,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Hand Wash",
+      "qty": 10,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Harpic",
+      "qty": 14,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": 18,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 26,
+      "unit": "case",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 8.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": 11,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tata Salt",
+      "qty": 4,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Floor Cleaner",
+      "qty": 7,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Odonil",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cleaning Cloth",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tea Cups Small",
+      "qty": 3,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tea Powder",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coffee Powder",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk",
+      "qty": 28.5,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gold Milk",
+      "qty": 12,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 22.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Horlicks",
+      "qty": 3,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Semiya",
+      "qty": 0.05,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju 2 Pieces",
+      "qty": 0.05,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Badam",
+      "qty": 0.05,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pista",
+      "qty": 0.05,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sabjee Binge",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Vanilla Ice Cream",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Butter Scotch Ice Cream",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Delight Ice Cream",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Brownie",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kunafa",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Straws Small",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Faluda Glass",
+      "qty": 2,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Silver Foil",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dust Bin Covers",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "White Tape",
+      "qty": 2,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mango",
+      "qty": 2,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Banana",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Anar",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Black Grapes",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Apples",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pineapple",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Orange",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mosambi",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Watermelon",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Muskmelon",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "15th_August_Transfer_15_08_2026_p01.jpg",
+  "normalized_dept": "RESTAURANT"
+}

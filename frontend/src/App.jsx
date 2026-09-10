@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import kapilaLogo from "./assets/kapila-logo.png";
-import { globalCss, COLORS } from "./styles/colors";
+import { COLORS } from "./styles/colors";
+import "./styles/global.css";
 import { AppProvider, useAppContext } from "./context/AppContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedScreen from "./components/ProtectedScreen";
@@ -8,7 +9,7 @@ import {
   LayoutDashboard, Package, Factory, Building2, Receipt, Inbox, Bell, 
   Scale, ArrowLeftRight, CalendarRange, ClipboardList, Send, ChefHat, 
   ArchiveRestore, Trash2, Search, Users, ShieldCheck, LogOut, BarChart3,
-  CalendarCheck, ClipboardCheck
+  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield
 } from "lucide-react";
 
 import Dashboard      from "./screens/Dashboard";
@@ -30,6 +31,10 @@ import LoginScreen from "./screens/Login";
 import ProductionPlannerScreen from "./screens/ProductionPlanner";
 import AuditScreen from "./screens/audit/AuditScreen";
 import ApprovalsScreen from "./screens/Approvals";
+import MaintenanceScreen from "./screens/Maintenance";
+import GateAndUtilitiesScreen from "./screens/GateAndUtilities";
+import FoodSafetyAndWasteScreen from "./screens/FoodSafetyAndWaste";
+import StaffAndNightAuditScreen from "./screens/StaffAndNightAudit";
 
 
 import StoreManagerHome from "./screens/StoreManagerHome";
@@ -72,10 +77,13 @@ const NAV_CATEGORIES = [
     ]
   },
   {
-    title: "Kitchen & Depts",
+    title: "Kitchen & Assets",
     items: [
       { id: "production_planner", label: "Production Planner", permission: "recipes.view", icon: <CalendarCheck size={16} /> },
-      { id: "production",   label: "Daily Production & Waste", permission: ["production.view", "leftovers.view", "waste_analytics.view"], icon: <ChefHat size={16} /> },
+      { id: "production",   label: "Daily Production & Waste", permission: "users.manage_roles", icon: <ChefHat size={16} /> },
+      { id: "maintenance",  label: "Kitchen Asset CMMS", permission: "maintenance.view", icon: <Wrench size={16} /> },
+      { id: "gate_utilities", label: "Gate & Utilities", permission: ["security.view", "utility.view"], icon: <Truck size={16} /> },
+      { id: "staff_audit",   label: "Staff & Night Audit", permission: ["staff.view", "night_audit.view"], icon: <Users size={16} /> },
       { id: "chef_stats",    label: "Chef Statistics",  permission: "chef_stats.view", icon: <BarChart3 size={16} /> },
     ]
   },
@@ -106,16 +114,20 @@ const STORE_MANAGER_NAV_CATEGORIES = [
     items: [
       { id: "pos",                            label: "Purchase Orders",     permission: "purchase_orders.view", icon: <Receipt size={16} /> },
       { id: "grn",                            label: "Goods Receipt (GRN)", permission: "grn.view",             icon: <Inbox size={16} /> },
+      { id: "suppliers",                      label: "Vendors & Suppliers", permission: "suppliers.view",       icon: <Factory size={16} /> },
       { id: "reorder",                        label: "Reorder Points",      permission: "reorder_points.view",   icon: <Bell size={16} /> },
       { id: "approvals",                      label: "Approval Queue",      permission: "purchase_orders.approve", icon: <ClipboardCheck size={16} /> },
     ]
   },
   {
-    title: "Inventory Control",
+    title: "Inventory & Assets",
     items: [
       { id: "audit",                          label: "Stock Audit",         permission: "audit.view",           icon: <ClipboardCheck size={16} /> },
       { id: "reconcile",                      label: "Reconciliation",      permission: "reconciliation.view",   icon: <Scale size={16} /> },
       { id: "transfers",                      label: "Stock Transfers",     permission: "transfers.view",       icon: <ArrowLeftRight size={16} /> },
+      { id: "maintenance",                    label: "Kitchen Asset CMMS",  permission: "maintenance.view",     icon: <Wrench size={16} /> },
+      { id: "gate_utilities",                 label: "Gate & Utilities",    permission: ["security.view", "utility.view"], icon: <Truck size={16} /> },
+      { id: "staff_audit",                    label: "Staff & Night Audit", permission: ["staff.view", "night_audit.view"], icon: <Users size={16} /> },
     ]
   }
 ];
@@ -210,7 +222,7 @@ function Inner() {
     issuance:   <ProtectedScreen permission="issuances.create"><IssuanceScreen /></ProtectedScreen>,
 
     production: (
-      <ProtectedScreen permission={["production.view", "leftovers.view", "waste_analytics.view"]}>
+      <ProtectedScreen permission="users.manage_roles">
         <ProductionScreen />
       </ProtectedScreen>
     ),
@@ -226,7 +238,10 @@ function Inner() {
     store_manager_store_issuance: <ProtectedScreen permission="issuances.create"><IssuanceScreen /></ProtectedScreen>,
     store_manager_indent: <ProtectedScreen permission="indents.view"><IndentScreen /></ProtectedScreen>,
     
-    chef_home: <ProtectedScreen permission="production.view"><ChefHome /></ProtectedScreen>,
+    chef_home: <ProtectedScreen permission={["recipes.view", "indents.view", "chef_stats.view"]}><ChefHome /></ProtectedScreen>,
+    maintenance: <ProtectedScreen permission="maintenance.view"><MaintenanceScreen /></ProtectedScreen>,
+    gate_utilities: <ProtectedScreen permission={["security.view", "utility.view"]}><GateAndUtilitiesScreen /></ProtectedScreen>,
+    staff_audit: <ProtectedScreen permission={["staff.view", "night_audit.view"]}><StaffAndNightAuditScreen /></ProtectedScreen>,
   };
 
   const handleNavigation = (id) => {
@@ -263,8 +278,7 @@ function Inner() {
 
   return (
     <>
-      <style>{globalCss}</style>
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden", backgroundColor: COLORS.bg }}>
+      <div style={{ display: "flex", height: "100vh", overflow: "hidden", backgroundColor: "var(--bg-page)" }}>
         
         {/* Mobile Overlay */}
         {isMobile && isSidebarOpen && (
@@ -282,7 +296,7 @@ function Inner() {
         {showSidebar && (
           <aside style={{
             width: SIDEBAR_WIDTH,
-            background: "var(--color-bg-sidebar)",
+            background: "var(--bg-sidebar)",
             borderRight: "1px solid var(--sidebar-border)",
             boxShadow: "var(--shadow-sidebar)",
             display: "flex",
@@ -310,7 +324,7 @@ function Inner() {
                 if (isMobile) setIsSidebarOpen(false);
               }}
               style={{
-              backgroundColor: "#1E293B", borderRadius: 8,
+              backgroundColor: "var(--bg-card)", borderRadius: 8,
               padding: "8px 14px",
               display: "flex", alignItems: "center", justifyContent: "center",
               width: "100%",
@@ -327,12 +341,12 @@ function Inner() {
 
           {/* User Profile */}
           <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--sidebar-border)" }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: COLORS.brand + "20", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: COLORS.brand }} title={user?.name}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--color-gold-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "var(--color-gold)" }} title={user?.name}>
               {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#1F2937" }}>{user?.name || "Kapila User"}</div>
-              <div style={{ fontSize: 11, color: "#9CA3AF" }}>{primaryRole}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-sidebar)" }}>{user?.name || "Kapila User"}</div>
+              <div style={{ fontSize: 11, color: "var(--sidebar-category)" }}>{primaryRole}</div>
             </div>
           </div>
 

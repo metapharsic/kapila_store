@@ -1,0 +1,129 @@
+{
+  "date": null,
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "NORTH INDIAN",
+  "items": [
+    {
+      "name": "Thamala Pakulu",
+      "qty": 250,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Banana Leaf",
+      "qty": 290,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Beetroot",
+      "qty": 8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Bendi",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Carrot",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dondakaya",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gongura",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Green Chilli",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaddu",
+      "qty": 11,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kandagaddu",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": 5,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Scrubber Steel",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Methi",
+      "qty": 1.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Aloo",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Spoon",
+      "qty": 2,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p13.jpg",
+  "normalized_dept": "NORTH INDIAN"
+}

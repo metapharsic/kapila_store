@@ -1,0 +1,164 @@
+{
+  "date": "2026-08-14",
+  "voucher_no": "",
+  "from_dept": "Central Store",
+  "to_dept": "CHAT & SOFTY",
+  "items": [
+    {
+      "name": "Biryani Rice",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jal Jeera",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gas",
+      "qty": 0.5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Hing",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Green Batana Raw",
+      "qty": 12.15,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kurbani",
+      "qty": 13,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pav",
+      "qty": 4,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Potato",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Vanilla Spoung",
+      "qty": 2.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cauliflower",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cabbage",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Beans",
+      "qty": 0.3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Carrot",
+      "qty": 0.3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Capsicum",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Green Chilli",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 25,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kothimeera",
+      "qty": 2.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 500 Ml R",
+      "qty": 4.5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cling Wrap",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p04.jpg",
+  "normalized_dept": "CHAT & SOFTY"
+}

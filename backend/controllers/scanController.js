@@ -46,6 +46,7 @@ async function canonicalizeToStock(parsedItems, fuzzyResults) {
 async function scanIndent(req, res, next) {
   try {
     const { image, mime_type } = req.body;
+    const apiKeyOverride = req.headers["x-api-key"] || null;
     if (!image || !mime_type) {
       return res.status(400).json({ success: false, error: "image and mime_type are required." });
     }
@@ -53,7 +54,7 @@ async function scanIndent(req, res, next) {
     // Pure-OCR pipeline: preprocess → Tesseract → regex parse → item-master
     // fuzzy match → per-row confidence/status. Matching happens inside the service
     // (fuzzyMatchBatch passed in to avoid a circular require).
-    const parsed = await scanImageStructured(image, mime_type, "indent", [], fuzzyMatchBatch);
+    const parsed = await scanImageStructured(image, mime_type, "indent", [], fuzzyMatchBatch, apiKeyOverride);
 
     if (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) {
       return res.status(422).json({ success: false, error: "No items could be extracted. Please check the image quality." });
@@ -97,6 +98,7 @@ async function scanIndent(req, res, next) {
 async function scanPurchase(req, res, next) {
   try {
     const { image, mime_type, po_id } = req.body;
+    const apiKeyOverride = req.headers["x-api-key"] || null;
     if (!image || !mime_type) {
       return res.status(400).json({ success: false, error: "image and mime_type are required." });
     }
@@ -104,7 +106,7 @@ async function scanPurchase(req, res, next) {
     // 1+2. Single-pass: OCR + structure in ONE Gemini call (pass known names for canonicalization)
     const stockNameRows = await db("stock").distinct("name").orderBy("name");
     const knownStockNames = stockNameRows.map((r) => r.name);
-    const parsed = await scanImageStructured(image, mime_type, "purchase", knownStockNames);
+    const parsed = await scanImageStructured(image, mime_type, "purchase", knownStockNames, null, apiKeyOverride);
 
     if (!parsed.items || !Array.isArray(parsed.items)) {
       return res.status(422).json({ success: false, error: "No items could be extracted from the receipt." });
@@ -191,12 +193,13 @@ async function scanPurchase(req, res, next) {
 async function scanText(req, res, next) {
   try {
     const { text } = req.body;
+    const apiKeyOverride = req.headers["x-api-key"] || null;
     if (!text) {
       return res.status(400).json({ success: false, error: "text is required." });
     }
 
     // No OCR step needed — go straight to LLM structuring
-    const parsed = await structureWithOllama(text, "text");
+    const parsed = await structureWithOllama(text, "text", [], apiKeyOverride);
 
     if (!parsed.items || !Array.isArray(parsed.items)) {
       return res.status(422).json({ success: false, error: "Could not parse the text. Please try again with clearer formatting." });
@@ -231,11 +234,12 @@ async function scanText(req, res, next) {
 async function scanVoice(req, res, next) {
   try {
     const { audio, mime_type } = req.body;
+    const apiKeyOverride = req.headers["x-api-key"] || null;
     if (!audio || !mime_type) {
       return res.status(400).json({ success: false, error: "audio and mime_type are required." });
     }
 
-    const text = await transcribeAudio(audio, mime_type);
+    const text = await transcribeAudio(audio, mime_type, apiKeyOverride);
     res.json({ success: true, text });
   } catch (err) {
     next(err);

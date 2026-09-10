@@ -1,0 +1,59 @@
+{
+  "date": "2026-08-14",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "ROOM SERVICE",
+  "items": [
+    {
+      "name": "Mineral Water 1L",
+      "qty": 12,
+      "unit": "box",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemon",
+      "qty": 4,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Watermelon",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Shower Gel",
+      "qty": 6,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dental Kit",
+      "qty": 10,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mineral Water 500ml",
+      "qty": 1,
+      "unit": "box",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Shampoo Gel",
+      "qty": 6,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p14.jpg",
+  "normalized_dept": "ROOM SERVICE"
+}

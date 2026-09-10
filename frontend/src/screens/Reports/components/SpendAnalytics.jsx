@@ -107,7 +107,7 @@ export default function SpendAnalytics({ filters, onSupplierClick }) {
         <Card style={{ padding: 20 }}>
           <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Top Suppliers by Spend</h3>
           <div style={{ width: "100%", height: 300 }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={spendData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={COLORS.border} />
                 <XAxis type="number" tick={{ fontSize: 12 }} />
@@ -128,7 +128,7 @@ export default function SpendAnalytics({ filters, onSupplierClick }) {
           <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Historical Spend Trend</h3>
           <div style={{ width: "100%", height: 300 }}>
             {purchaseOrders.length > 0 ? (
-              <ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.border} />
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} />

@@ -1,7 +1,10 @@
+import { useState } from "react";
 import IssuanceItemRow from "./IssuanceItemRow";
 import { COLORS } from "../../../styles/colors";
 import { ClipboardList, CheckSquare, CheckCircle, X } from "lucide-react";
 import { calculateNormalizedQty } from "../../../utils/units";
+import MultiAgentStatusBar from "../../../components/MultiAgentStatusBar";
+import LIFOSuggestionBanner from "../../../components/LIFOSuggestionBanner";
 
 const TH = ({ children, style = {}, ...rest }) => (
   <th
@@ -23,6 +26,7 @@ export default function IssuanceItemsGrid({
   onIssue, onSelectIndent, isMobile = false,
   stocks, getItemPrice, getItemBaseUnit, onUnitChange, msg,
 }) {
+  const [inspectedItemIdx, setInspectedItemIdx] = useState(0);
   const items = selectedIndent?.items || [];
   const totalItems = items.length;
   const confirmedCount = confirmedItems ? confirmedItems.size : 0;
@@ -96,6 +100,25 @@ export default function IssuanceItemsGrid({
         </div>
       )}
 
+      {/* ── Multi-Agent Swarm & LIFO Dispatch Advisory ── */}
+      {selectedIndent && (
+        <div style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0", backgroundColor: "#f8fafc" }}>
+          <MultiAgentStatusBar
+            compact
+            customNote="LIFO Dispatch Strategy active: evaluating available batches by freshest inward receipt"
+          />
+          {items.length > 0 && items[inspectedItemIdx] && (
+            <div style={{ marginTop: 8 }}>
+              <LIFOSuggestionBanner
+                compact
+                itemName={items[inspectedItemIdx].name}
+                itemCode={items[inspectedItemIdx].item_code}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Body ── */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {!selectedIndent ? (
@@ -116,11 +139,15 @@ export default function IssuanceItemsGrid({
               const cost = normalizedQty !== null ? normalizedQty * unitPrice : null;
 
               return (
-                <div key={idx} style={{
-                  background: isConf ? (COLORS.success + "08") : "#fff",
-                  border: `1px solid ${isConf ? COLORS.success + "33" : (isLow ? COLORS.danger + "44" : "#e2e8f0")}`,
-                  borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8,
-                }}>
+                <div 
+                  key={idx} 
+                  onClick={() => setInspectedItemIdx(idx)}
+                  style={{
+                    background: inspectedItemIdx === idx ? "rgba(244, 200, 75, 0.08)" : isConf ? (COLORS.success + "08") : "#fff",
+                    border: `1.5px solid ${inspectedItemIdx === idx ? "var(--color-gold, #f4c84b)" : isConf ? COLORS.success + "33" : (isLow ? COLORS.danger + "44" : "#e2e8f0")}`,
+                    borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, cursor: "pointer",
+                  }}
+                >
                   {/* Top row */}
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                     <div style={{ minWidth: 0 }}>
@@ -210,6 +237,8 @@ export default function IssuanceItemsGrid({
                     isConfirmed={confirmedItems.has(idx)} onToggleConfirm={onToggleConfirm}
                     onUnitChange={onUnitChange}
                     unitPrice={unitPrice} cost={cost} baseUnit={baseUnit}
+                    onInspect={setInspectedItemIdx}
+                    isInspected={inspectedItemIdx === idx}
                   />
                 );
               })}

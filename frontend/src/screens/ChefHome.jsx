@@ -2,43 +2,158 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import * as api from '../api';
+import kapilaLogo from '../assets/kapila-logo.png';
+import { 
+  ChefHat, ClipboardList, UtensilsCrossed, BarChart3, 
+  ShieldCheck, LogOut, ArrowRight, Sparkles, TrendingUp, AlertTriangle,
+  Smartphone, Tablet, Monitor, Cpu
+} from 'lucide-react';
 
 const MODULE_CARDS = [
   {
     id: 'production_planner',
-    icon: '📅',
+    icon: <UtensilsCrossed size={26} />,
     title: 'Production Planner',
-    description: 'View and manage daily recipes, planning, and kitchen tasks.',
-    accentColor: '#8B5CF6', // purple
-    bgAccent: '#F5F3FF',
+    description: 'View daily menus, scaled recipes, and kitchen prep tasks.',
+    accentColor: '#8b5cf6', // purple
+    bgAccent: 'rgba(139, 92, 246, 0.12)',
+    badge: 'Daily Recipes'
   },
   {
     id: 'indent',
-    icon: '📋',
+    icon: <ClipboardList size={26} />,
     title: 'Indent Material',
-    description: 'Submit material requirements to the store for nightly replenishment.',
-    accentColor: '#F59E0B', // amber
-    bgAccent: '#FFFBEB',
+    description: 'Request kitchen ingredients from Central Store for nightly replenishment.',
+    accentColor: '#f59e0b', // amber
+    bgAccent: 'rgba(245, 158, 11, 0.12)',
+    badge: 'Store Request'
+  },
+  {
+    id: 'chef_stats',
+    icon: <BarChart3 size={26} />,
+    title: 'Chef Statistics',
+    description: 'Track department consumption, yield efficiency, and cost per plate.',
+    accentColor: '#3b82f6', // blue
+    bgAccent: 'rgba(59, 130, 246, 0.12)',
+    badge: 'Analytics'
   },
   {
     id: 'production',
-    icon: '👨‍🍳',
+    icon: <ChefHat size={26} />,
     title: 'Daily Production & Waste',
-    description: 'Log finished plates, record leftovers, and manage food waste.',
-    accentColor: '#10B981', // green
-    bgAccent: '#ECFDF5',
+    description: 'Log finished food plates, record kitchen leftovers, and waste.',
+    accentColor: '#10b981', // green
+    bgAccent: 'rgba(16, 185, 129, 0.12)',
+    badge: 'Kitchen Log · Admin',
+    adminOnly: true
   },
 ];
 
-export default function ChefHome() {
-  const { user, logout } = useAuth();
-  const { setCurrentScreen } = useAppContext();
-  const [hoveredCard, setHoveredCard] = useState(null);
+export const DEPARTMENT_TILES = [
+  {
+    name: 'TIFFINS',
+    code: 'TFN',
+    icon: '🥞',
+    color: '#e8a838',
+    bg: 'rgba(232, 168, 56, 0.14)',
+    itemsCount: 158,
+    desc: 'Breakfast, Idli, Dosa & Batter'
+  },
+  {
+    name: 'STAFF',
+    code: 'STF',
+    icon: '👥',
+    color: '#3b82f6',
+    bg: 'rgba(59, 130, 246, 0.14)',
+    itemsCount: 71,
+    desc: 'Staff Kitchen Meals & Rations'
+  },
+  {
+    name: 'SI-MEALS',
+    code: 'SIM',
+    icon: '🍛',
+    color: '#10b981',
+    bg: 'rgba(16, 185, 129, 0.14)',
+    itemsCount: 92,
+    desc: 'South Indian Thali, Sambar & Dal'
+  },
+  {
+    name: 'NORTH INDIAN',
+    code: 'NIN',
+    icon: '🥘',
+    color: '#ef4444',
+    bg: 'rgba(239, 68, 68, 0.14)',
+    itemsCount: 116,
+    desc: 'Gravies, Paneer, Roti & Biryani'
+  },
+  {
+    name: 'CHAT & SOFTY',
+    code: 'CHT',
+    icon: '🍦',
+    color: '#ec4899',
+    bg: 'rgba(236, 72, 153, 0.14)',
+    itemsCount: 113,
+    desc: 'Chaat, Softies & JP Disposables'
+  },
+  {
+    name: 'CHINESE & DOSA',
+    code: 'CND',
+    icon: '🍜',
+    color: '#f97316',
+    bg: 'rgba(249, 115, 22, 0.14)',
+    itemsCount: 85,
+    desc: 'Noodles, Fried Rice & Special Dosas'
+  },
+  {
+    name: 'MOCKTAILS & CONTINENTAL',
+    code: 'MCT',
+    icon: '🍹',
+    color: '#8b5cf6',
+    bg: 'rgba(139, 92, 246, 0.14)',
+    itemsCount: 93,
+    desc: 'Mocktails, Shakes, Pizzas & Pastas'
+  },
+  {
+    name: 'RESTAURANT',
+    code: 'RST',
+    icon: '🍽️',
+    color: '#06b6d4',
+    bg: 'rgba(6, 182, 212, 0.14)',
+    itemsCount: 75,
+    desc: 'Main Dining Service & Dairy'
+  },
+  {
+    name: 'ROOM SERVICE',
+    code: 'RMS',
+    icon: '🛎️',
+    color: '#a855f7',
+    bg: 'rgba(168, 85, 247, 0.14)',
+    itemsCount: 60,
+    desc: 'In-Room Dining Orders & Supplies'
+  }
+];
 
+export default function ChefHome() {
+  const { user, roles = [], logout } = useAuth();
+  const isAdmin = roles.some(r => r.key === 'admin' || r.key === 'director');
+  const visibleModuleCards = MODULE_CARDS.filter(card => !card.adminOnly || isAdmin);
+  const { setCurrentScreen, setIndentPreFill } = useAppContext();
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredDept, setHoveredDept] = useState(null);
   const [stats, setStats] = useState(null);
 
+  // Viewport detection
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    // Only fetch for the current month
+    const checkViewport = () => {
+      setIsMobile(window.innerWidth <= 540);
+    };
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
+
+  useEffect(() => {
     const d = new Date();
     const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
     const today = d.toISOString().slice(0, 10);
@@ -46,10 +161,9 @@ export default function ChefHome() {
     api.chefStats.overview({ date_from: firstDay, date_to: today })
       .then(res => {
         if (res.success && res.data.length > 0) {
-          // Aggregate stats across all departments the chef has access to
-          const totalPlates = res.data.reduce((sum, d) => sum + d.total_plates, 0);
-          const totalCost = res.data.reduce((sum, d) => sum + d.estimated_cost, 0);
-          const totalAnomalies = res.data.reduce((sum, d) => sum + d.total_anomalies, 0);
+          const totalPlates = res.data.reduce((sum, d) => sum + (d.total_plates || 0), 0);
+          const totalCost = res.data.reduce((sum, d) => sum + (d.estimated_cost || 0), 0);
+          const totalAnomalies = res.data.reduce((sum, d) => sum + (d.total_anomalies || 0), 0);
           const costPerPlate = totalPlates > 0 ? (totalCost / totalPlates).toFixed(2) : '0.00';
           setStats({
             plates: totalPlates,
@@ -68,124 +182,338 @@ export default function ChefHome() {
     return 'Good evening';
   };
 
+  const handleOpenDeptIndent = (deptName) => {
+    if (setIndentPreFill) {
+      setIndentPreFill({ dept: deptName, tab: 'manual' });
+    }
+    setCurrentScreen('indent');
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
+      background: 'radial-gradient(ellipse at 50% 10%, #162032 0%, #080c14 90%)',
       display: 'flex',
       flexDirection: 'column',
+      color: '#f1f5f9',
+      fontFamily: 'var(--font-sans)',
     }}>
       {/* Header */}
       <header style={{
-        backgroundColor: '#1E293B',
-        padding: '0 32px',
-        height: '60px',
+        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        borderBottom: '1px solid rgba(232, 168, 56, 0.2)',
+        padding: isMobile ? '0 16px' : '0 32px',
+        height: '64px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexShrink: 0,
+        backdropFilter: 'blur(12px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50
       }}>
-        <div style={{ color: 'white', fontFamily: 'serif', fontSize: '22px', fontStyle: 'italic', fontWeight: 700 }}>
-          Kapila
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src={kapilaLogo} alt="Kapila" style={{ height: 32, objectFit: 'contain' }} />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: 20,
+            padding: '3px 10px',
+            fontSize: 11,
+            color: '#10b981',
+            fontWeight: 700
+          }}>
+            <ChefHat size={14} /> Kitchen Terminal
+          </div>
         </div>
-        <button
-          onClick={logout}
-          style={{
-            background: 'none',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: 'rgba(255,255,255,0.8)',
-            padding: '6px 14px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 500,
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-            e.currentTarget.style.color = '#fff';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
-          }}
-        >
-          Sign out
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            display: isMobile ? 'none' : 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            color: '#94a3b8'
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
+            KitchenOps: <strong style={{ color: '#ffffff' }}>Active</strong>
+          </div>
+
+          <button
+            onClick={logout}
+            style={{
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#fca5a5',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'all 0.15s ease',
+              touchAction: 'manipulation'
+            }}
+          >
+            <LogOut size={14} /> Sign out
+          </button>
+        </div>
       </header>
 
-      {/* Main content */}
+      {/* Main Content */}
       <main style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 24px',
+        padding: isMobile ? '24px 16px 40px' : '36px 24px 60px',
+        maxWidth: 1100,
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box'
       }}>
 
-        {/* Greeting */}
-        <div style={{ textAlign: 'center', marginBottom: stats ? '40px' : '56px' }}>
-          <h1 style={{
-            fontSize: '28px',
+        {/* Greeting Section */}
+        <div style={{ textAlign: 'center', marginBottom: 28, width: '100%' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'rgba(232, 168, 56, 0.1)',
+            border: '1px solid rgba(232, 168, 56, 0.25)',
+            borderRadius: 20,
+            padding: '4px 12px',
+            fontSize: 11,
+            color: '#e8a838',
             fontWeight: 700,
-            color: '#0F172A',
-            margin: 0,
-            marginBottom: '8px',
+            marginBottom: 10
+          }}>
+            <Sparkles size={12} /> Executive Kitchen Station · Hotel Kapila
+          </div>
+
+          <h1 style={{
+            fontSize: isMobile ? '24px' : '32px',
+            fontWeight: 800,
+            color: '#ffffff',
+            margin: '0 0 6px',
             fontFamily: 'var(--font-display, inherit)',
+            letterSpacing: '0.02em'
           }}>
             {greeting()}, {user?.name || 'Chef'} 👋
           </h1>
           <p style={{
-            fontSize: '15px',
-            color: '#64748B',
+            fontSize: isMobile ? '13px' : '15px',
+            color: '#94a3b8',
             margin: 0,
           }}>
-            Chef · Hotel Kapila — What would you like to do today?
+            Touch an operational module below to plan production or submit indents
           </p>
         </div>
 
-        {/* Quick Stats Widget */}
-        {stats && (
+        {/* Quick Stats Strip */}
+        <div style={{
+          width: '100%',
+          background: 'rgba(15, 23, 42, 0.8)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 16,
+          padding: isMobile ? '16px' : '20px 28px',
+          marginBottom: 28,
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)',
+          gap: 16,
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.4)',
+          boxSizing: 'border-box'
+        }}>
+          <div>
+            <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 4 }}>
+              Month's Plates
+            </div>
+            <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, color: '#ffffff' }}>
+              {stats?.plates ?? '—'}
+            </div>
+            <div style={{ fontSize: 11, color: '#10b981', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <TrendingUp size={12} /> Kitchen Output Active
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 4 }}>
+              Cost Per Plate
+            </div>
+            <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, color: '#e8a838' }}>
+              ₹{stats?.costPerPlate ?? '0.00'}
+            </div>
+            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+              Yield Efficiency
+            </div>
+          </div>
+
+          <div style={{ gridColumn: isMobile ? 'span 2' : 'auto' }}>
+            <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 4 }}>
+              Yield Anomalies
+            </div>
+            <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, color: (stats?.anomalies || 0) > 0 ? '#ef4444' : '#10b981' }}>
+              {stats?.anomalies ?? 0}
+            </div>
+            <div style={{ fontSize: 11, color: (stats?.anomalies || 0) > 0 ? '#ef4444' : '#10b981', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              {(stats?.anomalies || 0) > 0 ? <AlertTriangle size={12} /> : <ShieldCheck size={12} />}
+              {(stats?.anomalies || 0) > 0 ? 'Requires Waste Review' : 'Zero Quality Breaches'}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Department Indents Section (Layman Chef Friendly) */}
+        <div style={{ width: '100%', marginBottom: 28 }}>
           <div style={{
-            width: '100%',
-            maxWidth: '900px',
-            background: 'white',
-            border: '1px solid #E2E8F0',
-            borderRadius: '16px',
-            padding: '24px 32px',
-            marginBottom: '40px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            marginBottom: 14,
             flexWrap: 'wrap',
-            gap: '24px'
+            gap: 8
           }}>
             <div>
-              <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#64748B', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>This Month's Plates</p>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A' }}>{stats.plates}</div>
-            </div>
-            <div>
-              <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#64748B', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Cost Per Plate</p>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A' }}>₹{stats.costPerPlate}</div>
-            </div>
-            <div>
-              <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#64748B', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Anomalies</p>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: stats.anomalies > 0 ? '#EF4444' : '#10B981' }}>{stats.anomalies}</div>
+              <h2 style={{
+                fontSize: isMobile ? 16 : 18,
+                fontWeight: 800,
+                color: '#ffffff',
+                margin: '0 0 4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}>
+                <span>📋 Quick Department Indents</span>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: '#f59e0b',
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  padding: '2px 8px',
+                  borderRadius: 12,
+                  border: '1px solid rgba(245, 158, 11, 0.3)'
+                }}>Touch To Open Indent</span>
+              </h2>
+              <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
+                Select your kitchen department below to load its pre-printed material template immediately
+              </p>
             </div>
           </div>
-        )}
 
-        {/* Module Cards */}
-        <div className="resp-grid-3" style={{
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+            gap: isMobile ? 10 : 14,
+          }}>
+            {DEPARTMENT_TILES.map((dept) => {
+              const isHovered = hoveredDept === dept.name;
+              return (
+                <button
+                  key={dept.name}
+                  onClick={() => handleOpenDeptIndent(dept.name)}
+                  onMouseEnter={() => setHoveredDept(dept.name)}
+                  onMouseLeave={() => setHoveredDept(null)}
+                  style={{
+                    background: isHovered ? 'rgba(30, 41, 59, 0.95)' : 'rgba(15, 23, 42, 0.85)',
+                    border: `1.5px solid ${isHovered ? dept.color : 'rgba(255, 255, 255, 0.1)'}`,
+                    borderRadius: 14,
+                    padding: isMobile ? '12px 10px' : '14px 16px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.18s ease',
+                    transform: isHovered ? 'translateY(-2px)' : 'none',
+                    boxShadow: isHovered
+                      ? `0 8px 20px rgba(0,0,0,0.5), 0 0 15px ${dept.bg}`
+                      : '0 2px 8px rgba(0,0,0,0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  <div style={{
+                    fontSize: isMobile ? 22 : 26,
+                    width: isMobile ? 40 : 44,
+                    height: isMobile ? 40 : 44,
+                    borderRadius: 12,
+                    background: dept.bg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {dept.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      marginBottom: 2
+                    }}>
+                      <span style={{
+                        fontSize: isMobile ? 12 : 13,
+                        fontWeight: 800,
+                        color: '#ffffff',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {dept.name}
+                      </span>
+                      <span style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: dept.color,
+                        background: dept.bg,
+                        padding: '1px 5px',
+                        borderRadius: 4,
+                        border: `1px solid ${dept.color}40`
+                      }}>
+                        {dept.code}
+                      </span>
+                    </div>
+                    <div style={{
+                      fontSize: 10,
+                      color: '#94a3b8',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {dept.desc}
+                    </div>
+                    <div style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: isHovered ? '#f59e0b' : '#10b981',
+                      marginTop: 3,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}>
+                      <span>✓ {dept.itemsCount} items in template</span>
+                      <ArrowRight size={10} />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Operational Module Cards (Touch-Optimized) */}
+        <div style={{
           width: '100%',
-          maxWidth: '900px',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '24px'
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: isMobile ? 12 : 20,
         }}>
-          {MODULE_CARDS.map((card) => {
+          {visibleModuleCards.map((card) => {
             const isHovered = hoveredCard === card.id;
             return (
               <button
@@ -194,71 +522,127 @@ export default function ChefHome() {
                 onMouseEnter={() => setHoveredCard(card.id)}
                 onMouseLeave={() => setHoveredCard(null)}
                 style={{
-                  background: 'white',
-                  border: `1px solid ${isHovered ? card.accentColor : '#E2E8F0'}`,
-                  borderRadius: '16px',
-                  padding: '36px 28px',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  border: `1.5px solid ${isHovered ? card.accentColor : 'rgba(255, 255, 255, 0.08)'}`,
+                  borderRadius: 16,
+                  padding: isMobile ? '20px 18px' : '26px 22px',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'all 0.18s ease',
-                  boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.06)',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: isHovered 
+                    ? `0 12px 30px rgba(0, 0, 0, 0.6), 0 0 25px ${card.bgAccent}` 
+                    : '0 4px 16px rgba(0, 0, 0, 0.3)',
                   transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '16px',
+                  gap: 14,
                   outline: 'none',
+                  touchAction: 'manipulation',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
-                {/* Icon circle */}
+                {/* Accent glow corner */}
                 <div style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '14px',
-                  backgroundColor: card.bgAccent,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '26px',
-                }}>
-                  {card.icon}
+                  position: 'absolute',
+                  top: -20,
+                  right: -20,
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: card.accentColor,
+                  opacity: 0.1,
+                  filter: 'blur(20px)'
+                }} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 12,
+                    backgroundColor: card.bgAccent,
+                    color: card.accentColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {card.icon}
+                  </div>
+
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: card.accentColor,
+                    background: card.bgAccent,
+                    padding: '3px 8px',
+                    borderRadius: 6,
+                    border: `1px solid ${card.accentColor}33`,
+                    textTransform: 'uppercase'
+                  }}>
+                    {card.badge}
+                  </span>
                 </div>
 
-                {/* Title */}
                 <div>
                   <h2 style={{
-                    fontSize: '18px',
-                    fontWeight: 700,
-                    color: '#0F172A',
-                    margin: 0,
-                    marginBottom: '8px',
+                    fontSize: 17,
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    margin: '0 0 6px',
                   }}>
                     {card.title}
                   </h2>
                   <p style={{
-                    fontSize: '14px',
-                    color: '#64748B',
+                    fontSize: 13,
+                    color: '#94a3b8',
                     margin: 0,
-                    lineHeight: '1.5',
+                    lineHeight: '1.45',
                   }}>
                     {card.description}
                   </p>
                 </div>
 
-                {/* Arrow */}
                 <div style={{
                   marginTop: 'auto',
+                  paddingTop: 8,
+                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
                   color: card.accentColor,
-                  fontSize: '13px',
-                  fontWeight: 600,
+                  fontSize: 13,
+                  fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: 6,
                 }}>
-                  Open →
+                  Open Station Module <ArrowRight size={14} />
                 </div>
               </button>
             );
           })}
+        </div>
+
+        {/* Multi-Agent Swarm Telemetry Footer */}
+        <div style={{
+          marginTop: 36,
+          padding: '14px 20px',
+          borderRadius: 12,
+          background: 'rgba(15, 23, 42, 0.6)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 10,
+          boxSizing: 'border-box'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#cbd5e1' }}>
+            <Cpu size={15} style={{ color: '#e8a838' }} />
+            <span><strong>Multi-Agent Kitchen Governance:</strong> Production & Waste locked to Admin. Recipe lines and night indents synchronized with Central Store.</span>
+          </div>
+
+          <span style={{ fontSize: 11, color: '#10b981', fontWeight: 700 }}>
+            ● SENTINEL VERIFIED
+          </span>
         </div>
 
       </main>

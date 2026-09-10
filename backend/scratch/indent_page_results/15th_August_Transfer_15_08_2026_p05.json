@@ -1,0 +1,101 @@
+{
+  "date": "2024-08-15",
+  "voucher_no": "4145",
+  "from_dept": "Central Store",
+  "to_dept": "CHAT & SOFTY",
+  "items": [
+    {
+      "name": "Dosa Broom",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jalpan Carrybags 11*14",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Compostable Grocery Bags 13*16",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Garbage Bags",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Paper Rolls",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": 2,
+      "unit": "liter",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Napkins",
+      "qty": 5,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mineral Water 500Ml",
+      "qty": 65,
+      "unit": "box",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Wooden Spoons Big",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Wooden Fork",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Ice Cream Cone",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Softy Chocolate Milk",
+      "qty": 1,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Softy Vanilla Milk",
+      "qty": 1,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "15th_August_Transfer_15_08_2026_p05.jpg",
+  "normalized_dept": "CHAT & SOFTY"
+}

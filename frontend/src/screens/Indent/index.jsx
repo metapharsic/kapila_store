@@ -15,7 +15,8 @@ import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { useLocalSpeech } from "../../hooks/useLocalSpeech";
 import { getConversionMultiplier } from "../../utils/units";
-import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList } from "lucide-react";
+import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList, FileSpreadsheet, Send, Sparkles, RotateCcw, TrendingUp, AlertTriangle, CheckCircle2, Minus } from "lucide-react";
+import EnhancedItemAdditionModal from "./EnhancedItemAdditionModal";
 
 // Guaranteed-unique row id. Date.now()+Math.random() collides because the large
 // millisecond value truncates Math.random()'s fraction to ~2 decimals.
@@ -58,6 +59,18 @@ const getStatusStyleAndText = (status) => {
     return { bg: "#FEF3C7", color: "#92400E", text: "Pending" };
   }
   return { bg: "#F3F4F6", color: "#6B7280", text: status.charAt(0).toUpperCase() + status.slice(1) };
+};
+
+export const DEPARTMENT_METADATA = {
+  "TIFFINS": { code: "TFN", icon: "🥞", count: 158, color: "#E8A838", bg: "#FEF3C7", desc: "Breakfast, Idli, Dosa & Batter" },
+  "STAFF": { code: "STF", icon: "👥", count: 71, color: "#3B82F6", bg: "#EFF6FF", desc: "Staff Meals & Rations" },
+  "SI-MEALS": { code: "SIM", icon: "🍛", count: 92, color: "#10B981", bg: "#ECFDF5", desc: "South Indian Meals & Sambar" },
+  "NORTH INDIAN": { code: "NIN", icon: "🥘", count: 116, color: "#EF4444", bg: "#FEF2F2", desc: "North Indian Gravies & Paneer" },
+  "CHAT & SOFTY": { code: "CHT", icon: "🍦", count: 113, color: "#EC4899", bg: "#FDF2F8", desc: "Chaat, Softies & JP Disposables" },
+  "CHINESE & DOSA": { code: "CND", icon: "🍜", count: 85, color: "#F97316", bg: "#FFF7ED", desc: "Noodles, Fried Rice & Dosas" },
+  "MOCKTAILS & CONTINENTAL": { code: "MCT", icon: "🍹", count: 93, color: "#8B5CF6", bg: "#F5F3FF", desc: "Mocktails & Continental Pizzas" },
+  "RESTAURANT": { code: "RST", icon: "🍽️", count: 75, color: "#06B6D4", bg: "#ECFEFF", desc: "Restaurant Dining & Dairy" },
+  "ROOM SERVICE": { code: "RMS", icon: "🛎️", count: 60, color: "#A855F7", bg: "#FAF5FF", desc: "In-Room Dining Orders" }
 };
 
 import { today } from "../../utils/dates";
@@ -187,10 +200,19 @@ function ItemNameCombobox({ value, dept, deptItems, deptJsonItems = [], stocks =
 // first — often a stale ₹0 opening-stock row — so cost silently stays 0
 // even after picking the right item. Prefer an active (remaining>0) batch
 // with a real price; fall back to any batch with a real price.
-function getItemRate(stocks, item) {
+function getItemRate(stocks, item, availableStock = {}) {
+  // 1. Direct price from template item
+  if (item.price && parseFloat(item.price) > 0) return parseFloat(item.price);
+
+  // 2. Direct price from availableStock map
   const cleanName = (item.name || "").toLowerCase().trim();
-  const matches = stocks.filter(s => s.item_code === item.item_code || s.name.toLowerCase().trim() === cleanName);
-  if (!matches.length) return parseFloat(item.scannedPrice) || 0; // unmatched — fall back to OCR-read price
+  if (availableStock && availableStock[cleanName]?.price && parseFloat(availableStock[cleanName].price) > 0) {
+    return parseFloat(availableStock[cleanName].price);
+  }
+
+  // 3. Fallback to stocks catalog
+  const matches = (stocks || []).filter(s => s.item_code === item.item_code || s.name.toLowerCase().trim() === cleanName);
+  if (!matches.length) return parseFloat(item.scannedPrice) || 0;
   const withPrice = matches.filter(s => parseFloat(s.price) > 0);
   const pool = withPrice.length ? withPrice : matches;
   const active = pool.find(s => parseFloat(s.remaining) > 0);
@@ -201,23 +223,23 @@ function getItemRate(stocks, item) {
 // Rate is priced per the STOCK's unit (e.g. ₹/kg), but the indent line can be
 // in a different unit (e.g. 500 g) — multiplying qty×rate directly gave a
 // 1000x-inflated cost. Convert qty into the rate's unit before multiplying.
-function getLineCost(stocks, item) {
+function getLineCost(stocks, item, availableStock = {}) {
   const cleanName = (item.name || "").toLowerCase().trim();
-  const matches = stocks.filter(s => s.item_code === item.item_code || s.name.toLowerCase().trim() === cleanName);
-  const rate = getItemRate(stocks, item);
+  const matches = (stocks || []).filter(s => s.item_code === item.item_code || s.name.toLowerCase().trim() === cleanName);
+  const rate = getItemRate(stocks, item, availableStock);
   const qty = parseFloat(item.qty) || 0;
-  if (!matches.length) return rate * qty; // unmatched — scanned price already assumed same unit as scanned qty
-  const stockUnit = matches[0].unit;
+  if (!matches.length) return rate * qty;
+  const stockUnit = matches[0]?.unit || item.unit;
   const mult = getConversionMultiplier(item.unit, stockUnit);
-  const normQty = mult !== null ? qty * mult : qty; // unknown conversion — leave qty as-is rather than block
+  const normQty = mult !== null ? qty * mult : qty;
   return rate * normQty;
 }
 
 export default function IndentScreen() {
-  const { stockNames, stocks = [], indentPreFill, setIndentPreFill, indentSmartPreFill, setIndentSmartPreFill, setCurrentScreen } = useAppContext();
+  const { stockNames, stocks = [], indentPreFill, setIndentPreFill, indentSmartPreFill, setIndentSmartPreFill, setCurrentScreen, currentScreen } = useAppContext();
   const { roles, hasPermission } = useAuth();
   const isChef         = roles.some((r) => r.key === "chef");
-  const isStoreManager = roles.some((r) => r.key === "store_manager");
+  const isStoreManager = roles.some((r) => r.key === "store_manager" || r.key === "admin" || r.key === "director" || r.key === "store_keeper") || currentScreen === "store_manager_indent" || currentScreen?.startsWith("store_manager");
   const [deptsList, setDeptsList] = useState([]);
   const [deptItemsMap, setDeptItemsMap] = useState({});
   const [deptLeftovers, setDeptLeftovers] = useState([]);
@@ -226,13 +248,101 @@ export default function IndentScreen() {
   const [templateLoadedDept, setTemplateLoadedDept] = useState("");
   const [tableFilter, setTableFilter] = useState("");
   const [templateStats, setTemplateStats] = useState({ total: 0, dept: "" });
+  const [filterMode, setFilterMode] = useState("all"); // 'all' | 'ordered' | 'low_stock'
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+
+  const stepQty = (idx, delta) => {
+    setForm(prev => {
+      const current = parseFloat(prev.items[idx]?.qty) || 0;
+      const nextVal = Math.max(0, parseFloat((current + delta).toFixed(2)));
+      const newItems = [...prev.items];
+      newItems[idx] = {
+        ...newItems[idx],
+        qty: nextVal === 0 ? "" : String(nextVal)
+      };
+      return { ...prev, items: newItems };
+    });
+  };
+
+  const addPresetQty = (idx, addAmount) => {
+    setForm(prev => {
+      const current = parseFloat(prev.items[idx]?.qty) || 0;
+      const nextVal = parseFloat((current + addAmount).toFixed(2));
+      const newItems = [...prev.items];
+      newItems[idx] = {
+        ...newItems[idx],
+        qty: String(nextVal)
+      };
+      return { ...prev, items: newItems };
+    });
+  };
+
+  const handleAutoFillRecommendations = async () => {
+    if (!form.dept) {
+      setMsg("Please select a department first");
+      return;
+    }
+    setLoadingRecommendations(true);
+    try {
+      const res = await api.indents.recommendations({ dept: form.dept, date: form.date, weeks: 4 });
+      if (res.success && res.data && res.data.length > 0) {
+        const recMap = new Map();
+        res.data.forEach(r => {
+          recMap.set(r.name.toLowerCase().trim(), r);
+          if (r.item_code) recMap.set(r.item_code.toUpperCase().trim(), r);
+        });
+
+        let filledCount = 0;
+        setForm(prev => {
+          const updatedItems = prev.items.map(item => {
+            const cleanName = (item.name || "").toLowerCase().trim();
+            const codeKey = (item.item_code || "").toUpperCase().trim();
+            const rec = recMap.get(cleanName) || recMap.get(codeKey);
+
+            if (rec && rec.avg_qty > 0) {
+              filledCount++;
+              return {
+                ...item,
+                qty: String(rec.avg_qty),
+                notes: rec.trend_direction === "up" ? "⚡ Auto-Par (Rising Trend)" : (item.notes || "⚡ Auto-Par")
+              };
+            }
+            return item;
+          });
+
+          return { ...prev, items: updatedItems };
+        });
+
+        setMsg(`⚡ Multi-Agent Auto-Par: Filled ${filledCount} items based on weekday moving averages! ✓`);
+        setTimeout(() => setMsg(""), 4000);
+      } else {
+        setMsg("No historical weekday consumption patterns recorded for this department yet.");
+        setTimeout(() => setMsg(""), 3500);
+      }
+    } catch (err) {
+      console.error("Failed to load multi-agent recommendations:", err);
+      setMsg("Multi-Agent Recommendation error: " + (err.message || "Unknown"));
+      setTimeout(() => setMsg(""), 3500);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  const handleResetQuantities = () => {
+    setForm(prev => ({
+      ...prev,
+      items: prev.items.map(it => ({ ...it, qty: "" }))
+    }));
+    setMsg("All quantities reset to zero. ✓");
+    setTimeout(() => setMsg(""), 2500);
+  };
 
   // Local speech-to-text (Whisper Tiny — no Google, no internet)
   const { listening, statusMsg: speechStatus, startRecording, stopRecording } = useLocalSpeech();
   
   const [form, setForm] = useState({ dept: "", date: today(), indent_type: "routine", items: [{ id: uid(), name: "", qty: "", unit: "kg", item_code: "", notes: "" }] });
   const [activeRowIdx, setActiveRowIdx] = useState(0);
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState(isStoreManager ? "history" : "manual");
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(true);
   const [expandedIndentIds, setExpandedIndentIds] = useState(new Set());
   const [msg, setMsg]   = useState("");
@@ -280,6 +390,22 @@ export default function IndentScreen() {
   const [selectedItems, setSelectedItems] = useState({});
   const [activeCategory, setActiveCategory] = useState("All");
   const [historySearch, setHistorySearch] = useState("");
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+
+  const handleExportAutomatedExcel = async () => {
+    try {
+      setIsExportingExcel(true);
+      await api.indents.downloadAutomatedExcel();
+      setMsg("Automated Indent Forecasting Engine Excel downloaded successfully! ✓");
+      setTimeout(() => setMsg(""), 4000);
+    } catch (err) {
+      console.error("Failed to export automated indent excel:", err);
+      setMsg("Export failed: " + (err.message || "Unknown error"));
+      setTimeout(() => setMsg(""), 4000);
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
   const uniqueStockItems = [];
   const seenNames = new Set();
   (stocks || []).forEach(s => {
@@ -373,22 +499,39 @@ export default function IndentScreen() {
         setDeptsList(res.data);
         
         if (indentPreFill) {
-          const newForm = {
-            dept: indentPreFill.dept,
-            date: today(),
-            items: indentPreFill.items.map(it => ({
-              name: it.name,
-              qty: it.qty.toString(),
-              unit: it.unit,
-              item_code: stocks.find(s => s.name.toLowerCase() === it.name.toLowerCase())?.item_code || "KPL-NEW"
-            }))
-          };
-          setForm(newForm);
-          loadLeftovers(indentPreFill.dept);
-          fetchStockLevels(indentPreFill.items.map(it => it.name));
-          setIndentPreFill(null);
-          setMsg("Pre-filled items from Menu Plan ✓");
-          setTimeout(() => setMsg(""), 3000);
+          if (indentPreFill.dept && !indentPreFill.items) {
+            setActiveTab(indentPreFill.tab || "manual");
+            setForm((f) => ({ ...f, dept: indentPreFill.dept }));
+            loadLeftovers(indentPreFill.dept);
+            loadDepartmentTemplate(indentPreFill.dept);
+            setIndentPreFill(null);
+            setMsg(`Loaded ${indentPreFill.dept} template ✓`);
+            setTimeout(() => setMsg(""), 3000);
+          } else if (indentPreFill.tab) {
+            setActiveTab(indentPreFill.tab);
+            if (indentPreFill.statusFilter) {
+              setStatusFilter(indentPreFill.statusFilter);
+              load({ page: 1, status: indentPreFill.statusFilter });
+            }
+            setIndentPreFill(null);
+          } else if (indentPreFill.items) {
+            const newForm = {
+              dept: indentPreFill.dept,
+              date: today(),
+              items: indentPreFill.items.map(it => ({
+                name: it.name,
+                qty: it.qty.toString(),
+                unit: it.unit,
+                item_code: stocks.find(s => s.name.toLowerCase() === it.name.toLowerCase())?.item_code || "KPL-NEW"
+              }))
+            };
+            setForm(newForm);
+            loadLeftovers(indentPreFill.dept);
+            fetchStockLevels(indentPreFill.items.map(it => it.name));
+            setIndentPreFill(null);
+            setMsg("Pre-filled items from Menu Plan ✓");
+            setTimeout(() => setMsg(""), 3000);
+          }
         } else {
           const validNames = res.data.map(d => d.name);
           setForm((f) => {
@@ -490,16 +633,102 @@ export default function IndentScreen() {
     }
   }, [form.dept, templateLoadedDept]);
 
+  const selectDepartment = (deptName) => {
+    if (!deptName) return;
+    setForm((f) => ({ ...f, dept: deptName }));
+    loadLeftovers(deptName);
+    loadDepartmentTemplate(deptName);
+    setMsg(`Switched to ${deptName} template ✓`);
+    setTimeout(() => setMsg(""), 2500);
+  };
+
   const handleDeptChange = (e) => {
-    const val = e.target.value;
-    setForm((f) => ({ ...f, dept: val }));
-    loadLeftovers(val);
-    loadDepartmentTemplate(val);
+    selectDepartment(e.target.value);
   };
 
   const addRow = () => {
     setForm((f) => ({ ...f, items: [...f.items, { id: uid(), name: "", qty: "", unit: "kg", item_code: "", notes: "" }] }));
     setActiveRowIdx(form.items.length); // Focus on the new row
+  };
+
+  // High-standard multi-agent item addition handler
+  const handleAddEnhancedItems = (itemsToAdd) => {
+    if (!itemsToAdd || itemsToAdd.length === 0) return;
+
+    setForm(prev => {
+      // Clean out lone empty starter row if it exists
+      const baseItems = (prev.items.length === 1 && !prev.items[0].name) ? [] : [...prev.items];
+      
+      const newItems = [...baseItems];
+      let addedCount = 0;
+      let updatedCount = 0;
+
+      itemsToAdd.forEach(toAdd => {
+        const cleanName = (toAdd.name || "").toLowerCase().trim();
+        const codeKey = (toAdd.item_code || "").toUpperCase().trim();
+        
+        // Check if row already exists in table
+        const existingIdx = newItems.findIndex(row => {
+          const rowName = (row.name || "").toLowerCase().trim();
+          const rowCode = (row.item_code || "").toUpperCase().trim();
+          return (codeKey && rowCode === codeKey) || (cleanName && rowName === cleanName);
+        });
+
+        if (existingIdx >= 0) {
+          // Increment or update existing row
+          const existingRow = newItems[existingIdx];
+          const prevQty = parseFloat(existingRow.qty) || 0;
+          const addedQty = parseFloat(toAdd.qty) || 0;
+          const newQty = prevQty + addedQty;
+
+          newItems[existingIdx] = {
+            ...existingRow,
+            qty: String(newQty),
+            notes: toAdd.notes || existingRow.notes || "",
+            is_custom: toAdd.is_custom || existingRow.is_custom,
+            urgency: toAdd.urgency || existingRow.urgency
+          };
+          updatedCount++;
+        } else {
+          // Append new item
+          newItems.push({
+            id: uid(),
+            name: toAdd.name,
+            qty: String(toAdd.qty || ""),
+            unit: toAdd.unit || "kg",
+            item_code: toAdd.item_code || "",
+            price: toAdd.price || 0,
+            notes: toAdd.notes || "",
+            is_custom: !!toAdd.is_custom,
+            urgency: toAdd.urgency || "routine"
+          });
+          addedCount++;
+        }
+      });
+
+      return { ...prev, items: newItems };
+    });
+
+    // Fetch stock levels for all added items
+    const names = itemsToAdd.map(i => i.name).filter(Boolean);
+    if (names.length > 0) fetchStockLevels(names);
+
+    const totalCount = itemsToAdd.length;
+    setMsg(`Added ${totalCount} item${totalCount > 1 ? "s" : ""} to Indent ✓`);
+    setTimeout(() => setMsg(""), 3500);
+  };
+
+  const handleAddTemplateItem = async (payload) => {
+    try {
+      const res = await api.departments.addTemplateItem(payload);
+      if (res.success) {
+        setMsg(`Item '${payload.item_name}' permanently added to ${payload.department} template! ✓`);
+        loadDepartmentTemplate(payload.department);
+      }
+    } catch (err) {
+      console.error("Failed to add template item:", err);
+      throw err;
+    }
   };
   const removeRow = (idx) => setForm((f) => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
   const clearAll = () => {
@@ -860,7 +1089,7 @@ export default function IndentScreen() {
           <style>
             body { font-family: sans-serif; padding: 20px; color: #333; }
             .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-            .logo-container { background: #1E293B; border-radius: 8px; padding: 8px 20px; display: inline-flex; align-items: center; justify-content: center; }
+            .logo-container { background: #ffffff; border-radius: 8px; padding: 8px 20px; display: inline-flex; align-items: center; justify-content: center; }
             .details { margin-bottom: 20px; font-size: 14px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
             th { background: #f2f2f2; padding: 8px; text-align: left; border-bottom: 2px solid #ddd; }
@@ -971,59 +1200,240 @@ export default function IndentScreen() {
       <div className="indent-page-wrapper">
         
         {/* --- TABS --- */}
-        <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid #E5E7EB", paddingBottom: "10px", marginBottom: "16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #E5E7EB", paddingBottom: "10px", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => setActiveTab("manual")}
+              style={{
+                background: activeTab === "manual" ? "#F1F5F9" : "transparent",
+                border: "none",
+                borderBottom: activeTab === "manual" ? "2px solid #0F172A" : "2px solid transparent",
+                color: activeTab === "manual" ? "#0F172A" : "#64748B",
+                padding: "8px 16px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+                borderRadius: activeTab === "manual" ? "6px 6px 0 0" : 0
+              }}
+            >
+              📝 Manual Indent
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("smart")}
+              style={{
+                background: activeTab === "smart" ? "#FFFBEB" : "transparent",
+                border: "none",
+                borderBottom: activeTab === "smart" ? "2px solid #D97706" : "2px solid transparent",
+                color: activeTab === "smart" ? "#B45309" : "#64748B",
+                padding: "8px 16px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+                borderRadius: activeTab === "smart" ? "6px 6px 0 0" : 0
+              }}
+            >
+              ⚡ Smart Auto-Indent & Recipes
+            </button>
+            {isStoreManager && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("history");
+                  load({ page: 1 });
+                }}
+                style={{
+                  background: activeTab === "history" ? "#EFF6FF" : "transparent",
+                  border: "none",
+                  borderBottom: activeTab === "history" ? "2px solid #2563EB" : "2px solid transparent",
+                  color: activeTab === "history" ? "#1E3A8A" : "#64748B",
+                  padding: "8px 16px",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                  borderRadius: activeTab === "history" ? "6px 6px 0 0" : 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                📋 All Indents History (Register)
+              </button>
+            )}
+          </div>
+
           <button
-            onClick={() => setActiveTab("manual")}
+            type="button"
+            onClick={handleExportAutomatedExcel}
+            disabled={isExportingExcel}
             style={{
-              background: "transparent",
-              border: "none",
-              borderBottom: activeTab === "manual" ? "2px solid #475569" : "2px solid transparent",
-              color: activeTab === "manual" ? "#1E293B" : "#64748B",
-              padding: "8px 16px",
-              fontSize: "13px",
+              background: "#FEF3C7",
+              border: "1px solid #D97706",
+              color: "#92400E",
+              padding: "7px 14px",
+              borderRadius: "8px",
+              fontSize: "12px",
               fontWeight: 700,
-              cursor: "pointer",
+              cursor: isExportingExcel ? "not-allowed" : "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
               transition: "all 0.15s",
-              borderRadius: 0
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
             }}
+            title="Download Dynamic Indent Automation & Forecasting Engine Excel"
           >
-            📝 Manual Indent
-          </button>
-          <button
-            onClick={() => setActiveTab("smart")}
-            style={{
-              background: "transparent",
-              border: "none",
-              borderBottom: activeTab === "smart" ? "2px solid #e8a838" : "2px solid transparent",
-              color: activeTab === "smart" ? "#1E293B" : "#64748B",
-              padding: "8px 16px",
-              fontSize: "13px",
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.15s",
-              borderRadius: 0
-            }}
-          >
-            ⚡ Smart Auto-Indent & Recipes
+            <FileSpreadsheet size={15} color="#D97706" />
+            {isExportingExcel ? "Generating Engine…" : "📊 Download Forecasting Engine (Excel)"}
           </button>
         </div>
 
         {activeTab === "manual" ? (
-          <div className="indent-top-section">
-          
-          {/* LEFT PANEL */}
-          <div className="indent-left-panel">
-            <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "20px 24px", height: "100%", display: "flex", flexDirection: "column" }}>
-              <p style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.05em", color: "#475569", textTransform: "uppercase", marginBottom: "20px" }}>NEW INDENT FORM</p>
-              
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: "12px", color: "#475569", marginBottom: "6px", display: "block", fontWeight: 500 }}>
-                  Department
-                </label>
-                <select className="indent-field" value={form.dept} onChange={handleDeptChange}>
-                  {deptsList.map((d) => <option key={d.id} value={d.name}>{d.name} ({d.code})</option>)}
-                </select>
+          <div>
+            {/* DEPARTMENT TOUCH TILES RIBBON (FOR LAYMAN CHEF) */}
+            <div style={{
+              background: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              borderRadius: "14px",
+              padding: "14px 16px",
+              marginBottom: "16px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.03)"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "18px" }}>👨‍🍳</span>
+                  <div>
+                    <h3 style={{ fontSize: "13px", fontWeight: 800, color: "#0F172A", margin: 0, letterSpacing: "0.02em" }}>
+                      KITCHEN DEPARTMENTS (TOUCH A TILE TO OPEN VOUCHER TEMPLATE)
+                    </h3>
+                    <p style={{ fontSize: "11px", color: "#64748B", margin: "2px 0 0" }}>
+                      Tap any department below to instantly load its official voucher items (60–158 items)
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <label style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>Or Select Dropdown:</label>
+                  <select
+                    className="indent-field"
+                    style={{ width: "auto", minWidth: 170, padding: "5px 10px", fontSize: 12, height: 32, borderRadius: 8, borderColor: "#CBD5E1", background: "#F8FAFC", fontWeight: 600 }}
+                    value={form.dept}
+                    onChange={handleDeptChange}
+                  >
+                    {deptsList.map((d) => <option key={d.id} value={d.name}>{d.name} ({d.code})</option>)}
+                  </select>
+                </div>
               </div>
+
+              {/* 9 Department Touch Tiles */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+                gap: "8px"
+              }}>
+                {deptsList.map((d) => {
+                  const isSelected = form.dept === d.name;
+                  const meta = DEPARTMENT_METADATA[d.name] || { icon: "🍽️", count: 60, color: "#E8A838", bg: "#FEF3C7" };
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => selectDepartment(d.name)}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "10px 6px 8px",
+                        borderRadius: "10px",
+                        border: isSelected ? `2px solid ${meta.color}` : "1.5px solid #E2E8F0",
+                        background: isSelected ? meta.bg : "#FFFFFF",
+                        boxShadow: isSelected ? `0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px ${meta.color}` : "0 1px 3px rgba(0,0,0,0.03)",
+                        cursor: "pointer",
+                        transition: "all 0.16s ease",
+                        textAlign: "center",
+                        position: "relative",
+                        minHeight: "68px",
+                        outline: "none"
+                      }}
+                    >
+                      <span style={{ fontSize: "20px", marginBottom: "3px" }}>{meta.icon}</span>
+                      <span style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: isSelected ? "#0F172A" : "#334155",
+                        lineHeight: 1.15,
+                        textTransform: "uppercase"
+                      }}>
+                        {d.name}
+                      </span>
+                      <span style={{
+                        fontSize: "9px",
+                        fontWeight: 700,
+                        color: isSelected ? meta.color : "#64748B",
+                        marginTop: "2px"
+                      }}>
+                        {meta.count} items
+                      </span>
+                      {isSelected && (
+                        <span style={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          width: 14,
+                          height: 14,
+                          borderRadius: "50%",
+                          background: "#059669",
+                          color: "#FFFFFF",
+                          fontSize: 9,
+                          fontWeight: 900,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}>✓</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="indent-top-section">
+            
+            {/* LEFT PANEL */}
+            <div className="indent-left-panel">
+              <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "20px 24px", display: "flex", flexDirection: "column" }}>
+                <p style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.05em", color: "#475569", textTransform: "uppercase", marginBottom: "20px" }}>NEW INDENT FORM</p>
+                
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: "12px", color: "#475569", marginBottom: "6px", display: "block", fontWeight: 500 }}>
+                    Active Department
+                  </label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <select className="indent-field" value={form.dept} onChange={handleDeptChange} style={{ flex: 1 }}>
+                      {deptsList.map((d) => <option key={d.id} value={d.name}>{d.name} ({d.code})</option>)}
+                    </select>
+                    <div style={{
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      background: (DEPARTMENT_METADATA[form.dept] || {}).bg || "#F1F5F9",
+                      color: (DEPARTMENT_METADATA[form.dept] || {}).color || "#475569",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      whiteSpace: "nowrap",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4
+                    }}>
+                      <span>{(DEPARTMENT_METADATA[form.dept] || {}).icon || "🍽️"}</span>
+                      <span>{(DEPARTMENT_METADATA[form.dept] || {}).count || ""} items</span>
+                    </div>
+                  </div>
+                </div>
               
               <div style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: "12px", color: "#475569", marginBottom: "6px", display: "block", fontWeight: 500 }}>
@@ -1037,16 +1447,17 @@ export default function IndentScreen() {
                 <label style={{ fontSize: "12px", color: "#475569", marginBottom: "8px", display: "block", fontWeight: 500 }}>
                   Indent Type
                 </label>
-                <div style={{ display: "flex", borderRadius: 10, overflow: "hidden", border: "1px solid #E2E8F0", background: "#F8FAFC" }}>
+                <div style={{ display: "flex", borderRadius: 10, overflow: "hidden", border: "1px solid #CBD5E1", background: "#F1F5F9", padding: 2 }}>
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, indent_type: "routine" }))}
                     style={{
-                      flex: 1, padding: "9px 0", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 12,
-                      transition: "all 0.18s",
-                      background: form.indent_type === "routine" ? "#1e293b" : "transparent",
-                      color: form.indent_type === "routine" ? "#ffffff" : "#64748b",
+                      flex: 1, padding: "8px 0", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 12,
+                      transition: "all 0.18s", borderRadius: 8,
+                      background: form.indent_type === "routine" ? "#059669" : "transparent",
+                      color: form.indent_type === "routine" ? "#ffffff" : "#334155",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                      boxShadow: form.indent_type === "routine" ? "0 1px 3px rgba(0,0,0,0.15)" : "none"
                     }}
                   >
                     <span style={{ fontSize: 14 }}>✓</span> Routine
@@ -1055,17 +1466,18 @@ export default function IndentScreen() {
                     type="button"
                     onClick={() => setForm(f => ({ ...f, indent_type: "adhoc" }))}
                     style={{
-                      flex: 1, padding: "9px 0", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 12,
-                      transition: "all 0.18s",
+                      flex: 1, padding: "8px 0", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 12,
+                      transition: "all 0.18s", borderRadius: 8,
                       background: form.indent_type === "adhoc" ? "#d97706" : "transparent",
-                      color: form.indent_type === "adhoc" ? "#ffffff" : "#64748b",
+                      color: form.indent_type === "adhoc" ? "#ffffff" : "#334155",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                      boxShadow: form.indent_type === "adhoc" ? "0 1px 3px rgba(0,0,0,0.15)" : "none"
                     }}
                   >
                     <span style={{ fontSize: 14 }}>⚡</span> Ad-Hoc
                   </button>
                 </div>
-                <p style={{ fontSize: 11, color: form.indent_type === "adhoc" ? "#92400E" : "#64748b", marginTop: 6, background: form.indent_type === "adhoc" ? "#FEF3C7" : "#F1F5F9", borderRadius: 6, padding: "5px 8px" }}>
+                <p style={{ fontSize: 11, color: form.indent_type === "adhoc" ? "#92400E" : "#475569", marginTop: 6, background: form.indent_type === "adhoc" ? "#FEF3C7" : "#F1F5F9", borderRadius: 6, padding: "5px 8px" }}>
                   {form.indent_type === "adhoc"
                     ? "⚡ Emergency indent — stock is critically low or exhausted."
                     : "✓ Regular nightly indent for tomorrow's service."}
@@ -1110,11 +1522,11 @@ export default function IndentScreen() {
               )}
 
               {/* Action Buttons */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "24px", marginTop: "auto" }}>
-                <button className="action-btn primary-outline" onClick={addRow}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "16px", marginBottom: "16px" }}>
+                <button className="action-btn primary-outline" onClick={() => setShowModal(true)} title="Open Multi-Agent Item Addition suite">
                   <Plus size={15} /> Add Item
                 </button>
-                <button className="action-btn secondary-outline" onClick={() => { setSelectedItems({}); setShowModal(true); }}>
+                <button className="action-btn secondary-outline" onClick={() => setShowModal(true)} title="Bulk Select & Add multiple items">
                   <Zap size={15} /> Add Multi
                 </button>
                 <button
@@ -1168,7 +1580,7 @@ export default function IndentScreen() {
                         borderRadius: 999, transition: "width 0.22s ease",
                       }} />
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 11, color: "#64748B", fontWeight: 500 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
                       <span>{scanStage}</span>
                       <span>{scanProgress}%</span>
                     </div>
@@ -1176,10 +1588,54 @@ export default function IndentScreen() {
                 )}
               </div>
 
+              {/* Submit Indent Primary Action */}
+              <div style={{ marginTop: "12px", marginBottom: "12px" }}>
+                {msg && (
+                  <div style={{
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    background: msg.startsWith("Error") ? "#FEE2E2" : "#DCFCE7",
+                    color: msg.startsWith("Error") ? "#B91C1C" : "#15803D",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    marginBottom: "8px",
+                    textAlign: "center"
+                  }}>
+                    {msg}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="submit-indent-btn"
+                  onClick={submit}
+                  disabled={form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length === 0}
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    borderRadius: "8px",
+                    background: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "linear-gradient(135deg, #059669, #047857)" : "#CBD5E1",
+                    color: "#ffffff",
+                    border: "none",
+                    cursor: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "pointer" : "not-allowed",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    boxShadow: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "0 2px 5px rgba(5,150,105,0.28)" : "none",
+                    margin: 0
+                  }}
+                >
+                  <Send size={15} />
+                  Submit Indent {form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? `(${form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length} items)` : ""}
+                </button>
+              </div>
+
               {/* Share Order */}
-              <div style={{ marginTop: "auto" }}>
+              <div style={{ marginTop: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #E5E7EB" }}>
-                  <span style={{ color: "#64748B", fontSize: "12px", fontWeight: 500 }}>Share Order:</span>
+                  <span style={{ color: "var(--text-muted)", fontSize: "12px", fontWeight: 500 }}>Share Order:</span>
                   <button onClick={shareWhatsApp} className="share-btn whatsapp">
                     <WhatsAppIcon size={14} /> WhatsApp
                   </button>
@@ -1195,12 +1651,14 @@ export default function IndentScreen() {
           {/* RIGHT PANEL: The Right Department Template & Items */}
           <div className="indent-right-panel">
             <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "0", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-              <div style={{ padding: "10px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "10px", background: "#F8FAFC" }}>
+              
+              {/* Template Top Header */}
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "10px", background: "#1E293B" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.05em", color: "#1E293B", textTransform: "uppercase" }}>
+                  <span style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.05em", color: "#FFFFFF", textTransform: "uppercase" }}>
                     📋 {templateStats.dept || form.dept || "Department"} Template
                   </span>
-                  <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "12px", background: "#E2E8F0", color: "#475569" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "12px", background: "#334155", color: "#F8FAFC" }}>
                     {form.items.length} items
                   </span>
                   {form.items.filter(i => parseFloat(i.qty) > 0).length > 0 && (
@@ -1212,7 +1670,7 @@ export default function IndentScreen() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, maxWidth: 300, minWidth: 180, marginLeft: "auto" }}>
                   <div style={{ position: "relative", width: "100%" }}>
-                    <Search size={13} color="#94A3B8" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                    <Search size={13} color="var(--text-muted)" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                     <input
                       value={tableFilter}
                       onChange={(e) => setTableFilter(e.target.value)}
@@ -1222,7 +1680,7 @@ export default function IndentScreen() {
                     {tableFilter && (
                       <button
                         onClick={() => setTableFilter("")}
-                        style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#94A3B8", cursor: "pointer", fontSize: 11, padding: 0 }}
+                        style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, padding: 0 }}
                       >
                         ✕
                       </button>
@@ -1244,42 +1702,191 @@ export default function IndentScreen() {
                 </div>
               </div>
 
-              <div className="table-container resp-table-wrap" style={{ flex: 1, overflowY: "auto" }}>
+              {/* Multi-Agent Assistant & Quick Automation Action Bar */}
+              <div style={{
+                background: "#0F172A",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                padding: "8px 16px",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "10px"
+              }}>
+                {/* Left: Multi-Agent AI Automation */}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#E8A838", fontWeight: 700, letterSpacing: "0.03em", marginRight: 2 }}>
+                    <Sparkles size={13} /> Multi-Agent Engine:
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAutoFillRecommendations}
+                    disabled={loadingRecommendations}
+                    title="Calculates moving weekday consumption averages for this department and auto-fills template quantities"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(232, 168, 56, 0.2), rgba(232, 168, 56, 0.08))",
+                      border: "1px solid #E8A838",
+                      color: "#FDE68A",
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    <Zap size={12} style={{ color: "#E8A838" }} />
+                    {loadingRecommendations ? "Predicting..." : "⚡ Auto-Fill Weekday Par"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetQuantities}
+                    title="Reset all ordered quantities to zero without removing template items"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.06)",
+                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                      color: "#94A3B8",
+                      padding: "4px 9px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4
+                    }}
+                  >
+                    <RotateCcw size={11} /> Reset Qty
+                  </button>
+                </div>
+
+                {/* Right: Smart Filter Chips */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11, color: "#94A3B8", fontWeight: 600 }}>Filter:</span>
+                  <button
+                    type="button"
+                    onClick={() => setFilterMode("all")}
+                    style={{
+                      background: filterMode === "all" ? "#3B82F6" : "rgba(255, 255, 255, 0.08)",
+                      color: filterMode === "all" ? "#FFFFFF" : "#CBD5E1",
+                      border: filterMode === "all" ? "1px solid #3B82F6" : "1px solid rgba(255, 255, 255, 0.1)",
+                      borderRadius: 12,
+                      padding: "2px 9px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
+                  >
+                    All ({form.items.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFilterMode("ordered")}
+                    style={{
+                      background: filterMode === "ordered" ? "#059669" : "rgba(16, 185, 129, 0.15)",
+                      color: filterMode === "ordered" ? "#FFFFFF" : "#34D399",
+                      border: `1px solid ${filterMode === "ordered" ? "#059669" : "rgba(16, 185, 129, 0.35)"}`,
+                      borderRadius: 12,
+                      padding: "2px 9px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
+                  >
+                    ✓ Ordered ({form.items.filter(i => parseFloat(i.qty) > 0).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFilterMode("low_stock")}
+                    style={{
+                      background: filterMode === "low_stock" ? "#D97706" : "rgba(217, 119, 6, 0.15)",
+                      color: filterMode === "low_stock" ? "#FFFFFF" : "#FBBF24",
+                      border: `1px solid ${filterMode === "low_stock" ? "#D97706" : "rgba(217, 119, 6, 0.35)"}`,
+                      borderRadius: 12,
+                      padding: "2px 9px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
+                  >
+                    ⚠️ Low / Out Stock ({form.items.filter(i => {
+                      const cleanName = (i.name || "").toLowerCase().trim();
+                      const availObj = availableStock[cleanName];
+                      const avail = availObj?.available ?? availObj ?? i.current_stock;
+                      return avail !== undefined && avail !== null && Number(avail) <= 15;
+                    }).length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Template Items Table */}
+              <div className="table-container resp-table-wrap" style={{ flex: 1, overflowY: "auto", maxHeight: "520px" }}>
                 <table className="excel-table">
                   <colgroup>
-                    <col style={{ width: "40px" }} />
-                    <col style={{ width: "90px" }} />
+                    <col style={{ width: "35px" }} />
+                    <col style={{ width: "80px" }} />
                     <col style={{ width: "auto" }} />
-                    <col style={{ width: "80px" }} />
-                    <col style={{ width: "80px" }} />
-                    <col style={{ width: "80px" }} />
-                    <col style={{ width: "120px" }} />
-                    <col style={{ width: "50px" }} />
+                    <col style={{ width: "135px" }} />
+                    <col style={{ width: "85px" }} />
+                    <col style={{ width: "155px" }} />
+                    <col style={{ width: "70px" }} />
+                    <col style={{ width: "95px" }} />
+                    <col style={{ width: "110px" }} />
+                    <col style={{ width: "35px" }} />
                   </colgroup>
                   <thead>
                     <tr>
                       <th>#</th>
                       <th>Item Code</th>
                       <th>Item Name</th>
-                      <th>Qty</th>
+                      <th>Central Store Stock</th>
+                      <th>Rate</th>
+                      <th>Order Qty</th>
                       <th>Unit</th>
-                      <th>Avail</th>
+                      <th style={{ textAlign: "right" }}>Line Total</th>
                       <th>Notes</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {(() => {
-                      const displayed = tableFilter
-                        ? form.items.filter(it => (it.name || "").toLowerCase().includes(tableFilter.toLowerCase()) || (it.item_code || "").toLowerCase().includes(tableFilter.toLowerCase()))
-                        : form.items;
+                      let displayed = form.items;
+
+                      // Apply Mode Filters
+                      if (filterMode === "ordered") {
+                        displayed = displayed.filter(it => parseFloat(it.qty) > 0);
+                      } else if (filterMode === "low_stock") {
+                        displayed = displayed.filter(it => {
+                          const cleanName = (it.name || "").toLowerCase().trim();
+                          const availObj = availableStock[cleanName];
+                          const avail = availObj?.available ?? availObj ?? it.current_stock;
+                          return avail !== undefined && avail !== null && Number(avail) <= 15;
+                        });
+                      }
+
+                      // Apply Text Search Filter
+                      if (tableFilter.trim()) {
+                        const q = tableFilter.toLowerCase().trim();
+                        displayed = displayed.filter(it => (it.name || "").toLowerCase().includes(q) || (it.item_code || "").toLowerCase().includes(q));
+                      }
 
                       if (displayed.length === 0) {
                         return (
                           <tr>
-                            <td colSpan="8" style={{ textAlign: "center", padding: "40px 20px" }}>
-                              <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-                                {tableFilter ? `No template items matching "${tableFilter}"` : "No items in list. Click 'Load Dept Template' or '+ Add Item' to start."}
+                            <td colSpan="10" style={{ textAlign: "center", padding: "40px 20px" }}>
+                              <span style={{ color: "var(--text-muted)", fontSize: "13px" }}>
+                                {filterMode === "ordered"
+                                  ? "No ordered items yet. Increase quantities using the [+] buttons or enter a quantity to add."
+                                  : filterMode === "low_stock"
+                                  ? "No items currently flagged as low or out of stock in Central Store."
+                                  : tableFilter
+                                  ? `No template items matching "${tableFilter}"`
+                                  : "No items in list. Click 'Reload Template' or '+ Add Item' to start."}
                               </span>
                             </td>
                           </tr>
@@ -1293,16 +1900,25 @@ export default function IndentScreen() {
                         const availObj = availableStock[cleanName];
                         const avail = availObj?.available ?? availObj ?? item.current_stock;
                         const isStockCheckActive = item.name && avail !== undefined && avail !== null;
-                        const isLowStock = isStockCheckActive && (Number(avail) <= 0 || item.is_low_stock);
+                        const isOutStock = isStockCheckActive && Number(avail) <= 0;
+                        const isLowStock = isStockCheckActive && (Number(avail) <= 15 || item.is_low_stock);
                         const isNewItem = item.item_code === "KPL-NEW" || !item.item_code;
                         const isActive = activeRowIdx === idx;
                         const isQtyMissing = item.qtyMissing || (item.qty === "" && item.name);
+
+                        const itemRate = getItemRate(stocks, item, availableStock);
+                        const lineCost = getLineCost(stocks, item, availableStock);
 
                         const confidence = isNewItem ? "red" : (item.matchVia === "fuzzy" ? "yellow" : "green");
                         const isLowConfidence = item.confidence !== undefined && item.confidence < 0.7;
 
                         return (
-                          <tr key={item.id || idx} className={`excel-row ${isActive ? 'active-row' : ''}`} onClick={() => setActiveRowIdx(idx)} style={isQtyMissing ? { background: "#fffbeb", borderLeft: "3px solid #f59e0b" } : {}}>
+                          <tr
+                            key={item.id || idx}
+                            className={`excel-row ${isActive ? 'active-row' : ''}`}
+                            onClick={() => setActiveRowIdx(idx)}
+                            style={isQtyMissing ? { background: "#fffbeb", borderLeft: "3px solid #f59e0b" } : {}}
+                          >
                             <td className="row-num">{item.row_no || (idx + 1)}</td>
                             <td>
                               <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1337,43 +1953,147 @@ export default function IndentScreen() {
                                 </div>
                               )}
                             </td>
-                            <td>
-                              <input
-                                type="number"
-                                value={item.qty}
-                                onChange={(e) => updateItem(idx, "qty", e.target.value)}
-                                className="excel-input"
-                                placeholder={isQtyMissing ? "Fill qty" : "0"}
-                                style={parseFloat(item.qty) > 0 ? { borderColor: "#10b981", background: "#f0fdf4", fontWeight: 700, color: "#15803d" } : (isQtyMissing ? { borderColor: "#f59e0b", background: "#fef3c7", color: "#92400e" } : {})}
-                              />
+
+                            {/* Enhanced Central Store Inventory */}
+                            <td style={{ padding: "6px 8px" }}>
+                              {isStockCheckActive || item.current_stock !== undefined ? (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#1E293B" }}>
+                                    {Number(avail || 0).toLocaleString("en-IN", { maximumFractionDigits: 1 })} {availObj?.unit || item.unit}
+                                  </span>
+                                  <span
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      padding: "1px 6px",
+                                      borderRadius: 4,
+                                      width: "fit-content",
+                                      background: isOutStock ? "#FEE2E2" : (isLowStock ? "#FEF3C7" : "#DCFCE7"),
+                                      color: isOutStock ? "#DC2626" : (isLowStock ? "#D97706" : "#15803D"),
+                                      border: `1px solid ${isOutStock ? "#FCA5A5" : (isLowStock ? "#FCD34D" : "#86EFAC")}`
+                                    }}
+                                    title={`Live Central Store inventory: ${avail} ${item.unit}`}
+                                  >
+                                    {isOutStock ? "✕ Out of Stock" : (isLowStock ? "⚡ Low Stock" : "✓ In Stock")}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span style={{ color: "#94A3B8", fontSize: 11 }}>—</span>
+                              )}
                             </td>
+
+                            {/* Catalog Rate */}
+                            <td style={{ padding: "6px 8px" }}>
+                              {itemRate > 0 ? (
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#B45309" }}>
+                                    ₹{itemRate.toFixed(2)}
+                                  </span>
+                                  <span style={{ fontSize: 10, color: "#64748B" }}>
+                                    per {item.unit}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span style={{ color: "#94A3B8", fontSize: 11 }} title="Catalog rate not set">₹0.00</span>
+                              )}
+                            </td>
+
+                            {/* Order Qty with Touch Stepper & Preset Pills */}
+                            <td style={{ padding: "4px 6px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); stepQty(idx, -1); }}
+                                  className="stepper-btn minus"
+                                  title="Decrease quantity by 1"
+                                >
+                                  –
+                                </button>
+                                <input
+                                  type="number"
+                                  value={item.qty}
+                                  onChange={(e) => updateItem(idx, "qty", e.target.value)}
+                                  className="excel-input stepper-input"
+                                  placeholder={isQtyMissing ? "Fill qty" : "0"}
+                                  style={{
+                                    width: 54,
+                                    textAlign: "center",
+                                    padding: "6px 4px",
+                                    borderRadius: 6,
+                                    border: parseFloat(item.qty) > 0 ? "1.5px solid #10B981" : (isQtyMissing ? "1.5px solid #F59E0B" : "1px solid #CBD5E1"),
+                                    background: parseFloat(item.qty) > 0 ? "#F0FDF4" : (isQtyMissing ? "#FEF3C7" : "#FFFFFF"),
+                                    fontWeight: parseFloat(item.qty) > 0 ? 800 : 500,
+                                    color: parseFloat(item.qty) > 0 ? "#15803D" : (isQtyMissing ? "#92400E" : "#1E293B"),
+                                    fontSize: 13
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); stepQty(idx, 1); }}
+                                  className="stepper-btn plus"
+                                  title="Increase quantity by 1"
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              {/* Quick 1-Tap Preset Increment Chips */}
+                              <div style={{ display: "flex", gap: 2, marginTop: 4 }}>
+                                {[1, 5, 10, 25].map((preset) => (
+                                  <button
+                                    key={preset}
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); addPresetQty(idx, preset); }}
+                                    className="preset-chip"
+                                    title={`Add ${preset} ${item.unit}`}
+                                  >
+                                    +{preset}
+                                  </button>
+                                ))}
+                              </div>
+                            </td>
+
+                            {/* Unit Selector */}
                             <td>
                               <select
                                 value={item.unit}
                                 onChange={(e) => updateItem(idx, "unit", e.target.value)}
                                 className="excel-input"
+                                style={{ padding: "6px 4px", fontSize: 12 }}
                               >
                                 {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                               </select>
                             </td>
-                            <td>
-                              {isStockCheckActive || item.current_stock !== undefined ? (
-                                <span className={`stock-cell ${isLowStock ? 'low' : 'ok'}`} title={item.price ? `Live Stock: ${avail} ${item.unit} · Unit Price: ₹${item.price}` : `Live Stock: ${avail} ${item.unit}`}>
-                                  {Number(avail || 0).toFixed(1)}
+
+                            {/* Live Line Total Cost */}
+                            <td style={{ padding: "6px 8px", textAlign: "right" }}>
+                              {lineCost > 0 ? (
+                                <span style={{ fontSize: 12, fontWeight: 800, color: "#15803D", background: "#DCFCE7", padding: "3px 6px", borderRadius: 4 }}>
+                                  ₹{lineCost.toFixed(2)}
                                 </span>
-                              ) : <span style={{ color: "#cbd5e1" }}>-</span>}
+                              ) : (
+                                <span style={{ color: "#94A3B8", fontSize: 11 }}>—</span>
+                              )}
                             </td>
+
+                            {/* Notes */}
                             <td>
                               <input
                                 value={item.notes || ""}
                                 onChange={(e) => updateItem(idx, "notes", e.target.value)}
                                 placeholder="Notes..."
                                 className="excel-input"
+                                style={{ padding: "6px 8px", fontSize: 12 }}
                               />
                             </td>
+
+                            {/* Action / Delete */}
                             <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                              <button onClick={(e) => { e.stopPropagation(); removeRow(idx); }} className="row-delete-btn">
-                                <Trash2 size={14} />
+                              <button onClick={(e) => { e.stopPropagation(); removeRow(idx); }} className="row-delete-btn" title="Remove item row">
+                                <Trash2 size={13} />
                               </button>
                             </td>
                           </tr>
@@ -1383,32 +2103,56 @@ export default function IndentScreen() {
                   </tbody>
                 </table>
               </div>
-              <div style={{ padding: "12px 16px", borderTop: "1px solid #E5E7EB", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F8FAFC" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <button onClick={addRow} className="add-row-btn">[ + Add row ]</button>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>
-                    Total template items: {form.items.filter(i => i.name).length}
+
+              {/* Enhanced Sticky Summary & Budget Live Bar */}
+              <div style={{ padding: "12px 16px", borderTop: "1px solid #E2E8F0", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "12px", background: "#F8FAFC" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px" }}>
+                  <button onClick={addRow} className="add-row-btn" style={{ width: "auto", padding: "6px 12px", borderRadius: 6, border: "1px dashed #CBD5E1", background: "white", color: "#1E293B", fontWeight: 600, fontSize: 12 }}>
+                    + Add Row
+                  </button>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: "#475569" }}>
+                    Total Template Items: <strong>{form.items.filter(i => i.name).length}</strong>
                   </div>
                   {form.items.filter(i => parseFloat(i.qty) > 0).length > 0 && (
-                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#15803D" }}>
-                      ({form.items.filter(i => parseFloat(i.qty) > 0).length} ordered)
+                    <div style={{ fontSize: "12px", fontWeight: 700, color: "#15803D", background: "#DCFCE7", padding: "2px 8px", borderRadius: 12 }}>
+                      ✓ {form.items.filter(i => parseFloat(i.qty) > 0).length} Ordered
                     </div>
                   )}
-                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#1E293B" }}>
-                    Est. Cost: ₹{form.items.reduce((sum, item) => sum + getLineCost(stocks, item), 0).toFixed(2)}
+                  <div style={{ fontSize: "13px", fontWeight: 800, color: "#0F172A", background: "#FEF3C7", border: "1px solid #FCD34D", padding: "4px 10px", borderRadius: 6 }}>
+                    Est. Total Cost: ₹{form.items.reduce((sum, item) => sum + getLineCost(stocks, item, availableStock), 0).toFixed(2)}
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  {msg && <span style={{ color: COLORS.success, fontSize: 13, fontWeight: 500 }}>{msg}</span>}
-                  <button className="submit-indent-btn" onClick={submit} disabled={form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length === 0} style={{ width: "auto", padding: "8px 24px", margin: 0 }}>
-                    Submit Indent {form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? `(${form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length})` : ""}
+
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {msg && <span style={{ color: COLORS.success, fontSize: 12, fontWeight: 600 }}>{msg}</span>}
+                  <button
+                    type="button"
+                    className="submit-indent-btn"
+                    onClick={submit}
+                    disabled={form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length === 0}
+                    style={{
+                      width: "auto",
+                      padding: "8px 24px",
+                      margin: 0,
+                      background: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "linear-gradient(135deg, #059669, #047857)" : "#CBD5E1",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "0 2px 6px rgba(5,150,105,0.3)" : "none",
+                      cursor: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "pointer" : "not-allowed"
+                    }}
+                  >
+                    Submit Indent {form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? `(${form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length} items · ₹${form.items.reduce((sum, item) => sum + getLineCost(stocks, item, availableStock), 0).toFixed(0)})` : ""}
                   </button>
                 </div>
               </div>
             </Card>
           </div>
         </div>
-        ) : (
+        </div>
+        ) : activeTab === "smart" ? (
           <SmartIndentTab
             dept={form.dept}
             date={form.date}
@@ -1440,16 +2184,14 @@ export default function IndentScreen() {
                }
              }}
           />
-        )}
-
-        {/* --- BOTTOM: INDENT HISTORY --- */}
-        <div className="indent-history-section">
-          <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "20px 24px" }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "space-between", alignItems: "center", marginBottom: isHistoryExpanded ? "16px" : "0" }}>
-              <h2 style={{ fontSize: "15px", fontWeight: 700, color: "#1e293b", margin: 0, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}>
-                Indent History
-                {isHistoryExpanded ? <ChevronUp size={16} color="#64748b" /> : <ChevronDown size={16} color="#64748b" />}
-              </h2>
+        ) : isStoreManager && activeTab === "history" ? (
+          <div className="indent-history-section" style={{ width: "100%", marginTop: "8px" }}>
+            <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "20px 24px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "space-between", alignItems: "center", marginBottom: isHistoryExpanded ? "16px" : "0" }}>
+                <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#0F172A", margin: 0, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}>
+                  📋 All Indents Register (Master History)
+                  {isHistoryExpanded ? <ChevronUp size={16} color="var(--text-muted)" /> : <ChevronDown size={16} color="var(--text-muted)" />}
+                </h2>
               {isHistoryExpanded && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                   <div style={{ position: "relative" }}>
@@ -1538,7 +2280,7 @@ export default function IndentScreen() {
                               // SUMMARY ROW
                               rows.push(
                                 <tr key={`summary-${ind.id}`} style={{ background: groupBg, borderBottom: isExpanded ? "none" : "2px solid #E5E7EB", cursor: "pointer" }} onClick={() => toggleIndentAccordion(ind.id)}>
-                                  <td style={{ padding: "8px 10px", verticalAlign: "middle", borderRight: "1px solid #E5E7EB", color: "#94a3b8", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", borderLeft: `3px solid ${isAdhoc ? "#f59e0b" : "#22c55e"}` }}>
+                                  <td style={{ padding: "8px 10px", verticalAlign: "middle", borderRight: "1px solid #E5E7EB", color: "var(--text-muted)", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", borderLeft: `3px solid ${isAdhoc ? "#f59e0b" : "#22c55e"}` }}>
                                     {indIdx + 1}
                                   </td>
                                   <td style={{ padding: "8px 10px", verticalAlign: "middle", borderRight: "1px solid #E5E7EB", fontWeight: 600, color: "#111827", fontSize: 12, whiteSpace: "nowrap" }}>
@@ -1612,45 +2354,20 @@ export default function IndentScreen() {
             )}
           </Card>
         </div>
+        ) : null}
 
-        {/* Modal Logic (Outside the main flow, preserving functionality) */}
-        {showModal && (
-          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0, 0, 0, 0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(4px)" }}>
-            <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, width: 520, padding: 24, display: "flex", flexDirection: "column", maxHeight: "85vh", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <h3 style={{ fontSize: 15, color: COLORS.accent, fontWeight: 600, margin: 0 }}>📦 Select Multiple Items</h3>
-                <button onClick={() => setShowModal(false)} style={{ background: "transparent", color: COLORS.muted, fontSize: 16, border: "none", cursor: "pointer" }}>✕</button>
-              </div>
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Type to filter items..." style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 6, padding: "8px 12px", marginBottom: 16, width: "100%", fontSize: 13 }} />
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14, borderBottom: `1px solid ${COLORS.border}33`, paddingBottom: 10 }}>
-                {["All", "Grocery", "Dairy", "Vegetables", "Disposables", "Others"].map(cat => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)} style={{ background: activeCategory === cat ? COLORS.accent + "22" : "transparent", border: `1px solid ${activeCategory === cat ? COLORS.accent : COLORS.border + "aa"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: activeCategory === cat ? COLORS.accent : COLORS.muted, cursor: "pointer", fontWeight: 600, transition: "all 0.15s" }}>{cat}</button>
-                ))}
-              </div>
-              <div style={{ flex: 1, overflowY: "auto", marginBottom: 16, display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, paddingRight: 6 }}>
-                {filteredStockItems.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).filter(s => activeCategory === "All" || getItemCategory(s.name) === activeCategory).map((s) => {
-                  const isChecked = !!selectedItems[s.name];
-                  return (
-                    <label key={s.item_code} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: isChecked ? COLORS.accent + "11" : COLORS.bg + "44", border: `1px solid ${isChecked ? COLORS.accent + "44" : COLORS.border + "44"}`, borderRadius: 6, cursor: "pointer", transition: "all 0.15s" }}>
-                      <input type="checkbox" checked={isChecked} onChange={() => setSelectedItems(prev => ({ ...prev, [s.name]: !prev[s.name] }))} style={{ width: "auto", cursor: "pointer" }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <p style={{ fontSize: 13, fontWeight: 500, color: COLORS.text, margin: 0 }}>{s.name}</p>
-                          <span style={{ fontSize: 9, color: COLORS.muted, background: COLORS.border + "33", padding: "1px 5px", borderRadius: 3 }}>{getItemCategory(s.name)}</span>
-                        </div>
-                        <p style={{ fontSize: 10, color: COLORS.muted, margin: "2px 0 0" }}>{s.item_code} · Unit: {s.unit}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
-                <Btn onClick={addSelectedItems}>Add Selected ({Object.values(selectedItems).filter(Boolean).length})</Btn>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Multi-Agent Enhanced Item Addition Master Suite */}
+        <EnhancedItemAdditionModal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          dept={form.dept}
+          existingItems={form.items}
+          stocks={stocks}
+          deptItemsMap={deptItemsMap}
+          availableStock={availableStock}
+          onAddItems={handleAddEnhancedItems}
+          onAddTemplateItem={handleAddTemplateItem}
+        />
 
       </div>
       <style dangerouslySetInnerHTML={{__html: `
@@ -1666,6 +2383,9 @@ export default function IndentScreen() {
         .indent-left-panel {
           width: 35%;
           min-width: 320px;
+          align-self: flex-start;
+          position: sticky;
+          top: 16px;
         }
         .indent-right-panel {
           width: 65%;
@@ -1680,6 +2400,7 @@ export default function IndentScreen() {
           .indent-left-panel, .indent-right-panel {
             width: 100%;
             min-width: 100%;
+            position: static;
           }
         }
         .indent-history-section {
@@ -1765,6 +2486,65 @@ export default function IndentScreen() {
 
         .add-row-btn { width: 100%; padding: 8px; text-align: left; background: transparent; border: 1px dashed transparent; color: #64748b; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
         .add-row-btn:hover { border-color: #cbd5e1; background: white; color: #1e293b; }
+
+        .stepper-btn {
+          width: 24px;
+          height: 26px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 4px;
+          border: 1px solid #CBD5E1;
+          background: #F8FAFC;
+          color: #1E293B;
+          font-weight: 800;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.12s ease;
+          user-select: none;
+          touch-action: manipulation;
+          padding: 0;
+        }
+        .stepper-btn:hover {
+          background: #E2E8F0;
+          border-color: #94A3B8;
+        }
+        .stepper-btn:active {
+          transform: scale(0.92);
+        }
+        .stepper-btn.plus {
+          background: #DCFCE7;
+          border-color: #86EFAC;
+          color: #15803D;
+        }
+        .stepper-btn.plus:hover {
+          background: #BBF7D0;
+        }
+        .stepper-btn.minus {
+          background: #F1F5F9;
+          color: #64748B;
+        }
+        .preset-chip {
+          padding: 1px 5px;
+          font-size: 10px;
+          font-weight: 700;
+          border-radius: 4px;
+          background: #F1F5F9;
+          border: 1px solid #CBD5E1;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.1s ease;
+          touch-action: manipulation;
+        }
+        .preset-chip:hover {
+          background: #E2E8F0;
+          color: #0F172A;
+          border-color: #94A3B8;
+        }
+        .preset-chip:active {
+          transform: scale(0.92);
+          background: #CBD5E1;
+        }
 
         @media (max-width: 1024px) {
           .indent-top-section { flex-direction: column; height: auto; }

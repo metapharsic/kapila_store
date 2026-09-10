@@ -31,6 +31,9 @@ import ExportReportModal from "../../components/ExportReportModal";
 import { StockKpiCards } from "../../components/StockMaster/StockKpiCards";
 import StoreAlertsPanel from "../../components/StockMaster/StoreAlertsPanel";
 import { StockTable } from "../../components/StockMaster/StockTable";
+import ItemDetailDrawer from "../../components/StockMaster/ItemDetailDrawer";
+import AppendBatchModal from "../../components/StockMaster/AppendBatchModal";
+import DeleteConfirmModal from "../../components/StockMaster/DeleteConfirmModal";
 
 export default function StockScreen() {
   const { stocks, refreshStockNames, reorderAlerts, refreshReorderAlerts } = useAppContext();
@@ -38,7 +41,7 @@ export default function StockScreen() {
   const canEditStock = hasPermission("stock.edit") || hasPermission("stock.delete");
   const isStoreManager = roles.some((r) => r.key === "store_manager") || hasPermission("stock.create");
   const [msg, setMsg]   = useState("");
-  const [filters, setFilters] = useState({ low_stock: "", expiry_status: "", supplier: "", active_only: "", category: "" });
+  const [filters, setFilters] = useState({ low_stock: "", expiry_status: "", supplier: "", active_only: "", category: "", storage_zone: "" });
   const [stats, setStats]     = useState({ total_spend: 0, store_value: 0, low_stock_value: 0 });
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const { items, total, page, loading, error, fetch, setItems, setTotal } = usePaginatedApi(api.stock.list);
@@ -71,6 +74,7 @@ export default function StockScreen() {
   const [ledgerLoading, setLedgerLoading] = useState(false);
   const [ledgerPage, setLedgerPage] = useState(1);
   const [ledgerTotal, setLedgerTotal] = useState(0);
+  const [ledgerSummary, setLedgerSummary] = useState(null);
   const [ledgerFilters, setLedgerFilters] = useState({ type: "", q: "", date_from: "", date_to: "" });
   const [insightsData, setInsightsData] = useState(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
@@ -86,6 +90,7 @@ export default function StockScreen() {
       const res = await api.stock.ledger({ page: p, limit: LIMIT, ...mergedFilters });
       setLedgerData(res.data || []);
       setLedgerTotal(res.total || 0);
+      setLedgerSummary(res.summary || null);
       setLedgerPage(p);
       if (params.filters) setLedgerFilters(mergedFilters);
     } catch {}
@@ -101,6 +106,18 @@ export default function StockScreen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `kapila_ledger_${today()}.csv`; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportLedgerExcel = async () => {
+    try {
+      setMsg("Exporting Stock Ledger Excel...");
+      await api.stock.exportLedgerExcel(ledgerFilters);
+      setMsg("Stock Ledger Excel exported successfully ✓");
+      setTimeout(() => setMsg(""), 3500);
+    } catch (err) {
+      setMsg("Ledger export failed: " + (err.message || "Network error"));
+      setTimeout(() => setMsg(""), 4000);
+    }
   };
 
   const loadInsights = async () => {
@@ -345,6 +362,25 @@ export default function StockScreen() {
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [viewDrawerItem, setViewDrawerItem] = useState(null);
+  const [appendModalItem, setAppendModalItem] = useState(null);
+  const [deleteModalItem, setDeleteModalItem] = useState(null);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+
+  const handleExportAvailableStockExcel = async () => {
+    try {
+      setIsExportingExcel(true);
+      await api.stock.exportExcel();
+      setMsg("Available stock Excel report exported successfully ✓");
+      setTimeout(() => setMsg(""), 3500);
+    } catch (err) {
+      console.error("Export Excel error:", err);
+      setMsg("Export failed: " + (err.message || "Network error"));
+      setTimeout(() => setMsg(""), 4000);
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%" }}>
@@ -483,11 +519,21 @@ export default function StockScreen() {
               </Btn>
               <Btn 
                 small 
-                style={{ backgroundColor: "#0F172A", color: "#FFFFFF", borderColor: "#0F172A" }} 
+                style={{ backgroundColor: "#065f46", color: "#FFFFFF", borderColor: "#059669", display: "inline-flex", alignItems: "center", gap: 5 }} 
+                onClick={handleExportAvailableStockExcel} 
+                title="Export live Available Stock with warehouse racks, vendors & timestamps to Excel (.xlsx)"
+                disabled={isExportingExcel}
+              >
+                <FileSpreadsheet size={14} style={{ color: "#34d399" }} /> 
+                {isExportingExcel ? "Exporting..." : "Export Excel (.xlsx)"}
+              </Btn>
+              <Btn 
+                small 
+                style={{ backgroundColor: "var(--bg-modal)", color: "#FFFFFF", borderColor: "var(--bg-modal)" }} 
                 onClick={() => setIsExportModalOpen(true)} 
                 title="Generate Complete Enterprise Excel Inventory Report (7 Sheets)"
               >
-                <FileSpreadsheet size={14} style={{ marginRight: 4, color: "#FBBF24" }} /> Export Excel (.xlsx)
+                <FileSpreadsheet size={14} style={{ marginRight: 4, color: "#FBBF24" }} /> Full 7-Sheet Report
               </Btn>
             </div>
           </div>
@@ -503,7 +549,7 @@ export default function StockScreen() {
                       if (q) handleNLPSearch(q);
                     }}
                     style={{
-                      background: COLORS.brand || "#e8a838",
+                      background: COLORS.brand || "var(--color-gold)",
                       color: "white",
                       border: "none",
                       borderRadius: "8px",
@@ -604,6 +650,57 @@ export default function StockScreen() {
                     <option value="">All Categories</option>
                     {STOCK_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
+
+                  <select
+                    value={filters.storage_zone || ""}
+                    onChange={(e) => handleFilterChange("storage_zone", e.target.value)}
+                    className={filters.storage_zone ? "chip active" : "chip"}
+                    style={{
+                      fontSize: 12,
+                      paddingRight: "24px",
+                      appearance: "none",
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 8px center",
+                      backgroundSize: "10px",
+                      cursor: "pointer",
+                      outline: "none"
+                    }}
+                  >
+                    <option value="">All Storage Zones</option>
+                    <option value="General Store & Provisions">General Store & Provisions</option>
+                    <option value="Main Dry Store - Heavy Grains & Rice">Main Dry Store - Rice</option>
+                    <option value="Main Dry Store - Heavy Grains & Flour">Main Dry Store - Flour</option>
+                    <option value="Main Dry Store - Pulses & Lentils">Main Dry Store - Pulses</option>
+                    <option value="Main Dry Store - Edible Oils & Ghee">Main Dry Store - Oils</option>
+                    <option value="Main Dry Store - Spices & Seasonings">Main Dry Store - Spices</option>
+                    <option value="Cold Chain - Walk-in Dairy Chiller">Cold Chain - Chiller</option>
+                    <option value="Cold Chain - Deep Freeze (-18°C)">Cold Chain - Deep Freeze</option>
+                    <option value="Fresh Produce - Daily Vegetable Bay">Fresh Produce Bay</option>
+                    <option value="Beverage Cellar & Soft Drink Store">Beverage Cellar</option>
+                  </select>
+
+                  {(filters.low_stock || filters.expiry_status || filters.supplier || filters.category || filters.storage_zone) && (
+                    <button
+                      onClick={() => {
+                        const resetFilters = { low_stock: "", expiry_status: "", supplier: "", active_only: "", category: "", storage_zone: "" };
+                        setFilters(resetFilters);
+                        load({ page: 1, ...resetFilters });
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#ef4444",
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        padding: "4px 6px"
+                      }}
+                    >
+                      Clear Filters
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -618,13 +715,19 @@ export default function StockScreen() {
                 groupByItem={groupByItem}
                 readOnly={!canEditStock}
 
+                onView={(item) => setViewDrawerItem(item)}
+                onEditItem={(item) => setEditItem(item)}
+                onAppend={(item) => setAppendModalItem(item)}
+                onDelete={(item) => setDeleteModalItem(item)}
+                onExportExcel={handleExportAvailableStockExcel}
+
                 setPrintModalItem={setPrintModalItem}
                 setAdjustModalItem={setAdjustModalItem}
                 setAdjustQty={setAdjustQty}
                 setAdjustMinAlert={setAdjustMinAlert}
                 setAdjustReason={setAdjustReason}
                 setAdjustNotes={setAdjustNotes}
-                remove={(id) => setEditItem(items.find((i) => i.id === id))}
+                remove={(id) => setDeleteModalItem(items.find((i) => i.id === id))}
                 editingId={null}
                 startEdit={(item) => setEditItem(item)}
                 saveEdit={saveEdit}
@@ -654,11 +757,13 @@ export default function StockScreen() {
               ledgerData={ledgerData}
               ledgerPage={ledgerPage}
               ledgerTotal={ledgerTotal}
+              ledgerSummary={ledgerSummary}
               limit={LIMIT}
               onPage={(p) => loadLedger({ page: p })}
               filters={ledgerFilters}
               onFilterChange={(next) => loadLedger({ page: 1, filters: next })}
               onExport={exportLedgerCSV}
+              onExportExcel={exportLedgerExcel}
             />
           )}
 
@@ -723,6 +828,49 @@ export default function StockScreen() {
           refreshStockNames();
           refreshActiveTab();
           setMsg("Item updated ✓");
+          setTimeout(() => setMsg(""), 3000);
+        }}
+      />
+
+      {/* 360° Item Detail Dossier Drawer */}
+      <ItemDetailDrawer
+        item={viewDrawerItem}
+        onClose={() => setViewDrawerItem(null)}
+        onEditItem={(it) => {
+          setViewDrawerItem(null);
+          setEditItem(it);
+        }}
+        onAppendBatch={(it) => {
+          setViewDrawerItem(null);
+          setAppendModalItem(it);
+        }}
+        onPrintItem={(it) => {
+          setPrintModalItem(it);
+        }}
+      />
+
+      {/* Append Inward Batch Modal */}
+      <AppendBatchModal
+        item={appendModalItem}
+        onClose={() => setAppendModalItem(null)}
+        onSuccess={() => {
+          load({ page: 1 });
+          refreshStockNames();
+          refreshActiveTab();
+          setMsg("Batch appended successfully ✓");
+          setTimeout(() => setMsg(""), 3000);
+        }}
+      />
+
+      {/* Decommission / Delete Stock Modal */}
+      <DeleteConfirmModal
+        item={deleteModalItem}
+        onClose={() => setDeleteModalItem(null)}
+        onSuccess={() => {
+          load({ page: 1 });
+          refreshStockNames();
+          refreshActiveTab();
+          setMsg("Item removed from stock ✓");
           setTimeout(() => setMsg(""), 3000);
         }}
       />

@@ -5,6 +5,7 @@ const { requirePermission, requireAnyPermission } = require("../middleware/autho
 
 router.get("/", requireAnyPermission(["departments.view", "recipes.view", "indents.view", "production.view"]), ctrl.list);
 router.get("/items", requireAnyPermission(["departments.view", "indents.create"]), ctrl.getDepartmentItems);
+router.post("/template-item", requireAnyPermission(["departments.edit", "indents.create"]), ctrl.addItemToDepartmentTemplate);
 router.post("/", requirePermission("departments.create"), validate("department"), ctrl.create);
 router.patch("/:id", requirePermission("departments.edit"), validate("department"), ctrl.update);
 router.delete("/:id", requirePermission("departments.delete"), ctrl.remove);

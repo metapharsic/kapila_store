@@ -1,0 +1,647 @@
+{
+  "date": "2026-08-19",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "NORTH INDIAN",
+  "items": [
+    {
+      "name": "Aromatic Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Biryani Leaf",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Baby Corn",
+      "qty": 2,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Biryani Rice",
+      "qty": 27.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Brown Onion",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Butter 500 Gm",
+      "qty": 2,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chat Masala",
+      "qty": 0.01,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chilly Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coal",
+      "qty": 12,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coconut Powder",
+      "qty": 5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Corn Flour",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cream",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dalchina",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dalda",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dhaniya",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dhaniya Powder",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dry Coconut",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Elaichi",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Garlic",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Frozen Green Peas",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Eggs",
+      "qty": 0.5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Fish",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mutton Keema",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mutton",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Paneer",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Prawns",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Bread",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato Sauce Glass",
+      "qty": null,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jeera",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jeera Powder",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kabuli Channa",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju 2 Pieces",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju Nuka",
+      "qty": 0.7,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kashmiri Mirchi Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kasturi Methi",
+      "qty": 0.01,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kewara Water",
+      "qty": null,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Khas Khas",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lavang",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Maida",
+      "qty": 9,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Masoor Dal",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mushroom",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk Maid",
+      "qty": null,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mustard Oil",
+      "qty": null,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Noodles",
+      "qty": 20,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Veg Oyster Sauce",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Palm Oil",
+      "qty": 14,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pepper",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Potato",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pally Chutney",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Red Chilly",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Red Chilly Sauce",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Rose Water",
+      "qty": null,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sajeera",
+      "qty": 0.01,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soya Sauce",
+      "qty": 9,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tata Salt",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Salt Big",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Star Pool",
+      "qty": 7,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sunflower Oil",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sweet Corn Pkt",
+      "qty": 1,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sweetcorn Tin",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tamarind",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Atta",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tarbuj",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Till",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato Sauce",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tugar Dal",
+      "qty": 1.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Turmeric Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Viniger",
+      "qty": null,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mayonnaise",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "White Pepper",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chicken Big",
+      "qty": 4.9,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chicken Small",
+      "qty": 21.8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Green Chilly Sauce",
+      "qty": null,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jajikaya",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Japathri",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Beans",
+      "qty": 1.8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cabbage",
+      "qty": 2,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Capsicum",
+      "qty": 7,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Carrot",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cauliflower",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kheera Dosakaya",
+      "qty": 1.5,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kothimeera",
+      "qty": 2,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Green Chilli",
+      "qty": 5,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Palak",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato",
+      "qty": 0.5,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pudina",
+      "qty": null,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Spring Onion",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "19th_August_Transfer_19_08_2026_p02.jpg",
+  "normalized_dept": "NORTH INDIAN"
+}

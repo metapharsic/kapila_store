@@ -7,6 +7,8 @@ const { requirePermission, requireAnyPermission } = require("../middleware/autho
 router.get("/",      requireAnyPermission(["indents.view", "issuances.view", "issuances.create"]), paginate(["date", "created_at", "dept", "status"]), ctrl.list);
 router.get("/templates", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getTemplates);
 router.get("/templates/:name", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getTemplateByName);
+router.get("/automated-pattern-excel", requireAnyPermission(["indents.view", "stock.export", "dashboard.export"]), ctrl.exportAutomatedIndentExcel);
+router.get("/automated-pattern-preview", requireAnyPermission(["indents.view", "dashboard.view"]), ctrl.getAutomatedIndentPreview);
 router.get("/recommendations", requirePermission("indents.view"), ctrl.getRecommendations);
 router.post("/smart-autofill", requirePermission("indents.create"), ctrl.smartAutofill);
 router.post("/voice-parse", requirePermission("indents.create"), ctrl.voiceParse);

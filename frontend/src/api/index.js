@@ -6,17 +6,27 @@ export const stock = {
   update: (id, payload) => api.patch(`/stock/${id}`, payload),
   updateUnit: (item_code, unit) => api.patch("/stock/unit", { item_code, unit }),
   remove: (id, reason) => api.delete(`/stock/${id}`, reason ? { reason } : undefined),
+  details: (id) => api.get(`/stock/details/${id}`),
+  appendBatch: (id, body) => api.post(`/stock/${id}/append`, body),
+  exportExcel: () => api.download("/stock/export-excel", {}, `Kapila_Warehouse_Stock_${new Date().toISOString().slice(0, 10)}.xlsx`),
   ledger:   (params) => api.get("/stock/ledger", params),
+  exportLedgerExcel: (params) => api.download("/stock/ledger/export-excel", params, `Kapila_Stock_Ledger_${new Date().toISOString().slice(0, 10)}.xlsx`),
   insights: () => api.get("/stock/insights"),
   available: (names, codes) => api.get("/stock/available", {
     names: Array.isArray(names) ? names.join(",") : names,
     codes: Array.isArray(codes) ? codes.join(",") : codes,
   }),
   reconcile: (body) => api.post("/stock/reconcile", body),
+  reconcileHistory: (params) => api.get("/stock/reconcile/history", params),
+  reconcileSession: (id) => api.get(`/stock/reconcile/history/${id}`),
+  adjustments: (params) => api.get("/stock/adjustments", params),
   supplierRates: (item) => api.get("/stock/supplier-rates", { item }),
+
   createAlias: (alias, item_code) => api.post("/stock/alias", { alias, item_code }),
   searchNLP: (query) => api.post("/stock/search-nlp", { query }),
   substitute: (name) => api.get("/stock/substitute", { name }),
+  lifoSuggestions: (params) => api.get("/stock/lifo-suggestions", params),
+  agentStatus: () => api.get("/stock/agent-status"),
 };
 
 export const indents = {
@@ -31,12 +41,19 @@ export const indents = {
   closeDay:        (body) => api.post("/indents/day-close", body),
   templates:       (params) => api.get("/indents/templates", params),
   templateDetails: (name) => api.get(`/indents/templates/${encodeURIComponent(name)}`),
+  downloadAutomatedExcel: () =>
+    api.download(
+      "/indents/automated-pattern-excel",
+      {},
+      "Automated_Indent_Pattern_and_Forecasting_Engine.xlsx"
+    ),
+  previewAutomatedPattern: () => api.get("/indents/automated-pattern-preview"),
 };
 
 export const issuances = {
   list:        (params) => api.get("/issuances", params),
   bulkPreview: () => api.get("/issuances/bulk-preview"),
-  bulkIssue:   (indentIds) => api.post("/issuances/bulk-issue", { indentIds }),
+  bulkIssue:   (indentIds, dispatch_strategy = "LIFO") => api.post("/issuances/bulk-issue", { indentIds, dispatch_strategy }),
   create:      (body)   => api.post("/issuances", body),
   remove:      (id)     => api.delete(`/issuances/${id}`),
 };
@@ -137,6 +154,7 @@ export const approvals = {
 export const departments = {
   list:   () => api.get("/departments"),
   items:  () => api.get("/departments/items"),
+  addTemplateItem: (body) => api.post("/departments/template-item", body),
   create: (body)   => api.post("/departments", body),
   update: (id, body) => api.patch(`/departments/${id}`, body),
   remove: (id)     => api.delete(`/departments/${id}`),
@@ -244,6 +262,13 @@ export const reports = {
       `Kapila_Inventory_Report_${new Date().toISOString().slice(0, 10)}.xlsx`
     ),
   previewInventoryMetadata: (params) => api.get("/reports/inventory-preview", params),
+  downloadAutomatedIndentExcel: () =>
+    api.download(
+      "/indents/automated-pattern-excel",
+      {},
+      "Automated_Indent_Pattern_and_Forecasting_Engine.xlsx"
+    ),
+  previewAutomatedIndent: () => api.get("/indents/automated-pattern-preview"),
 };
 
 
@@ -251,3 +276,81 @@ export const systemReset = {
   listGroups: () => api.get("/system-reset/groups"),
   reset: (groups, confirmText) => api.post("/system-reset", { groups, confirmText }),
 };
+
+export const maintenance = {
+  listAssets: (params) => api.get("/maintenance/assets", params),
+  getAssetDetails: (id) => api.get(`/maintenance/assets/${id}`),
+  createAsset: (body) => api.post("/maintenance/assets", body),
+  updateAsset: (id, body) => api.patch(`/maintenance/assets/${id}`, body),
+  listWorkOrders: (params) => api.get("/maintenance/work-orders", params),
+  createWorkOrder: (body) => api.post("/maintenance/work-orders", body),
+  updateWorkOrder: (id, body) => api.patch(`/maintenance/work-orders/${id}`, body),
+  consumeParts: (id, parts) => api.post(`/maintenance/work-orders/${id}/parts`, { parts }),
+  completeWorkOrder: (id, body) => api.post(`/maintenance/work-orders/${id}/complete`, body),
+  listSchedules: (params) => api.get("/maintenance/schedules", params),
+  completeSchedule: (id, body) => api.post(`/maintenance/schedules/${id}/complete`, body),
+  analytics: () => api.get("/maintenance/analytics"),
+  exportExcel: () => api.download("/maintenance/export-excel", {}, `Kapila_CMMS_Maintenance_Report_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+export const security = {
+  listPasses: (params) => api.get("/security/passes", params),
+  getPass: (id) => api.get(`/security/passes/${id}`),
+  createPass: (body) => api.post("/security/passes", body),
+  updatePass: (id, body) => api.put(`/security/passes/${id}`, body),
+  deletePass: (id) => api.delete(`/security/passes/${id}`),
+  recordExit: (id, body) => api.put(`/security/passes/${id}/exit`, body),
+  reconcileRgp: (id, body) => api.put(`/security/passes/${id}/reconcile`, body),
+  appendItem: (passId, body) => api.post(`/security/passes/${passId}/items`, body),
+  deleteItem: (passId, itemId) => api.delete(`/security/passes/${passId}/items/${itemId}`),
+  telemetry: () => api.get("/security/telemetry"),
+  exportExcel: () => api.download("/security/export-excel", {}, `Kapila_Security_Gate_Pass_Log_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+export const utility = {
+  listReadings: (params) => api.get("/utility/readings", params),
+  createReading: (body) => api.post("/utility/readings", body),
+  analytics: (params) => api.get("/utility/analytics", params),
+  exportExcel: () => api.download("/utility/export-excel", {}, `Kapila_Utility_Consumption_Report_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+export const foodSafety = {
+  listInspections: (params) => api.get("/food-safety/inspections", params),
+  createInspection: (body) => api.post("/food-safety/inspections", body),
+  telemetry: () => api.get("/food-safety/telemetry"),
+  listPestLogs: (params) => api.get("/food-safety/pest-logs", params),
+  createPestLog: (body) => api.post("/food-safety/pest-logs", body),
+  exportExcel: () => api.download("/food-safety/export-excel", {}, `Kapila_Food_Safety_HACCP_Report_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+export const waste = {
+  listLogs: (params) => api.get("/waste/logs", params),
+  logWaste: (body) => api.post("/waste/logs", body),
+  analytics: (params) => api.get("/waste/analytics", params),
+  listRuco: (params) => api.get("/waste/ruco", params),
+  logRuco: (body) => api.post("/waste/ruco", body),
+  recordRucoDisposal: (body) => api.post("/waste/ruco/disposal", body),
+  exportExcel: () => api.download("/waste/export-excel", {}, `Kapila_Kitchen_Waste_and_RUCO_Report_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+export const staff = {
+  listEmployees: (params) => api.get("/staff/employees", params),
+  createEmployee: (body) => api.post("/staff/employees", body),
+  updateEmployee: (id, body) => api.patch(`/staff/employees/${id}`, body),
+  listAttendance: (params) => api.get("/staff/attendance", params),
+  recordAttendance: (body) => api.post("/staff/attendance", body),
+  listLeaves: (params) => api.get("/staff/leaves", params),
+  applyLeave: (body) => api.post("/staff/leaves", body),
+  reviewLeave: (id, body) => api.patch(`/staff/leaves/${id}/review`, body),
+  exportExcel: (params) => api.download("/staff/export-excel", params, `Kapila_Staff_Roster_and_Attendance_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+export const nightAudit = {
+  getPreview: (params) => api.get("/night-audit/preview", params),
+  execute: (body) => api.post("/night-audit/execute", body),
+  listLogs: (params) => api.get("/night-audit/logs", params),
+  telemetry: () => api.get("/night-audit/telemetry"),
+  exportExcel: () => api.download("/night-audit/export-excel", {}, `Kapila_Food_Cost_Night_Audit_Report_${new Date().toISOString().slice(0, 10)}.xlsx`),
+};
+
+

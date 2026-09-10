@@ -5,11 +5,12 @@ import * as api from '../api';
 import {
   Package, ShoppingCart, ClipboardList, FileText,
   AlertTriangle, Clock, TrendingDown, CloudOff, CloudLightning,
-  PlusCircle, Activity, MessageSquare, Sparkles, Bell, Send, FileSpreadsheet
+  PlusCircle, Activity, MessageSquare, Sparkles, Bell, Send, FileSpreadsheet, Building2
 } from 'lucide-react';
 import Card from '../components/Card';
 import Btn from '../components/Btn';
 import ExportReportModal from '../components/ExportReportModal';
+import MultiAgentStatusBar from '../components/MultiAgentStatusBar';
 import { COLORS } from '../styles/colors';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 
@@ -39,10 +40,18 @@ const MODULE_CARDS = [
     bgAccent: 'rgba(245, 158, 11, 0.1)',
   },
   {
+    id: 'suppliers',
+    icon: <Building2 size={28} />,
+    title: 'Vendors & Suppliers',
+    description: 'Register and manage vendor profiles, GSTIN, contacts, and live reliability benchmarks.',
+    accentColor: COLORS.warning,
+    bgAccent: 'rgba(245, 158, 11, 0.1)',
+  },
+  {
     id: 'store_manager_store_issuance',
     icon: <ClipboardList size={28} />,
     title: 'Store Issuance',
-    description: 'Issue materials to kitchens and departments against pending indent requests.',
+    description: 'Issue materials to kitchens and departments against pending indent requests with LIFO priority.',
     accentColor: COLORS.warning,
     bgAccent: 'rgba(245, 158, 11, 0.1)',
   },
@@ -58,7 +67,7 @@ const MODULE_CARDS = [
 
 export default function StoreManagerHome() {
   const { user, logout } = useAuth();
-  const { setCurrentScreen } = useAppContext();
+  const { setCurrentScreen, setIndentPreFill } = useAppContext();
   const [hoveredCard, setHoveredCard] = useState(null);
 
   // KPIs
@@ -271,69 +280,21 @@ export default function StoreManagerHome() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
+      minHeight: '100%',
+      backgroundColor: 'transparent',
       display: 'flex',
       flexDirection: 'column',
     }}>
       {toast && (
         <div style={{
           position: 'fixed', top: 16, right: 16, zIndex: 1000,
-          background: '#0F172A', color: '#fff', padding: '10px 16px',
+          background: 'var(--text-main)', color: '#fff', padding: '10px 16px',
           borderRadius: 8, fontSize: 13, fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           maxWidth: 340,
         }}>
           {toast}
         </div>
       )}
-      {/* Header */}
-      <header style={{
-        backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        padding: '0 32px',
-        height: '60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <div style={{ color: COLORS.text, fontFamily: 'serif', fontSize: '22px', fontStyle: 'italic', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 12 }}>
-          Kapila
-          {offlineCount > 0 ? (
-            <span style={{ fontSize: 11, background: COLORS.warning, color: '#fff', padding: '2px 8px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4, fontStyle: 'normal', fontFamily: 'sans-serif' }}>
-              <CloudOff size={12} /> {offlineCount} Pending Sync
-            </span>
-          ) : (
-            <span style={{ fontSize: 11, background: '#F1F5F9', color: COLORS.muted, padding: '2px 8px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4, fontStyle: 'normal', fontFamily: 'sans-serif' }}>
-              <CloudLightning size={12} /> All Synced
-            </span>
-          )}
-        </div>
-        <button
-          onClick={logout}
-          style={{
-            background: 'none',
-            border: '1px solid #e2e8f0',
-            color: COLORS.muted,
-            padding: '6px 14px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 500,
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F1F5F9';
-            e.currentTarget.style.color = COLORS.text;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = COLORS.muted;
-          }}
-        >
-          Sign out
-        </button>
-      </header>
 
       {/* Main content */}
       <main style={{
@@ -341,10 +302,21 @@ export default function StoreManagerHome() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '32px 24px',
-        overflowY: 'auto'
+        padding: '8px 0 32px 0',
       }}>
-        <div style={{ width: '100%', maxWidth: '1000px' }}>
+        <div style={{ width: '100%', maxWidth: '1100px' }}>
+          {/* Sync Status Banner */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+            {offlineCount > 0 ? (
+              <span style={{ fontSize: 12, background: 'var(--color-warning)', color: '#fff', padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+                <CloudOff size={13} /> {offlineCount} Pending Sync
+              </span>
+            ) : (
+              <span style={{ fontSize: 12, background: 'rgba(16, 185, 129, 0.12)', color: '#047857', padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <CloudLightning size={13} /> All Synced
+              </span>
+            )}
+          </div>
 
           {/* Greeting */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
@@ -368,30 +340,50 @@ export default function StoreManagerHome() {
               <Btn
                 onClick={() => setCurrentScreen('store_manager_stock_purchase')}
                 icon={<PlusCircle size={16} />}
-                style={{ backgroundColor: COLORS.brand, borderColor: COLORS.brand, color: '#ffffff' }}
+                style={{ backgroundColor: 'var(--color-gold)', borderColor: 'var(--color-gold)', color: '#18181b', fontWeight: 600, boxShadow: 'var(--shadow-sm)' }}
               >
                 Receive Stock
               </Btn>
               <Btn
                 onClick={() => setCurrentScreen('store_manager_store_issuance')}
                 icon={<Activity size={16} />}
-                style={{ backgroundColor: 'transparent', borderColor: COLORS.brand, color: COLORS.brand }}
+                style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)', fontWeight: 600, boxShadow: 'var(--shadow-sm)' }}
               >
                 Issue Materials
               </Btn>
               <Btn
+                onClick={() => setCurrentScreen('suppliers')}
+                icon={<Building2 size={16} />}
+                style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)', fontWeight: 600, boxShadow: 'var(--shadow-sm)' }}
+              >
+                Vendors & Suppliers
+              </Btn>
+              <Btn
                 onClick={() => setIsExportModalOpen(true)}
-                icon={<FileSpreadsheet size={16} color="#FBBF24" />}
-                style={{ backgroundColor: '#0F172A', borderColor: '#0F172A', color: '#ffffff' }}
+                icon={<FileSpreadsheet size={16} color="var(--color-gold-dark)" />}
+                style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)', fontWeight: 600, boxShadow: 'var(--shadow-sm)' }}
               >
                 Export Excel Report
               </Btn>
             </div>
           </div>
 
+          {/* Multi-Agent Swarm Status Bar & LIFO Advisory */}
+          <div style={{ marginBottom: '20px' }}>
+            <MultiAgentStatusBar
+              customNote="Multi-agent swarm active: Real-time Vendor Intelligence, LIFO Batch Valuation, and Stock Balance integrity verified"
+            />
+          </div>
+
           {/* KPI Row — glance metrics, top priority */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-            <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', borderLeft: `4px solid ${COLORS.warning}`, background: '#ffffff' }} onClick={() => setCurrentScreen('store_manager_indent')}>
+            <Card
+              style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', borderLeft: `4px solid ${COLORS.warning}`, background: '#ffffff' }}
+              onClick={() => {
+                if (setIndentPreFill) setIndentPreFill({ tab: 'history', statusFilter: 'pending' });
+                setCurrentScreen('store_manager_indent');
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: COLORS.muted, fontSize: '13px', fontWeight: 600 }}>
                 <FileText size={16} color={COLORS.warning} /> Pending Indents
               </div>
@@ -453,7 +445,12 @@ export default function StoreManagerHome() {
               return (
                 <button
                   key={card.id}
-                  onClick={() => setCurrentScreen(card.id)}
+                  onClick={() => {
+                    if (card.id === 'store_manager_indent' && setIndentPreFill) {
+                      setIndentPreFill({ tab: 'history' });
+                    }
+                    setCurrentScreen(card.id);
+                  }}
                   onMouseEnter={() => setHoveredCard(card.id)}
                   onMouseLeave={() => setHoveredCard(null)}
                   style={{
@@ -712,7 +709,7 @@ export default function StoreManagerHome() {
                 <Activity size={16} color={COLORS.warning} /> Issuances — Last 7 Days
               </h3>
               <div style={{ height: 200 }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <BarChart data={issuanceTrend}>
                     <XAxis dataKey="day" tick={{ fontSize: 11, fill: COLORS.muted }} axisLine={false} tickLine={false} />
                     <Tooltip cursor={{ fill: '#F8FAFC' }} />
@@ -728,7 +725,7 @@ export default function StoreManagerHome() {
                   <TrendingDown size={16} color={COLORS.danger} /> Lowest Stock Items
                 </h3>
                 <div style={{ height: 200 }}>
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                     <BarChart data={lowStockItems} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} stroke="#e2e8f0" />
                       <XAxis type="number" hide domain={[0, 100]} />

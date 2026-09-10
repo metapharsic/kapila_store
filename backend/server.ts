@@ -151,6 +151,13 @@ app.use("/api/menu",            require("./routes/menu"));
 app.use("/api/monitoring",      require("./routes/monitoringRoutes"));
 app.use("/api/reports",         require("./routes/reportRoutes"));
 app.use("/api/system-reset",    require("./routes/systemResetRoutes"));
+app.use("/api/maintenance",     require("./routes/maintenance"));
+app.use("/api/security",        require("./routes/security"));
+app.use("/api/utility",         require("./routes/utility"));
+app.use("/api/food-safety",     require("./routes/foodSafety"));
+app.use("/api/waste",           require("./routes/waste"));
+app.use("/api/staff",           require("./routes/staffHrms"));
+app.use("/api/night-audit",     require("./routes/nightAudit"));
 
 // AI health check — tells the frontend if Gemini API is configured
 app.get("/api/ai-health", authenticate, async (req: Request, res: Response) => {

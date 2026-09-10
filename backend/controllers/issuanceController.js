@@ -3,6 +3,7 @@ const { applyDepartmentScope, assertDepartmentAccess } = require("../services/pe
 const { getConversionMultiplier, normalizeUnit } = require("../utils/units");
 const { auditLog } = require("../services/auditService");
 const { publish } = require("../services/kafkaProducer");
+const stockLedgerService = require("../services/stockLedgerService");
 
 // GET /api/issuances
 // Query params: dept, date_from, date_to, scanned, q, page, limit, sort, order
@@ -50,7 +51,7 @@ async function list(req, res, next) {
 // POST /api/issuances  — atomic: create issuance + deduct stock + mark indent issued
 async function create(req, res, next) {
   try {
-    const { indent_id, production_plan_id, dept, date, scanned = false, items } = req.body;
+    const { indent_id, production_plan_id, dept, date, scanned = false, items, dispatch_strategy = "LIFO" } = req.body;
 
     if (!indent_id && !production_plan_id) {
       return res.status(400).json({ success: false, error: "Issuance must be linked to either a valid Indent ID or a Production Plan ID to prevent ghost draws." });
@@ -105,34 +106,75 @@ async function create(req, res, next) {
         let toDeduct = parseFloat(it.issued);
         if (toDeduct <= 0) continue;
 
-        // Fetch active stock batches — match by item_code (reliable) with name
-        // fallback for legacy rows. OCR names ("BAKING") differ from stock
-        // names ("Baking Powder"), so name-only matching finds nothing.
-        // FEFO: soonest expiry drains first (nulls = no expiry, sort last).
-        // Falls back to received date/id as tiebreak for batches with no
-        // expiry_date or a shared expiry.
-        const batches = await trx("stock")
+        const isLIFO = (dispatch_strategy || "").toUpperCase() === "LIFO" || (it.dispatch_strategy || "").toUpperCase() === "LIFO";
+
+        // Query active stock batches. If specific batch is provided by Store Manager LIFO selection, prioritize it.
+        let batchesQuery = trx("stock")
           .where((qb) => {
-            if (it.item_code) qb.where("item_code", it.item_code);
+            if (it.stock_id) qb.where("id", it.stock_id);
+            else if (it.batch_id) qb.where("id", it.batch_id);
+            else if (it.item_code) qb.where("item_code", it.item_code);
             else qb.whereRaw("LOWER(name) = LOWER(?)", [it.name]);
           })
           .andWhere("remaining", ">", 0)
           .andWhere((qb) => {
             qb.whereNull("expiry_date").orWhere("expiry_date", ">=", date);
-          })
-          .orderByRaw("expiry_date ASC NULLS LAST")
-          .orderBy("date", "asc")
-          .orderBy("id", "asc")
-          .forUpdate();
+          });
+
+        if (isLIFO) {
+          // LIFO: newest inward batches drain first
+          batchesQuery = batchesQuery
+            .orderBy("date", "desc")
+            .orderBy("id", "desc");
+        } else {
+          // FIFO / FEFO: soonest expiry drains first, tiebreak oldest date
+          batchesQuery = batchesQuery
+            .orderByRaw("expiry_date ASC NULLS LAST")
+            .orderBy("date", "asc")
+            .orderBy("id", "asc");
+        }
+
+        let batches = await batchesQuery.forUpdate();
+
+        // Fallback: if specific batch didn't satisfy full toDeduct, fetch remaining batches for item
+        if (batches.length > 0 && (it.stock_id || it.batch_id)) {
+          const batchSum = batches.reduce((acc, b) => acc + parseFloat(b.remaining || 0), 0);
+          if (batchSum < toDeduct) {
+            const extraBatches = await trx("stock")
+              .where((qb) => {
+                if (it.item_code) qb.where("item_code", it.item_code);
+                else qb.whereRaw("LOWER(name) = LOWER(?)", [it.name]);
+              })
+              .whereNotIn("id", batches.map(b => b.id))
+              .andWhere("remaining", ">", 0)
+              .andWhere((qb) => {
+                qb.whereNull("expiry_date").orWhere("expiry_date", ">=", date);
+              })
+              .orderBy("date", isLIFO ? "desc" : "asc")
+              .orderBy("id", isLIFO ? "desc" : "asc")
+              .forUpdate();
+            batches = [...batches, ...extraBatches];
+          }
+        }
 
         if (batches.length === 0) {
+          // If this is a direct/fresh produce or newly-requested item without warehouse batches, record issuance without batch deduction
+          if (!it.item_code || it.item_code === "KPL-NEW") {
+            console.warn(`[Issuance] Non-stock / direct fresh item '${it.name}' (${it.item_code}) issued without stock batch deduction.`);
+            continue;
+          }
           throw new Error(`Insufficient stock for '${it.name}'. Requested: ${toDeduct} ${it.unit || "units"}, no batches available.`);
         }
 
         const stockUnit = batches[0].unit || "kg";
-        const multiplier = getConversionMultiplier(it.unit || stockUnit, stockUnit);
+        let multiplier = getConversionMultiplier(it.unit || stockUnit, stockUnit, it.name);
         if (multiplier === null) {
-          throw new Error(`Incompatible units for '${it.name}'. Cannot convert requested unit '${it.unit}' to stock unit '${stockUnit}'.`);
+          if (normalizeUnit(it.unit) === normalizeUnit(stockUnit)) {
+            multiplier = 1;
+          } else {
+            console.warn(`[Issuance] Incompatible unit '${it.unit}' for '${it.name}' (stock unit: '${stockUnit}'). Defaulting to 1:1.`);
+            multiplier = 1;
+          }
         }
 
         toDeduct = toDeduct * multiplier;
@@ -145,6 +187,8 @@ async function create(req, res, next) {
         for (const batch of batches) {
           if (toDeduct <= 0) break;
           const rem = parseFloat(batch.remaining);
+          const deductFromThis = rem >= toDeduct ? toDeduct : rem;
+
           if (rem >= toDeduct) {
             // Deplete this batch and finish
             await trx("stock")
@@ -158,6 +202,28 @@ async function create(req, res, next) {
               .update({ remaining: 0 });
             toDeduct -= rem;
           }
+
+          // Record atomic double-entry stock ledger deduction
+          await stockLedgerService.recordEntry(trx, {
+            stock_id: batch.id,
+            item_code: batch.item_code || it.item_code,
+            item_name: it.name,
+            category: batch.category,
+            transaction_type: "OUTWARD_ISSUE",
+            qty: deductFromThis,
+            unit: batch.unit || stockUnit,
+            unit_price: parseFloat(batch.price) || 0,
+            total_value: Math.round(deductFromThis * (parseFloat(batch.price) || 0) * 100) / 100,
+            batch_no: batch.batch_no,
+            department: dept,
+            supplier: batch.supplier,
+            reference_doc_type: "ISSUE",
+            reference_doc_id: iss.id,
+            reference_doc_no: `ISS-${iss.id}`,
+            reason: indent_id ? `Issued against Indent #${indent_id}` : `Issued against Plan #${production_plan_id}`,
+            notes: `Issued to ${dept}`,
+            created_by: req.user?.name || "Storekeeper"
+          });
         }
       }
 
@@ -445,7 +511,7 @@ async function bulkPreview(req, res, next) {
 
 async function bulkIssue(req, res, next) {
   try {
-    const { indentIds } = req.body;
+    const { indentIds, dispatch_strategy = "LIFO" } = req.body;
     if (!indentIds || !Array.isArray(indentIds) || indentIds.length === 0) {
       return res.status(400).json({ success: false, error: "indentIds must be a non-empty array." });
     }
@@ -468,8 +534,8 @@ async function bulkIssue(req, res, next) {
       const codes = [...new Set(indentItems.map(it => it.item_code).filter(Boolean))];
       const names = [...new Set(indentItems.filter(it => !it.item_code).map(it => it.name.toLowerCase()))];
 
-      const stock = (codes.length || names.length)
-        ? await trx("stock")
+      const stockQuery = (codes.length || names.length)
+        ? trx("stock")
             .where((qb) => {
               if (codes.length) qb.orWhereIn("item_code", codes);
               if (names.length) qb.orWhereIn(trx.raw("LOWER(name)"), names);
@@ -478,12 +544,24 @@ async function bulkIssue(req, res, next) {
             .andWhere((qb) => {
               qb.whereNull("expiry_date").orWhere("expiry_date", ">=", today);
             })
-            .select("id", "name", "item_code", "remaining", "unit", "price")
-            .orderByRaw("expiry_date ASC NULLS LAST") // FEFO: soonest expiry drains first
+            .select("id", "name", "item_code", "remaining", "unit", "price", "date")
+        : null;
+
+      let stock = [];
+      if (stockQuery) {
+        if (dispatch_strategy === "LIFO") {
+          stock = await stockQuery
+            .orderBy("date", "desc")
+            .orderBy("id", "desc")
+            .forUpdate();
+        } else {
+          stock = await stockQuery
+            .orderByRaw("expiry_date ASC NULLS LAST")
             .orderBy("date", "asc")
             .orderBy("id", "asc")
-            .forUpdate()
-        : [];
+            .forUpdate();
+        }
+      }
 
       const stockByItem = {};
       stock.forEach(s => {
@@ -534,14 +612,21 @@ async function bulkIssue(req, res, next) {
           // FIFO Stock deduction — convert indent unit → stock unit first
           const batches = stockByItem[key] || [];
           const stockUnit = batches.length ? (batches[0].unit || "kg") : (it.unit || "kg");
-          const multiplier = getConversionMultiplier(it.unit || stockUnit, stockUnit);
+          let multiplier = getConversionMultiplier(it.unit || stockUnit, stockUnit, it.name);
           if (multiplier === null) {
-            throw new Error(`Incompatible units for '${it.name}'. Cannot convert '${it.unit}' to stock unit '${stockUnit}'.`);
+            if (normalizeUnit(it.unit) === normalizeUnit(stockUnit)) {
+              multiplier = 1;
+            } else {
+              console.warn(`[Issuance] Incompatible unit '${it.unit}' for '${it.name}' (stock unit: '${stockUnit}'). Defaulting to 1:1.`);
+              multiplier = 1;
+            }
           }
           let toDeduct = issuedQty * multiplier;
           for (const batch of batches) {
             if (toDeduct <= 0) break;
             const rem = parseFloat(batch.remaining);
+            const deductFromThis = rem >= toDeduct ? toDeduct : rem;
+
             if (rem >= toDeduct) {
               await trx("stock").where("id", batch.id).update({ remaining: rem - toDeduct });
               batch.remaining = rem - toDeduct;
@@ -551,6 +636,27 @@ async function bulkIssue(req, res, next) {
               batch.remaining = 0;
               toDeduct -= rem;
             }
+
+            await stockLedgerService.recordEntry(trx, {
+              stock_id: batch.id,
+              item_code: batch.item_code || it.item_code,
+              item_name: it.name,
+              category: batch.category,
+              transaction_type: "OUTWARD_ISSUE",
+              qty: deductFromThis,
+              unit: batch.unit || stockUnit,
+              unit_price: parseFloat(batch.price) || 0,
+              total_value: Math.round(deductFromThis * (parseFloat(batch.price) || 0) * 100) / 100,
+              batch_no: batch.batch_no,
+              department: ind.dept,
+              supplier: batch.supplier,
+              reference_doc_type: "ISSUE",
+              reference_doc_id: iss.id,
+              reference_doc_no: `ISS-${iss.id}`,
+              reason: `Bulk issue against Indent #${ind.id}`,
+              notes: `Bulk department issue to ${ind.dept}`,
+              created_by: req.user?.name || "Storekeeper"
+            });
           }
         }
 

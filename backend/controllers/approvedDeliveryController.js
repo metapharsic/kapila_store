@@ -53,11 +53,13 @@ async function scan(req, res, next) {
           error: "PDF appears to be image-based (scanned). Please upload a photo/image of the document instead.",
         });
       }
-      extracted = await structureWithOllama(rawText, DELIVERY_PROMPT_TASK, knownStockNames);
+      const apiKeyOverride = req.headers["x-api-key"] || null;
+      extracted = await structureWithOllama(rawText, DELIVERY_PROMPT_TASK, knownStockNames, apiKeyOverride);
     } else {
       // Image: single-pass OCR + structure in ONE Gemini call
       const base64 = req.file.buffer.toString("base64");
-      extracted = await scanImageStructured(base64, req.file.mimetype, DELIVERY_PROMPT_TASK, knownStockNames);
+      const apiKeyOverride = req.headers["x-api-key"] || null;
+      extracted = await scanImageStructured(base64, req.file.mimetype, DELIVERY_PROMPT_TASK, knownStockNames, null, apiKeyOverride);
     }
 
     if (!extracted.items || !Array.isArray(extracted.items)) {

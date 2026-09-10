@@ -1,0 +1,59 @@
+{
+  "date": null,
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "STAFF",
+  "items": [
+    {
+      "name": "Box Container 500 Ml",
+      "qty": 95,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 1000 Ml",
+      "qty": 50,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Broken Rice",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk",
+      "qty": 1,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 15,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "16th_August_Transfer_16_08_2026_p03.jpg",
+  "normalized_dept": "STAFF"
+}

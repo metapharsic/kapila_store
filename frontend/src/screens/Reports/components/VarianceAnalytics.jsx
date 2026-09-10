@@ -98,7 +98,7 @@ export default function VarianceAnalytics({ filters }) {
           <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Shrinkage by Reason</h3>
           <div style={{ width: "100%", height: 300, display: "flex", justifyContent: "center" }}>
             {varianceReasons.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <PieChart>
                   <Pie
                     data={varianceReasons}

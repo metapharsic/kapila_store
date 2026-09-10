@@ -1,0 +1,352 @@
+{
+  "date": "2026-08-14",
+  "voucher_no": "",
+  "from_dept": "Central Store",
+  "to_dept": "NORTH INDIAN",
+  "items": [
+    {
+      "name": "Aromatic Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Biryani Rice",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Butter 500 Gm",
+      "qty": 2,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chat Masala",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coal",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coconut Powder",
+      "qty": 12,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cream",
+      "qty": 3,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dalchina",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dhaniya Powder",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Frozen Green Peas",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Garlic",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Ghee",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jeera",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jeera Powder",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju 2 Pieces",
+      "qty": 0.25,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju Nuka",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kashmiri Mirchi Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kasturi Methi",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Maida",
+      "qty": 11,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Masoor Dal",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Palm Oil",
+      "qty": 14,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pepper",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Potato",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Red Chilly Sauce",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soya Sauce",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sunflower Oil",
+      "qty": 7,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sweet Corn Pkt",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Atta",
+      "qty": 13,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato Sauce",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tugar Dal",
+      "qty": 1.5,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Turmeric Powder",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "White Pepper",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chicken Big",
+      "qty": 6.9,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chicken Small",
+      "qty": 7.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": 25,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Eggs",
+      "qty": 150,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Paneer",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": 2,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Beans",
+      "qty": 1.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Capsicum",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Carrot",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cauliflower",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kothimeera",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Green Chilli",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 5,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Palak",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pudina",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p01.jpg"
+}

@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-09-08T13:14:31.718Z",
+  "executiveSummary": {
+    "referenceReport": "Current stock report as on 24-08-26.xlsx",
+    "totalRefItems": 367,
+    "totalDbItems": 366,
+    "exactMatchCount": 366,
+    "qtyVarianceCount": 0,
+    "priceVarianceCount": 0,
+    "missingInDbCount": 1,
+    "unlistedInExcelCount": 0,
+    "refTotalQty": 1158273.0031890003,
+    "dbTotalRemaining": 579136.5015945004,
+    "netQtyDelta": -579136.5015944999,
+    "refTotalValuation": 41519711.809639186,
+    "dbTotalValuation": 20759855.904819597,
+    "netValuationDelta": -20759855.90481959,
+    "pctValuationDelta": -49.999999999999986
+  },
+  "topValuationVariances": [],
+  "topSurplus": [],
+  "topDeficits": [],
+  "missingInDb": [
+    {
+      "originalName": "Total Inventory Valuation",
+      "norm": "total inventory valuation",
+      "qty": 579136.5015945002,
+      "price": 0,
+      "totalVal": 20759855.904819593
+    }
+  ],
+  "unlistedInExcel": []
+}

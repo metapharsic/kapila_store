@@ -75,6 +75,7 @@ export default function StoreIssuancePage() {
         dept: selectedIndent.dept,
         date: today(),
         scanned: false,
+        dispatch_strategy: "LIFO",
         items: issueItems,
       });
       setLastIssuedDept(selectedIndent.dept);

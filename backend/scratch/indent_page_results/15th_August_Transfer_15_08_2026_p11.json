@@ -1,0 +1,234 @@
+{
+  "date": "2026-01-16",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "SI-MEALS",
+  "items": [
+    {
+      "name": "Atta",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Biryani Leaf",
+      "qty": 0.02,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Bobberlu",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Broken Rice",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Channa Atta",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coconut",
+      "qty": 10,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": 81,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dalda",
+      "qty": 0.02,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dhaniya Powder",
+      "qty": 0.3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dosa Flour",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Indian Gas",
+      "qty": 1.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Homa",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Jeera",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju 2 Pieces",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kaju Nuka",
+      "qty": 0.02,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lavang",
+      "qty": 0.2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Meal Maker",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk Maid",
+      "qty": 3,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Moong Dal",
+      "qty": 6.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Small Onion",
+      "qty": 14,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Paper Pool",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pesarlu",
+      "qty": 0.02,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mango Pickle",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Semiya",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 33,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sunflower Oil",
+      "qty": 33,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tamarind",
+      "qty": 26,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tarjuj",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Turmeric Powder",
+      "qty": 8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Upima Ravva",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Urad Dal",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "15th_August_Transfer_15_08_2026_p11.jpg",
+  "normalized_dept": "SI-MEALS"
+}

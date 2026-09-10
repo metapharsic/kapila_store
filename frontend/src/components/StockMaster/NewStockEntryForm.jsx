@@ -8,7 +8,10 @@ import { useLocalSpeech } from "../../hooks/useLocalSpeech";
 import { useBreakpoint } from "../../styles/responsive";
 import * as api from "../../api";
 import { today } from "../../utils/dates";
-import { PlusCircle, Plus, Trash2, Camera, Mic, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { PlusCircle, Plus, Trash2, Camera, Mic, RefreshCw, ChevronDown, ChevronUp, Upload, Building2, Sparkles, CheckCircle2 } from "lucide-react";
+import CreateVendorModal from "../CreateVendorModal";
+import MultiAgentStatusBar from "../MultiAgentStatusBar";
+import LIFOSuggestionBanner from "../LIFOSuggestionBanner";
 
 const toTitleCase = (str) => {
   if (!str) return "";
@@ -28,14 +31,19 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
   const [msg, setMsg]   = useState("");
   const fileInputRef    = useRef();
   const cameraInputRef  = useRef();
+  const csvFileInputRef = useRef();
   const [scanningBill, setScanningBill]     = useState(false);
   const [showQuickImport, setShowQuickImport] = useState(false);
   const [importText, setImportText]           = useState("");
-  const [activeRowIdx, setActiveRowIdx]       = useState(null);
+  const [activeRowIdx, setActiveRowIdx]       = useState(0);
   const [expandedCards, setExpandedCards]     = useState({});
   const [purchaseOrders, setPurchaseOrders]   = useState([]);
   const [selectedPoId, setSelectedPoId]       = useState("");
   const [supplierReliability, setSupplierReliability] = useState(null);
+  const [suppliersList, setSuppliersList]     = useState([]);
+  const [showVendorModal, setShowVendorModal] = useState(false);
+  const [fieldSyncState, setFieldSyncState]   = useState(false);
+  const [lastSyncName, setLastSyncName]       = useState("");
  
   const { listening, interimText, startRecording, stopRecording } = useLocalSpeech();
  
@@ -48,7 +56,16 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
         console.error("Failed to load POs in form", err);
       }
     };
+    const fetchSuppliers = async () => {
+      try {
+        const res = await api.suppliers.list({ limit: 200, sort: "name", order: "asc" });
+        setSuppliersList(res.data || []);
+      } catch (err) {
+        console.error("Failed to load suppliers in form", err);
+      }
+    };
     fetchPOs();
+    fetchSuppliers();
   }, []);
 
   useEffect(() => {
@@ -166,6 +183,81 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
       });
       return { ...prev, items: nextItems };
     });
+  };
+
+  const handleSelectLIFOBatch = (batch) => {
+    if (activeRowIdx === null || !form.items[activeRowIdx]) return;
+    setFieldSyncState(true);
+    setLastSyncName(batch.name);
+    updateItem(activeRowIdx, "unit", batch.unit);
+    updateItem(activeRowIdx, "price", batch.unit_cost.toString());
+    if (batch.item_code) {
+      updateItem(activeRowIdx, "item_code", batch.item_code);
+    }
+    setMsg(`LIFO Batch ${batch.batch_no} synced (Unit: ${batch.unit}, Rate: ₹${batch.unit_cost}) ✓`);
+    setTimeout(() => {
+      setFieldSyncState(false);
+      setMsg("");
+    }, 2500);
+  };
+
+  const handleCSVUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const text = evt.target.result;
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (lines.length === 0) return;
+
+        let startIndex = 0;
+        const firstLineLower = lines[0].toLowerCase();
+        if (firstLineLower.includes("item") || firstLineLower.includes("name") || firstLineLower.includes("qty")) {
+          startIndex = 1;
+        }
+
+        const parsedItems = [];
+        for (let i = startIndex; i < lines.length; i++) {
+          const parts = lines[i].split(/[,;\t]/).map(p => p.trim());
+          if (parts.length >= 2) {
+            const name = parts[0];
+            const qty = parseFloat(parts[1]) || 1;
+            const unit = parts[2] || "kg";
+            const price = parts[3] ? parseFloat(parts[3]) || "" : "";
+            const expiry = parts[4] || "";
+
+            parsedItems.push({
+              id: Date.now() + Math.random(),
+              name,
+              qty: qty.toString(),
+              unit,
+              price: price.toString(),
+              item_code: "",
+              expiry_date: expiry,
+              min_alert_qty: ""
+            });
+          }
+        }
+
+        if (parsedItems.length > 0) {
+          setForm(prev => ({
+            ...prev,
+            items: [...(prev.items.length === 1 && !prev.items[0].name ? [] : prev.items), ...parsedItems]
+          }));
+          setMsg(`Uploaded and parsed ${parsedItems.length} items to purchase ✓`);
+          setTimeout(() => setMsg(""), 3500);
+        } else {
+          setMsg("No valid items found in file. Format: Name, Qty, Unit, Price");
+          setTimeout(() => setMsg(""), 4000);
+        }
+      } catch (err) {
+        setMsg("Failed to parse file: " + err.message);
+      } finally {
+        e.target.value = null;
+      }
+    };
+    reader.readAsText(file);
   };
 
   const addAllToStore = async () => {
@@ -300,6 +392,7 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
     <>
       <input ref={fileInputRef}   type="file" accept="image/*"                   style={{ display: "none" }} onChange={handleScanBill} />
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleScanBill} />
+      <input ref={csvFileInputRef} type="file" accept=".csv,.tsv,.txt" style={{ display: "none" }} onChange={handleCSVUpload} />
 
       {/* ── Header row ── */}
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16 }}>
@@ -322,6 +415,9 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
             <button type="button" className="premium-btn" onClick={() => fileInputRef.current.click()} disabled={scanningBill} style={{ minHeight: 44 }}>
               <Camera size={14} /> {scanningBill ? "Scanning…" : "Scan Doc"}
             </button>
+            <button type="button" className="premium-btn" onClick={() => csvFileInputRef.current.click()} style={{ minHeight: 44, gridColumn: "1 / -1" }}>
+              <Upload size={14} /> Upload Items File
+            </button>
           </div>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -329,8 +425,18 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
             <button type="button" className="premium-btn" onClick={() => cameraInputRef.current.click()} disabled={scanningBill}><Camera size={14} /> Scan using Camera</button>
             <button type="button" className="premium-btn" onClick={() => setShowQuickImport(!showQuickImport)}><Mic size={14} /> {showQuickImport ? "Hide Voice" : "Voice Input"}</button>
             <button type="button" className="premium-btn" onClick={() => fileInputRef.current.click()} disabled={scanningBill}><Camera size={14} /> {scanningBill ? "Scanning…" : "Scan Doc"}</button>
+            <button type="button" className="premium-btn" onClick={() => csvFileInputRef.current.click()}><Upload size={14} /> Upload Items File</button>
           </div>
         )}
+      </div>
+
+      {/* ── Multi-Agent Swarm Status Bar ── */}
+      <div style={{ marginBottom: 16 }}>
+        <MultiAgentStatusBar
+          syncing={fieldSyncState}
+          lastSyncField={lastSyncName ? `Item "${lastSyncName}"` : null}
+          customNote="Field Sync active across Vendor, LIFO Valuation, and Storage zones"
+        />
       </div>
 
       {/* ── Voice / Quick Import panel ── */}
@@ -390,10 +496,68 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
             </div>
           )}
         </div>
-        <Input label="Supplier / Vendor"  value={form.supplier} onChange={(e) => setForm((f) => ({ ...f, supplier: e.target.value }))} placeholder="e.g. National Traders" />
+
+        {/* Supplier / Vendor with + New Vendor CTA */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.text }}>Supplier / Vendor</label>
+            <button
+              type="button"
+              onClick={() => setShowVendorModal(true)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--color-gold, #f4c84b)",
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4
+              }}
+            >
+              <Building2 size={13} /> + New Vendor
+            </button>
+          </div>
+          <input
+            value={form.supplier}
+            onChange={(e) => setForm((f) => ({ ...f, supplier: e.target.value }))}
+            placeholder="Select or enter vendor..."
+            list="suppliers-datalist"
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              background: COLORS.bg,
+              border: `1px solid ${COLORS.border}`,
+              color: COLORS.text,
+              borderRadius: 8,
+              height: 44,
+              fontSize: 14,
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+          <datalist id="suppliers-datalist">
+            {suppliersList.map((s) => (
+              <option key={s.id} value={s.name}>{s.name} {s.gstin ? `(${s.gstin})` : ""}</option>
+            ))}
+          </datalist>
+        </div>
+
         <Input label="Date received" type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
         <Input label="GST / Tax (%)" type="number" value={form.gst} onChange={(e) => setForm((f) => ({ ...f, gst: e.target.value }))} placeholder="0" />
       </div>
+
+      {/* ── LIFO Suggestion Banner for active item ── */}
+      {form.items[activeRowIdx]?.name && (
+        <div style={{ marginBottom: 16 }}>
+          <LIFOSuggestionBanner
+            itemName={form.items[activeRowIdx]?.name}
+            itemCode={form.items[activeRowIdx]?.item_code}
+            onSelectBatch={handleSelectLIFOBatch}
+          />
+        </div>
+      )}
 
       {/* ── Purchase Items ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, marginTop: 24 }}>
@@ -607,6 +771,16 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
         .premium-btn:active:not(:disabled) { transform: translateY(0); }
         .premium-btn:disabled { opacity: 0.6; cursor: not-allowed; }
       `}} />
+      <CreateVendorModal
+        open={showVendorModal}
+        onClose={() => setShowVendorModal(false)}
+        onSuccess={(newVendor) => {
+          setSuppliersList(prev => [...prev, newVendor]);
+          setForm(f => ({ ...f, supplier: newVendor.name }));
+          setMsg(`Vendor "${newVendor.name}" registered and selected ✓`);
+          setTimeout(() => setMsg(""), 3000);
+        }}
+      />
     </>
   );
 }

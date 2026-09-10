@@ -1,0 +1,157 @@
+{
+  "date": "2026-08-19",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "RESTAURANT",
+  "items": [
+    {
+      "name": "Mops",
+      "qty": 5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Thums Up 250Ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sprite 250Ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Paper Rolls",
+      "qty": null,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Napkins",
+      "qty": 2,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Harpic",
+      "qty": 0.2,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mineral Water 1L",
+      "qty": 1.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cherries",
+      "qty": 8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Somp",
+      "qty": 8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Somp White",
+      "qty": 4,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tooth Pick",
+      "qty": 0.5,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 250Ml",
+      "qty": 0.5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato Sauce",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Wooden Spoons Big",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tea Powder",
+      "qty": 8,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Coffee Powder",
+      "qty": 16,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk",
+      "qty": 9,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Gold Milk",
+      "qty": 3,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sugar",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Horlicks",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Black Grapes",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "19th_August_Transfer_19_08_2026_p01.jpg",
+  "normalized_dept": "RESTAURANT"
+}

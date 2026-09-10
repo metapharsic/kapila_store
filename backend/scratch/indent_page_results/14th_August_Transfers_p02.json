@@ -1,0 +1,51 @@
+{
+  "date": null,
+  "voucher_no": null,
+  "from_dept": null,
+  "to_dept": "STALL",
+  "items": [
+    {
+      "name": "Chinese Container 750ml",
+      "qty": 52,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Broken Rice",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": 5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk",
+      "qty": 4,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 10,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p02.jpg"
+}

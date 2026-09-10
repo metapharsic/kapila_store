@@ -120,7 +120,7 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick }) {
           <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Department Yield Tracker</h3>
           <div style={{ width: "100%", height: 300 }}>
             {yieldData.length > 0 ? (
-              <ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart data={yieldData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.border} />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -141,7 +141,7 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick }) {
         <Card style={{ padding: 20 }}>
           <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Cost Per Plate Trend (Weekly)</h3>
           <div style={{ width: "100%", height: 300 }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <AreaChart data={dailyTrend} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
                 <defs>
                   <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">

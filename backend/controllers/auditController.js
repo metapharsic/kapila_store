@@ -109,15 +109,18 @@ async function create(req, res, next) {
       if (!dept) {
         return res.status(404).json({ success: false, error: "Department not found" });
       }
-      const jsonPath = path.join(__dirname, "../db/department_items.json");
-      if (fs.existsSync(jsonPath)) {
-        const mapping = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-        const deptItemNames = mapping[dept.name] || [];
-        if (deptItemNames.length > 0) {
-          stockQuery.whereIn(db.raw("LOWER(name)"), deptItemNames.map((n) => n.toLowerCase()));
-        } else {
-          stockQuery.whereRaw("1 = 0");
-        }
+      const templateRows = await db("indent_templates")
+        .whereILike("template_name", `%${dept.name}%`)
+        .select("item_name", "item_code");
+
+      const deptItemNames = templateRows.map((t) => t.item_name.toLowerCase());
+      const deptItemCodes = templateRows.map((t) => t.item_code).filter(Boolean);
+
+      if (deptItemNames.length > 0 || deptItemCodes.length > 0) {
+        stockQuery.where((qb) => {
+          if (deptItemNames.length > 0) qb.whereIn(db.raw("LOWER(name)"), deptItemNames);
+          if (deptItemCodes.length > 0) qb.orWhereIn("item_code", deptItemCodes);
+        });
       } else {
         stockQuery.whereRaw("1 = 0");
       }

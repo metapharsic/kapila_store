@@ -10,7 +10,7 @@
     "migrate:rollback": "knex migrate:rollback",
     "seed": "knex seed:run",
     "cleanup:tokens": "node scripts/cleanup_tokens.js",
-    "test": "jest --testPathPattern=tests/ --forceExit"
+    "test": "jest --testPathPatterns=tests/ --forceExit"
   },
   "dependencies": {
     "@google/genai": "^2.17.0",

@@ -1,0 +1,5874 @@
+{
+  "generated_at": "2026-09-09T18:34:31.373Z",
+  "pages_processed": 44,
+  "total_items_logged": 1137,
+  "total_unique_items": 312,
+  "total_departments": 9,
+  "departments": [
+    {
+      "department": "NORTH INDIAN",
+      "vouchers_pages_count": 9,
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ],
+      "unique_items_count": 120,
+      "sample_items": [
+        "Aromatic Powder",
+        "Biryani Rice",
+        "Butter 500 Gm",
+        "Chat Masala",
+        "Coal",
+        "Coconut Powder",
+        "Cream",
+        "Dalchina",
+        "Dhaniya Powder",
+        "Frozen Green Peas",
+        "Garlic",
+        "Ghee",
+        "Jeera",
+        "Jeera Powder",
+        "Kaju 2 Pieces"
+      ]
+    },
+    {
+      "department": "TIFFINS",
+      "vouchers_pages_count": 4,
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ],
+      "unique_items_count": 106,
+      "sample_items": [
+        "Atta",
+        "Pesarlu",
+        "Pally Chutney",
+        "Potato",
+        "Ragi Flour",
+        "Red Chilly",
+        "Salt Big",
+        "Sunflower Oil",
+        "Tamarind",
+        "Tarbuj",
+        "Tugar Dal",
+        "Butter Covers",
+        "Compostable Grocery Bags 13*16",
+        "Parcel Covers 4*6",
+        "Compostable Grocery Bags 16*20"
+      ]
+    },
+    {
+      "department": "RESTAURANT",
+      "vouchers_pages_count": 11,
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ],
+      "unique_items_count": 96,
+      "sample_items": [
+        "Mops",
+        "Thums Up 250ml",
+        "Sprite 250ml",
+        "Paper Rolls",
+        "Napkins",
+        "Mineral Water 1l",
+        "Cherries",
+        "Somp",
+        "Somp White",
+        "Tooth Pick",
+        "Box Container 250ml",
+        "Tomato Sauce",
+        "Wooden Spoons Big Small",
+        "Boost",
+        "Lamsa"
+      ]
+    },
+    {
+      "department": "CHINESE & DOSA",
+      "vouchers_pages_count": 2,
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ],
+      "unique_items_count": 59,
+      "sample_items": [
+        "Aromatic Powder",
+        "Biryani Rice",
+        "Black Pepper",
+        "Corn Flour",
+        "Curd",
+        "Garlic",
+        "Bharath Gas",
+        "Indian Gas",
+        "Ginger",
+        "Green Chilly Sauce",
+        "Honey",
+        "Kaju 2 Pieces",
+        "Kashmiri Mirchi Powder",
+        "Maida",
+        "Noodles"
+      ]
+    },
+    {
+      "department": "SI-MEALS",
+      "vouchers_pages_count": 2,
+      "dates": [
+        "2026-01-16",
+        "2026-08-15"
+      ],
+      "unique_items_count": 50,
+      "sample_items": [
+        "Atta",
+        "Meal Maker Keema",
+        "Milk",
+        "Moong Dal",
+        "Onion",
+        "Palm Oil",
+        "Coconut",
+        "Corn Flour",
+        "Curd",
+        "Curd Cups",
+        "Dalchina",
+        "Mango Pickle",
+        "Fotato",
+        "Dosa Flour",
+        "Ragi Flour"
+      ]
+    },
+    {
+      "department": "STAFF",
+      "vouchers_pages_count": 9,
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "Unknown Date"
+      ],
+      "unique_items_count": 47,
+      "sample_items": [
+        "Chinese Container 750ml",
+        "Broken Rice",
+        "Curd",
+        "Milk",
+        "Lemons",
+        "Onion",
+        "Hmt Rice",
+        "Tugar Dal",
+        "Upma Ravva",
+        "Ghee",
+        "Coconut",
+        "Carrot",
+        "Kaju Nuka",
+        "Kaddu",
+        "Pucina"
+      ]
+    },
+    {
+      "department": "MOCKTAILS & CONTINENTAL",
+      "vouchers_pages_count": 2,
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ],
+      "unique_items_count": 37,
+      "sample_items": [
+        "Lemon",
+        "Milk",
+        "Semiya",
+        "Soda 750 Ml",
+        "Tomato Ketchup",
+        "Butter 500 Gm",
+        "Garlic",
+        "Mayonnaise",
+        "Mozzarella Cheese",
+        "Faluda Glass",
+        "Capsicum",
+        "Cucumber",
+        "Pudina",
+        "Potato",
+        "Onion"
+      ]
+    },
+    {
+      "department": "CHAT & SOFTY",
+      "vouchers_pages_count": 3,
+      "dates": [
+        "2024-08-14",
+        "2024-08-15",
+        "2026-08-14"
+      ],
+      "unique_items_count": 36,
+      "sample_items": [
+        "Biryani Rice",
+        "Jal Jeera",
+        "Gas",
+        "Hing",
+        "Green Batana Raw",
+        "Kurbani",
+        "Onion",
+        "Pav",
+        "Potato",
+        "Sugar",
+        "Vanilla Spoung",
+        "Cauliflower",
+        "Cabbage",
+        "Beans",
+        "Carrot"
+      ]
+    },
+    {
+      "department": "ROOM SERVICE",
+      "vouchers_pages_count": 2,
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ],
+      "unique_items_count": 10,
+      "sample_items": [
+        "Mineral Water 1L",
+        "Lemon",
+        "Watermelon",
+        "Shower Gel",
+        "Dental Kit",
+        "Mineral Water 500ml",
+        "Shampoo Gel",
+        "Soaps",
+        "Shampoo",
+        "Muskmelon"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "name": "3cp",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "5cp",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "8cp",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Aloo",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 10,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Alu/Potato",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Amchur Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.5,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Anar",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Apples",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pcs"
+      ],
+      "total_qty": 6.5,
+      "frequency": 5,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Aromatic Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 7.3,
+      "frequency": 7,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Atta",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 70,
+      "frequency": 8,
+      "departments": [
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Atukulu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1102,
+      "frequency": 4,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Baby Corn",
+      "primary_unit": "tin",
+      "all_units": [
+        "tin",
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 13,
+      "frequency": 5,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Badam",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.7,
+      "frequency": 4,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Baking Powder",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Banana",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "dozen"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Banana Leaf",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 400,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Barath Gas",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1.5,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Beans",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 311.1,
+      "frequency": 8,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Beetroot",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 8.25,
+      "frequency": 2,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Bendi",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Bharath Gas",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pcs"
+      ],
+      "total_qty": 21.6,
+      "frequency": 7,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Biryani Leaf",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 10.22,
+      "frequency": 6,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-10",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Biryani Rice",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "l"
+      ],
+      "total_qty": 80.5,
+      "frequency": 9,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Bis Coffe Biscuits",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Bis Coffe Paste",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Bis Coffie Biscuits",
+      "primary_unit": "bulk",
+      "all_units": [
+        "bulk"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Bis Cofie Paste",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Black Grapes",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.5,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Black Pepper",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 1.3,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Blue Lagoon",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Bobberlu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "Boiled Rice",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 504,
+      "frequency": 2,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Boost",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "pkt"
+      ],
+      "total_qty": 10,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Box Container 1000 Ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 100,
+      "frequency": 3,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Box Container 1500ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Box Container 250ml",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt",
+        "pcs"
+      ],
+      "total_qty": 3.5,
+      "frequency": 4,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Box Container 400ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Box Container 500 Ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 147,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Box Container 500 Ml R",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 4.5,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Box Container 750ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 3,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Bread",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Broken Rice",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 18,
+      "frequency": 7,
+      "departments": [
+        "SI-MEALS",
+        "STAFF"
+      ],
+      "dates": [
+        "2026-01-16",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Brown Onion",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 30.5,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Brownie",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Burger Box",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 5,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Butter 500 Gm",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt",
+        "tin",
+        "kg"
+      ],
+      "total_qty": 29.1,
+      "frequency": 12,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Butter Covers",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt"
+      ],
+      "total_qty": 200,
+      "frequency": 4,
+      "departments": [
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Butter Scotch Ice Cream",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "bulk"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Cabbage",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 36,
+      "frequency": 4,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Caps",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Capsicum",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "jar"
+      ],
+      "total_qty": 16,
+      "frequency": 6,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Carrot",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 23.25,
+      "frequency": 12,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Cauliflower",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pc"
+      ],
+      "total_qty": 14.5,
+      "frequency": 8,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Channa Atta",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4,
+      "frequency": 2,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Channa Dal",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 303,
+      "frequency": 3,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Chat Masala",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.81,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Cherries",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "case",
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 27.5,
+      "frequency": 5,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Chicken Big",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 13.8,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Chicken Small",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 29.5,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Chilly Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 13.5,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Chinese Container 1000ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Chinese Container 1500ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Chinese Container 500ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Chinese Container 750ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 52,
+      "frequency": 4,
+      "departments": [
+        "CHINESE & DOSA",
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Chocolate Sauce",
+      "primary_unit": "bulk",
+      "all_units": [
+        "bulk",
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Cleaning Cloth",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt"
+      ],
+      "total_qty": 3,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-17"
+      ]
+    },
+    {
+      "name": "Cleaning Coth",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt"
+      ],
+      "total_qty": 1,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Cling Wrap",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "CHAT & SOFTY",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-17"
+      ]
+    },
+    {
+      "name": "Coal",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 39.5,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Coconut",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "block"
+      ],
+      "total_qty": 120.5,
+      "frequency": 5,
+      "departments": [
+        "CHINESE & DOSA",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Coconut Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 23,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Coffee Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "ko"
+      ],
+      "total_qty": 46.55,
+      "frequency": 10,
+      "departments": [
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Compostable Grocery Bags 13*16",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "kgs"
+      ],
+      "total_qty": 12,
+      "frequency": 6,
+      "departments": [
+        "CHAT & SOFTY",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Compostable Grocery Bags 16*20",
+      "primary_unit": "kgs",
+      "all_units": [
+        "kgs",
+        "kg"
+      ],
+      "total_qty": 4,
+      "frequency": 4,
+      "departments": [
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Corn Flour",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 15.1,
+      "frequency": 8,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Cream",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 6.2,
+      "frequency": 4,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Cucumber",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 7.5,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Curd",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt",
+        "pcs"
+      ],
+      "total_qty": 156.02,
+      "frequency": 18,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Curd Cups",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 288,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Custic Soda",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Custod Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.5,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Daida",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10"
+      ]
+    },
+    {
+      "name": "Dalchina",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 5.4,
+      "frequency": 8,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dalda",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 6.52,
+      "frequency": 6,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Delight Ice Cream",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bulk"
+      ],
+      "total_qty": 0.5,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Dental Kit",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 30,
+      "frequency": 2,
+      "departments": [
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Dhaniya",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.1,
+      "frequency": 4,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dhaniya Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 5.9,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dondakaya",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 10,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dosa Box",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 100,
+      "frequency": 2,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dosa Broom",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2024-08-15"
+      ]
+    },
+    {
+      "name": "Dosa Flour",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 25.72,
+      "frequency": 5,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dosa Rice",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 24,
+      "frequency": 2,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dry Coconut",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 3.7,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Dust Bin Covers",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Eggs",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 151.5,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Elaichi",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4.6,
+      "frequency": 4,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Faluda Glass",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt"
+      ],
+      "total_qty": 52,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Fish",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Floor Cleaner",
+      "primary_unit": "l",
+      "all_units": [
+        "l",
+        "kg"
+      ],
+      "total_qty": 8,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Fotato",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 10,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Frozen Green Peas",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 14,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Garam Masala",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Garbage Bags",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "CHAT & SOFTY",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2024-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Garlic",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 31.7,
+      "frequency": 9,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Gas",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0.5,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Ghee",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 511.25,
+      "frequency": 8,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Ginger",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 65.5,
+      "frequency": 6,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Ginger Syrup",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Gold Milk",
+      "primary_unit": "l",
+      "all_units": [
+        "l"
+      ],
+      "total_qty": 64.5,
+      "frequency": 8,
+      "departments": [
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Gongura",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 3,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Goruchikkudy",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 12,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Green Batana Raw",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pcs"
+      ],
+      "total_qty": 27.15,
+      "frequency": 3,
+      "departments": [
+        "CHAT & SOFTY",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Green Chilli",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 28.6,
+      "frequency": 9,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Green Chilly Sauce",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 4.4,
+      "frequency": 6,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Green Mojito Mint",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Gulkanda",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Hand Gloves",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Hand Wash",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "pcs"
+      ],
+      "total_qty": 11,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Harpic",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "pcs",
+        "l"
+      ],
+      "total_qty": 14.2,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Hing",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 6,
+      "frequency": 4,
+      "departments": [
+        "CHAT & SOFTY",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Hmt Rice",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 33.25,
+      "frequency": 3,
+      "departments": [
+        "SI-MEALS",
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Homa",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "Honey",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.3,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Horlicks",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 7,
+      "frequency": 4,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Ice Cream Cone",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 3,
+      "frequency": 2,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15"
+      ]
+    },
+    {
+      "name": "Idly Box",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 200,
+      "frequency": 2,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Idly Ravva",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 31,
+      "frequency": 3,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Idly Rice",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Indian Gas",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pcs"
+      ],
+      "total_qty": 14520.05,
+      "frequency": 7,
+      "departments": [
+        "CHINESE & DOSA",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Jaggery",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 23,
+      "frequency": 3,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Jajikaya",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 4,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Jal Jeera",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.5,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Jalpan Carrybags 11*14",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2024-08-15"
+      ]
+    },
+    {
+      "name": "Japathri",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 7,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Jeera",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.35,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Jeera Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.4,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kabuli Channa",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 7.1,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kaddu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 20.5,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN",
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kaju 2 Pieces",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 4.55,
+      "frequency": 13,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Kaju Naka",
+      "primary_unit": "pc",
+      "all_units": [
+        "pc"
+      ],
+      "total_qty": 200,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Kaju Nuka",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4.97,
+      "frequency": 8,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kala Khatta Syrup",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Kandagaddu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Karivepaku",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kashmiri Mirchi Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt",
+        "g"
+      ],
+      "total_qty": 655.4,
+      "frequency": 13,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kasturi Methi",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.81,
+      "frequency": 6,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kewara Water",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 8.1,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Khas Khas",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2.2,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kheera Dosakaya",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 1.5,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Kismis",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.2,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Kit Kat",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Kothimeera",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "tin"
+      ],
+      "total_qty": 19,
+      "frequency": 7,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Kothrnir",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.25,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Kunafa",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "pcs"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Kunafla",
+      "primary_unit": "bulk",
+      "all_units": [
+        "bulk"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Kurbani",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 13,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Lamsa",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Lavang",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 7.8,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Lemon",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 20,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT",
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-18"
+      ]
+    },
+    {
+      "name": "Lemon Salt",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.5,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Lemons",
+      "primary_unit": "tin",
+      "all_units": [
+        "tin",
+        "kg",
+        "pcs",
+        "case",
+        "l",
+        "pic",
+        "pkt"
+      ],
+      "total_qty": 177.5,
+      "frequency": 16,
+      "departments": [
+        "CHAT & SOFTY",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Maida",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 48.93,
+      "frequency": 11,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Mandikaya",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.3,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Mango",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Mango Crush",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Mango Pickle",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 11.5,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Masoor Dal",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 8,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Mayonaise",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Mayonnaise",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 1.2,
+      "frequency": 5,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Meal Maker",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "Meal Maker Keema",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Mentulu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 300,
+      "frequency": 3,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Methi",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.5,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Milk",
+      "primary_unit": "l",
+      "all_units": [
+        "l",
+        "pcs"
+      ],
+      "total_qty": 120,
+      "frequency": 19,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Milk Maid",
+      "primary_unit": "tin",
+      "all_units": [
+        "tin"
+      ],
+      "total_qty": 8,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Mineral Water 1l",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "box",
+        "pkt",
+        "l",
+        "case",
+        "kg"
+      ],
+      "total_qty": 161.3,
+      "frequency": 7,
+      "departments": [
+        "RESTAURANT",
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Mineral Water 500ml",
+      "primary_unit": "box",
+      "all_units": [
+        "box"
+      ],
+      "total_qty": 68,
+      "frequency": 3,
+      "departments": [
+        "CHAT & SOFTY",
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15",
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Moong Dal",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 38,
+      "frequency": 5,
+      "departments": [
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Mops",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 11,
+      "frequency": 4,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Mosambi",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4,
+      "frequency": 4,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Mozzarella Cheese",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Mtr Sambar Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Mushroom",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 10,
+      "frequency": 4,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Muskmelon",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 12.5,
+      "frequency": 6,
+      "departments": [
+        "RESTAURANT",
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Mustard Oil",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 5,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Mutton",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Mutton Keema",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Napkins",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "pcs",
+        "l"
+      ],
+      "total_qty": 741,
+      "frequency": 8,
+      "departments": [
+        "CHAT & SOFTY",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15",
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Noodles",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 30,
+      "frequency": 4,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Nutella Chocolate",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "jar"
+      ],
+      "total_qty": 0.45,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Odonil",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "l"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Onion",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "l"
+      ],
+      "total_qty": 210.55,
+      "frequency": 27,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Orange",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 6,
+      "frequency": 4,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Oreo Biscuits",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Original Mint Mojitho",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Palak",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 12,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Pally Chutney",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 20.95,
+      "frequency": 6,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Pally Chutney Rowde",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Palm Oil",
+      "primary_unit": "l",
+      "all_units": [
+        "l",
+        "bottle",
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 59.4,
+      "frequency": 11,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Paneer",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pcs"
+      ],
+      "total_qty": 10.5,
+      "frequency": 6,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Paneer Momos",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Paper Pool",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "Paper Rolls",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "pcs",
+        "l"
+      ],
+      "total_qty": 24,
+      "frequency": 8,
+      "departments": [
+        "CHAT & SOFTY",
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2024-08-15",
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Pappor",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.25,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Parcel Covers 4*6",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 12,
+      "frequency": 9,
+      "departments": [
+        "CHINESE & DOSA",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Parcel Covers 5*8",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 5,
+      "frequency": 4,
+      "departments": [
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Pather Pool",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Pav",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 4,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Pearly",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 700,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Pepper",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 10.2,
+      "frequency": 6,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Pesarlu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1.02,
+      "frequency": 2,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Pineapple",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 9,
+      "frequency": 5,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Pineapple Syrup",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 4,
+      "frequency": 2,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Pista",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.05,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Pizza Box Big",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 15,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Pizza Box Small",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 3,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Potato",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 75.5,
+      "frequency": 11,
+      "departments": [
+        "CHAT & SOFTY",
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Pottu",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 6,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Prawns",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Pucina",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 3,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Pudina",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg",
+        "l"
+      ],
+      "total_qty": 7.05,
+      "frequency": 9,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Putani",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4.5,
+      "frequency": 3,
+      "departments": [
+        "CHINESE & DOSA",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Ragi Flour",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2.5,
+      "frequency": 3,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Rai",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Rajma",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Ramjadu",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "bottle"
+      ],
+      "total_qty": 6,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18"
+      ]
+    },
+    {
+      "name": "Rectrangle Box 500ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Red Chilly",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 8.2,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-17",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Red Chilly Sauce",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "pcs"
+      ],
+      "total_qty": 5.1,
+      "frequency": 7,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Rock Salt",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 770,
+      "frequency": 2,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Rose Syrup",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "bulk"
+      ],
+      "total_qty": 1.05,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Rose Water",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Round Pally",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Sabjee Binge",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Sabudana",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 166,
+      "frequency": 1,
+      "departments": [
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Sajeera",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0.21,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Salt Big",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt",
+        "tin"
+      ],
+      "total_qty": 6.5,
+      "frequency": 4,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Sandwich Box",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 5,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Sandwich Bread",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Schezwan Chutney",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Schezwan Sauce",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Scrubber Steel",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Semiya",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 2.1,
+      "frequency": 5,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT",
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Shampoo",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 16,
+      "frequency": 1,
+      "departments": [
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Shampoo Gel",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 6,
+      "frequency": 1,
+      "departments": [
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Shower Gel",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 6,
+      "frequency": 1,
+      "departments": [
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Silver Foil",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Silver Pouch 6*8",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 3,
+      "departments": [
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Silver Pouch 7*9",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 3,
+      "departments": [
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Silver Pouch 8*10",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Small Onion",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 16.5,
+      "frequency": 3,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Soap Oil",
+      "primary_unit": "l",
+      "all_units": [
+        "l",
+        "pkt",
+        "liter",
+        "kg"
+      ],
+      "total_qty": 49.5,
+      "frequency": 11,
+      "departments": [
+        "CHAT & SOFTY",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Soaps",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 30,
+      "frequency": 1,
+      "departments": [
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Soda 750 Ml",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 3,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Softy Chocolate Milk",
+      "primary_unit": "l",
+      "all_units": [
+        "l"
+      ],
+      "total_qty": 3,
+      "frequency": 2,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15"
+      ]
+    },
+    {
+      "name": "Softy Vanilla Milk",
+      "primary_unit": "l",
+      "all_units": [
+        "l"
+      ],
+      "total_qty": 3,
+      "frequency": 2,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15"
+      ]
+    },
+    {
+      "name": "Somp",
+      "primary_unit": "case",
+      "all_units": [
+        "case",
+        "kg"
+      ],
+      "total_qty": 27,
+      "frequency": 7,
+      "departments": [
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Somp White",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 12,
+      "frequency": 6,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Sompi",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 7,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-18"
+      ]
+    },
+    {
+      "name": "Soya Sauce",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 15.5,
+      "frequency": 5,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Sponge",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "pkt",
+        "bottle"
+      ],
+      "total_qty": 18,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18"
+      ]
+    },
+    {
+      "name": "Spoon",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Spray Bottle",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 2,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Spring Onion",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Spring Rolls",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 6,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Sprite",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 3,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-17"
+      ]
+    },
+    {
+      "name": "Sprite 250ml",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "l",
+        "pcs"
+      ],
+      "total_qty": 18.2,
+      "frequency": 6,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Sprite 750 Ml",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "dozen",
+        "bottle"
+      ],
+      "total_qty": 2,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Star Pool",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "l"
+      ],
+      "total_qty": 9,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Straws Big",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Straws Small",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 1,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Sugar",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 914.5,
+      "frequency": 17,
+      "departments": [
+        "CHAT & SOFTY",
+        "RESTAURANT",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Sun Flower Oil",
+      "primary_unit": "ltr",
+      "all_units": [
+        "ltr"
+      ],
+      "total_qty": 5,
+      "frequency": 1,
+      "departments": [
+        "STAFF"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Sunflower Oil",
+      "primary_unit": "l",
+      "all_units": [
+        "l",
+        "bottle",
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 69.9,
+      "frequency": 12,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Sweet Corn Pkt",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "pcs",
+        "tin"
+      ],
+      "total_qty": 3.5,
+      "frequency": 5,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Sweetcorn Tin",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 12,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Tamarind",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 827.05,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Tarbuj",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2.6,
+      "frequency": 3,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Tarjuj",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "Tata Salt",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "block",
+        "kg"
+      ],
+      "total_qty": 38,
+      "frequency": 9,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Tea Cups Small",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 5,
+      "frequency": 3,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-17"
+      ]
+    },
+    {
+      "name": "Tea Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 18,
+      "frequency": 6,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Thamala Pakulu",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 500,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Thums Up",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 10,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-17"
+      ]
+    },
+    {
+      "name": "Thums Up 250ml",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "bottle"
+      ],
+      "total_qty": 27,
+      "frequency": 5,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Till",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 0,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Tomato",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 51,
+      "frequency": 8,
+      "departments": [
+        "CHAT & SOFTY",
+        "MOCKTAILS & CONTINENTAL",
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Tomato Ketchup",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs",
+        "dozen"
+      ],
+      "total_qty": 10,
+      "frequency": 3,
+      "departments": [
+        "CHINESE & DOSA",
+        "MOCKTAILS & CONTINENTAL"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Tomato Sauce",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "box",
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 6.1,
+      "frequency": 8,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Tomato Sauce Glass",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Tooth Pick",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "box",
+        "pkt"
+      ],
+      "total_qty": 6.5,
+      "frequency": 6,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Tugar Dal",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "kg"
+      ],
+      "total_qty": 22.2,
+      "frequency": 6,
+      "departments": [
+        "NORTH INDIAN",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Turmeric Powder",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 9.2,
+      "frequency": 5,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "2026-08-14",
+        "2026-08-16",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Upima Ravva",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "SI-MEALS"
+      ],
+      "dates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "Upma Ravva",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "pkt"
+      ],
+      "total_qty": 1011,
+      "frequency": 6,
+      "departments": [
+        "NORTH INDIAN",
+        "SI-MEALS",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Urad Dal",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 3096.5,
+      "frequency": 8,
+      "departments": [
+        "SI-MEALS",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-01-16",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Vanilla Ice Cream",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "bulk"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Vanilla Spoung",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2.5,
+      "frequency": 1,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    },
+    {
+      "name": "Veg Momos",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "CHINESE & DOSA"
+      ],
+      "dates": [
+        "2026-08-15"
+      ]
+    },
+    {
+      "name": "Veg Oyster Sauce",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 46,
+      "frequency": 6,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-10",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-17",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Viniger",
+      "primary_unit": "bottle",
+      "all_units": [
+        "bottle",
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 4,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "Water Melon Syrup",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg",
+        "bottle"
+      ],
+      "total_qty": 0.1,
+      "frequency": 3,
+      "departments": [
+        "MOCKTAILS & CONTINENTAL",
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Watermelon",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 11,
+      "frequency": 6,
+      "departments": [
+        "RESTAURANT",
+        "ROOM SERVICE"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-18",
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "White Batana",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "NORTH INDIAN",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "White Pepper",
+      "primary_unit": "kg",
+      "all_units": [
+        "kg"
+      ],
+      "total_qty": 4,
+      "frequency": 4,
+      "departments": [
+        "CHINESE & DOSA",
+        "NORTH INDIAN"
+      ],
+      "dates": [
+        "2026-08-14",
+        "2026-08-15",
+        "2026-08-16",
+        "2026-08-19"
+      ]
+    },
+    {
+      "name": "White Tape",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 2,
+      "frequency": 5,
+      "departments": [
+        "RESTAURANT",
+        "STAFF",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2026-08-15",
+        "2026-08-20",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Wooden Fork",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 2,
+      "frequency": 2,
+      "departments": [
+        "CHAT & SOFTY"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15"
+      ]
+    },
+    {
+      "name": "Wooden Spoons",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-16"
+      ]
+    },
+    {
+      "name": "Wooden Spoons Big",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt",
+        "pcs",
+        "kg"
+      ],
+      "total_qty": 6,
+      "frequency": 6,
+      "departments": [
+        "CHAT & SOFTY",
+        "RESTAURANT",
+        "TIFFINS"
+      ],
+      "dates": [
+        "2024-08-14",
+        "2024-08-15",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "Unknown Date"
+      ]
+    },
+    {
+      "name": "Wooden Spoons Big (Small)",
+      "primary_unit": "pkt",
+      "all_units": [
+        "pkt"
+      ],
+      "total_qty": 1,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-20"
+      ]
+    },
+    {
+      "name": "Wooden Spoons Big Small",
+      "primary_unit": "pcs",
+      "all_units": [
+        "pcs"
+      ],
+      "total_qty": 0,
+      "frequency": 1,
+      "departments": [
+        "RESTAURANT"
+      ],
+      "dates": [
+        "2026-08-14"
+      ]
+    }
+  ]
+}

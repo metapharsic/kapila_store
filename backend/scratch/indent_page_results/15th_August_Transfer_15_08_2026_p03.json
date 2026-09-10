@@ -1,0 +1,185 @@
+{
+  "date": null,
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "STAFF",
+  "items": [
+    {
+      "name": "3cp",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "5cp",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "8cp",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 500 Ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 750ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 1000 Ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chinese Container 750ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Chinese Container 1000ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Box Container 1500ml",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Parcel Covers 4*6",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": null,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Compostable Grocery Bags 13*16",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Compostable Grocery Bags 16*20",
+      "qty": null,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Parcel Covers 5*8",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Parcel Covers 4*6",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Silver Pouch 6*8",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Silver Pouch 8*10",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Silver Pouch 7*9",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Butter Covers",
+      "qty": null,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "White Tape",
+      "qty": null,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Broken Rice",
+      "qty": 2.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Curd",
+      "qty": 4,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Milk",
+      "qty": null,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Lemons",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 3,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "15th_August_Transfer_15_08_2026_p03.jpg",
+  "normalized_dept": "STAFF"
+}

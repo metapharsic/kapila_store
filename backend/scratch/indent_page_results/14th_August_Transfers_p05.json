@@ -1,0 +1,73 @@
+{
+  "date": "2024-08-14",
+  "voucher_no": "24",
+  "from_dept": "Central Store",
+  "to_dept": "CHAT & SOFTY",
+  "items": [
+    {
+      "name": "Compostable Grocery Bags 13*16",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Soap Oil",
+      "qty": 2,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Napkins",
+      "qty": 4,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mineral Water 500ml",
+      "qty": 2,
+      "unit": "box",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Wooden Spoons Big",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Wooden Fork",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Ice Cream Cone",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Softy Chocolate Milk",
+      "qty": 2,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Softy Vanilla Milk",
+      "qty": 2,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p05.jpg",
+  "normalized_dept": "CHAT & SOFTY"
+}

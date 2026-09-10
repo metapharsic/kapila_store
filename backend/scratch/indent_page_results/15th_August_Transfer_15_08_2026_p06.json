@@ -1,0 +1,199 @@
+{
+  "date": "2026-08-15",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "MOCKTAILS & CONTINENTAL",
+  "items": [
+    {
+      "name": "Badam",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sabjee Binge",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Mango Crush",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pineapple Syrup",
+      "qty": 3,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Rose Syrup",
+      "qty": 1,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sprite 750 Ml",
+      "qty": 2,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Kunafla",
+      "qty": 1,
+      "unit": "bulk",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Water Melon Syrup",
+      "qty": 0.1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pizza Box Big",
+      "qty": 15,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Pizza Box Small",
+      "qty": 3,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sandwich Box",
+      "qty": 5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Burger Box",
+      "qty": 5,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato Ketchup",
+      "qty": 6,
+      "unit": "dozen",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Baby Corn",
+      "qty": 6,
+      "unit": "tin",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sandwich Bread",
+      "qty": 2,
+      "unit": "bottle",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sunflower Oil",
+      "qty": 6,
+      "unit": "L",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sweet Corn Pkt",
+      "qty": 1,
+      "unit": "pkt",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Straws Big",
+      "qty": 1,
+      "unit": "pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Bharath Gas",
+      "qty": 2,
+      "unit": "Pcs",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Beetroot",
+      "qty": 0.25,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Beans",
+      "qty": 6,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Capsicum",
+      "qty": 4,
+      "unit": "jar",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Carrot",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Cucumber",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Tomato",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Potato",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "15th_August_Transfer_15_08_2026_p06.jpg",
+  "normalized_dept": "MOCKTAILS & CONTINENTAL"
+}

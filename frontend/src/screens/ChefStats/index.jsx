@@ -4,6 +4,8 @@ import Card from "../../components/Card";
 import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS } from "../../styles/colors";
 import * as api from "../../api";
+import { useAppContext } from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
 import { ChevronRight, ArrowLeft, TrendingUp, TrendingDown, Info } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -19,6 +21,9 @@ import {
 } from "recharts";
 
 export default function ChefStatsScreen() {
+  const { setCurrentScreen } = useAppContext();
+  const { roles = [] } = useAuth();
+  const isChef = roles.some((r) => r.key === "chef");
   const [view, setView] = useState("overview"); // 'overview' | 'detail'
   const [selectedDeptId, setSelectedDeptId] = useState(null);
   
@@ -421,7 +426,11 @@ export default function ChefStatsScreen() {
   };
 
   return (
-    <Section title="Chef Statistics" sub="Department-wise kitchen performance, consumption, and efficiency metrics">
+    <Section 
+      title="Chef Statistics" 
+      sub="Department-wise kitchen performance, consumption, and efficiency metrics"
+      onBack={isChef ? () => setCurrentScreen("chef_home") : () => setCurrentScreen("dashboard")}
+    >
       {renderFilters()}
       {view === "overview" ? renderOverview() : renderDetail()}
     </Section>

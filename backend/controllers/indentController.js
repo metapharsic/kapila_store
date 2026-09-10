@@ -59,26 +59,43 @@ async function create(req, res, next) {
 
     const result = await db.transaction(async (trx) => {
       const [indent] = await trx("indents").insert({ dept: deptExists.name, date, status: "pending", indent_type }).returning("*");
-      const rows = items.map((it) => ({ indent_id: indent.id, name: it.name, qty: it.qty, unit: it.unit, item_code: it.item_code }));
+      const rows = items.map((it) => ({
+        indent_id: indent.id,
+        name: it.name,
+        qty: it.qty,
+        unit: it.unit,
+        item_code: it.item_code || "KPL-NEW",
+      }));
       const savedItems = await trx("indent_items").insert(rows).returning("*");
 
       // Estimate indent value from latest known price per item so amount-based
       // approval routing (small → store manager, large → admin) actually works.
       const { getConversionMultiplier } = require("../utils/units");
-      const itemNames = items.map((it) => it.name.toLowerCase());
-      const priceRows = itemNames.length
-        ? await trx("stock").whereRaw("LOWER(name) = ANY(?)", [itemNames]).select("name", "price", "unit")
+      const itemNames = items.map((it) => (it.name || "").toLowerCase()).filter(Boolean);
+      const itemCodes = items.map((it) => (it.item_code || "").trim().toUpperCase()).filter(Boolean);
+      const priceRows = (itemNames.length || itemCodes.length)
+        ? await trx("stock")
+            .where((qb) => {
+              if (itemCodes.length) qb.whereIn(trx.raw("UPPER(item_code)"), itemCodes);
+              if (itemNames.length) qb.orWhereRaw("LOWER(name) = ANY(?)", [itemNames]);
+            })
+            .select("item_code", "name", "price", "unit")
         : [];
       const priceMap = {};
-      priceRows.forEach((r) => { priceMap[r.name.toLowerCase()] = { price: parseFloat(r.price) || 0, unit: r.unit }; });
+      priceRows.forEach((r) => {
+        if (r.name) priceMap[r.name.toLowerCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
+        if (r.item_code) priceMap[r.item_code.trim().toUpperCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
+      });
       // Rate is priced per the STOCK's unit — convert indent qty into that unit
       // before multiplying, else e.g. 500g × ₹/kg rate inflates cost 1000x.
       const itemValues = items.map((it) => {
-        const stockInfo = priceMap[it.name.toLowerCase()];
+        const codeKey = (it.item_code || "").trim().toUpperCase();
+        const nameKey = (it.name || "").toLowerCase();
+        const stockInfo = (codeKey && priceMap[codeKey]) || priceMap[nameKey];
         const qty = parseFloat(it.qty) || 0;
         if (!stockInfo) return { name: it.name, qty, value: 0 };
-        const mult = getConversionMultiplier(it.unit, stockInfo.unit);
-        const normQty = mult !== null ? qty * mult : qty;
+        const mult = getConversionMultiplier(it.unit, stockInfo.unit, it.name) ?? 1;
+        const normQty = qty * mult;
         return { name: it.name, qty, value: normQty * stockInfo.price };
       });
       const estimatedAmount = itemValues.reduce((sum, it) => sum + it.value, 0);
@@ -599,6 +616,42 @@ async function getTemplateByName(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function exportAutomatedIndentExcel(req, res, next) {
+  try {
+    const indentAutomationService = require("../services/indentAutomationService");
+    const workbook = await indentAutomationService.generateWorkbook(
+      {},
+      { userName: req.user?.name || "Store Administrator" }
+    );
+
+    const filename = "Automated_Indent_Pattern_and_Forecasting_Engine.xlsx";
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getAutomatedIndentPreview(req, res, next) {
+  try {
+    const indentAutomationService = require("../services/indentAutomationService");
+    const summary = await indentAutomationService.getAutomationSummary();
+    res.json(summary);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   list, 
   create, 
@@ -610,6 +663,8 @@ module.exports = {
   voiceParse, 
   closeDay,
   getTemplates,
-  getTemplateByName
+  getTemplateByName,
+  exportAutomatedIndentExcel,
+  getAutomatedIndentPreview
 };
 

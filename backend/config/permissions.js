@@ -122,7 +122,7 @@ const ROLE_PERMISSION_KEYS = {
     "audit.view", "audit.create", "audit.enter_counts",
     "purchase_orders.view", "purchase_orders.create", "purchase_orders.approve",
     "grn.view", "grn.create", "grn.scan",
-    "suppliers.view",
+    "suppliers.view", "suppliers.create", "suppliers.edit",
     "reorder_points.view", "reorder_points.create", "reorder_points.edit", "reorder_points.approve",
     "transfers.view", "transfers.create", "transfers.approve",
     "reconciliation.view", "reconciliation.create", "reconciliation.approve",
@@ -130,15 +130,13 @@ const ROLE_PERMISSION_KEYS = {
   chef: [
     "recipes.view", "recipes.create", "recipes.edit", "recipes.delete",
     "indents.view", "indents.create", "indents.edit", "indents.delete",
-    "production.view", "production.create", "production.edit", "production.delete",
-    "leftovers.view", "leftovers.create", "leftovers.edit", "leftovers.delete",
-    "waste_analytics.view", "waste_analytics.export",
+    "chef_stats.view", "chef_stats.export",
     "scan.indent", "scan.text",
   ],
   employee: [
     "dashboard.view", "departments.view", "transfers.view", "transfers.create", "menu.view",
-    "recipes.view", "indents.view", "indents.create", "production.view", "production.create",
-    "leftovers.view", "leftovers.create", "chef_stats.view", "search.view",
+    "recipes.view", "indents.view", "indents.create",
+    "chef_stats.view", "search.view",
   ],
 };
 

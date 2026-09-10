@@ -101,6 +101,38 @@ constraints it must not violate.
 
 ---
 
+## Multi-Agent Specialized Engine Roles
+
+### 7. `agent-scanner`
+**Trigger:** OCR ingest, barcode/SKU parsing, item autocomplete, Combobox search
+**Responsibilities:**
+- Fast prefix & fuzzy matching across store item master
+- Auto-extract unit and pack-size specifications
+- Keyboard navigable high-density UI components
+
+### 8. `agent-loader`
+**Trigger:** Batch data ingestion, theoretical stock preloading, multi-category inventory pulling
+**Responsibilities:**
+- Compute expected theoretical on-hand balances across storage locations
+- Live variance computation: `Variance = Physical Count - Theoretical Stock`
+- Handle pack-to-base unit conversion ratios
+
+### 9. `agent-auditor`
+**Trigger:** Reconciliation sessions, discrepancy logs, audit history, shift handoff summaries
+**Responsibilities:**
+- Maintain persistent audit trail for every physical count session
+- Group line-item variances with financial valuation impacts
+- Surface non-zero variance metrics and root-cause annotations
+
+### 10. `agent-veritas`
+**Trigger:** Reconciliation commitment, ledger adjustments, write-offs, gate pass approvals
+**Responsibilities:**
+- Two-stage confirmation dialog with impact balance ledger preview
+- Atomic transaction execution: adjust stock on-hand, write audit session, post stock ledger
+- Strict validation guarding against negative stock without override permission
+
+---
+
 ## Shared Rules (All Agents)
 1. Read `CLAUDE.md` before starting any task
 2. Check the relevant `docs/<MODULE>.md` before editing that module

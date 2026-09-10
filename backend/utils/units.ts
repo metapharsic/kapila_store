@@ -52,21 +52,29 @@ export const getConversionMultiplier = (fromUnit: string, toUnit: string, itemNa
   if (f === "ml" && t === "l") return 0.001;
   if (f === "l" && t === "ml") return 1000;
 
-  // Count
+  // Count & Packaging 1:1 Equivalencies in Hotel Inventory
+  if ((f === "bottle" && t === "pcs") || (f === "pcs" && t === "bottle")) return 1;
+  if ((f === "tin" && t === "pcs") || (f === "pcs" && t === "tin")) return 1;
+  if ((f === "jar" && t === "pcs") || (f === "pcs" && t === "jar")) return 1;
+  if ((f === "bulk" && t === "pcs") || (f === "pcs" && t === "bulk")) return 1;
+  if ((f === "bulk" && t === "pkt") || (f === "pkt" && t === "bulk")) return 1;
+  if ((f === "pkt" && t === "pcs") || (f === "pcs" && t === "pkt")) return 1;
+
+  // Count conversions
   if (f === "dozen" && t === "pcs") return 12;
   if (f === "pcs" && t === "dozen") return 1 / 12;
   if (f === "box" && t === "pcs") return 24; // standard assumption
   if (f === "pcs" && t === "box") return 1 / 24;
 
-  // Pack size extraction from item name (e.g. "Butter 500 Gm")
+  // Pack size extraction from item name (e.g. "Butter 500 Gm", "Cheese 500g")
   if (itemName) {
     const pkgMatch = itemName.match(/(\d+(?:\.\d+)?)\s*(gm|g|kg|ml|l|ltr|litre|liter|grams|kilograms|liters|litres)\b/i);
     if (pkgMatch) {
       const pkgVal = parseFloat(pkgMatch[1]);
       const pkgNormalizedUnit = normalizeUnit(pkgMatch[2]).toLowerCase();
 
-      // Convert pcs/pkt/box to weight/volume
-      if (["pcs", "pkt", "box"].includes(f) && ["kg", "g", "l", "ml"].includes(t)) {
+      // Convert pcs/pkt/box/bulk to weight/volume
+      if (["pcs", "pkt", "box", "bulk"].includes(f) && ["kg", "g", "l", "ml"].includes(t)) {
         let pcsToPkg = pkgVal;
         if (f === "box") pcsToPkg = pkgVal * 24;
         const pkgToT = getConversionMultiplier(pkgNormalizedUnit, t);
@@ -75,8 +83,8 @@ export const getConversionMultiplier = (fromUnit: string, toUnit: string, itemNa
         }
       }
 
-      // Convert weight/volume to pcs/pkt/box
-      if (["kg", "g", "l", "ml"].includes(f) && ["pcs", "pkt", "box"].includes(t)) {
+      // Convert weight/volume to pcs/pkt/box/bulk
+      if (["kg", "g", "l", "ml"].includes(f) && ["pcs", "pkt", "box", "bulk"].includes(t)) {
         const fToPkg = getConversionMultiplier(f, pkgNormalizedUnit);
         if (fToPkg !== null) {
           let pkgToT = 1 / pkgVal;

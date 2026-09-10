@@ -30,17 +30,28 @@ kapila/
 
 ## Modules
 1. **Stock** — Incoming purchases from suppliers
-   - *Voice Capturing & OCR*: Multi-language speech recognition (Telugu `te-IN`, Hindi `hi-IN`, English `en-IN`, Tamil, Kannada, etc.) & receipt scans (Codex 3.5 Sonnet).
+   - *Voice Capturing & OCR*: Multi-language speech recognition (Telugu `te-IN`, Hindi `hi-IN`, English `en-IN`, Tamil, Kannada, etc.) & receipt scans (Codex 3.5 Sonnet / Gemini).
    - *Alerts & POs*: WhatsApp PO generation (`https://wa.me/?text=...`) and clipboard copying for low stock items.
    - *Supplier Comparisons*: Auto-ranking active supplier rates under item input to recommend the cheapest.
    - *Expiry tracking*: Spoilage warning widget displaying items expiring in under 3 days.
-2. **Indent** — Department nightly material requests
+   - *Stock Ledger & LIFO*: Double-entry transactional ledger tracking FIFO/LIFO batches, pack size variations, and warehouse positioning (Rack / Shelf / Bin).
+2. **Stock Reconciliation (Multi-Agent Engine)**
+   - *Agent Scanner*: Instant searchable combobox with category grouping, keyboard navigation, and automatic unit matching.
+   - *Agent Loader*: Batch theoretical stock loading, real-time variance calculation against physical counts, pack conversion math.
+   - *Agent Auditor*: Comprehensive historical reconciliation sessions audit trail, expandable item breakdown, unit-rate valuation.
+   - *Agent Veritas*: Two-stage verification dialog with impact ledger preview, automatic inventory level adjustment and double-entry ledger postings.
+3. **Indent** — Department nightly material requests
    - *Recipe Planner & Auto-Indent*: Scaled recipe-based portion calculator and historical weekday average trend recommendation engine.
-3. **Issuance** — Storekeeper issues goods, AI scan of paper forms
-4. **Production** — Plates/portions logged per department
-5. **Leftovers** — Unsold food carried forward
-6. **Dashboard** — Cross-module KPIs and alerts
-   - *Store Manager Home*: Live at-a-glance view of pending indents, low stock alerts, offline sync status, recent activity feeds, quick action shortcuts, and shift handoff notes.
+   - *Multi-Agent Indent Processor & Harmonizer*: Multi-department batch ingestion, item alias normalization, unit conversion reconciliation.
+4. **Issuance** — Storekeeper issues goods, AI scan of paper forms, auto batch deduction
+5. **Production** — Plates/portions logged per department
+6. **Leftovers** — Unsold food carried forward
+7. **Kitchen Assets & Maintenance (CMMS)** — Equipment lifecycle, preventive maintenance schedules, breakdown work orders
+8. **Security Gate & Utilities** — Returnable/non-returnable gate passes, daily utility consumption meter logging (power, water, gas, diesel)
+9. **Food Safety & Waste** — Critical control point logs (temperature, oil quality, cleaning audits), waste logging with financial impact
+10. **Staff HRMS & Night Audit** — Shift attendance, roster management, automated day-end closing reconciliation
+11. **Dashboard** — Cross-module KPIs and alerts
+    - *Store Manager Home*: Live at-a-glance view of pending indents, low stock alerts, offline sync status, recent activity feeds, quick action shortcuts, and shift handoff notes.
 
 ## Departments (fixed list)
 `TIFFINS | STAFF | SI-MEALS | NORTH INDIAN | CHAT & SOFTY | CHINESE & DOSA | MOCKTAILS & CONTINENTAL | RESTAURANT | ROOM SERVICE`
@@ -54,8 +65,8 @@ kapila/
 - API calls must include `x-api-key` header for Anthropic endpoints
 - Prefer editing existing files over creating new ones
 
-## Known Bugs
-- `handleScan` in IssuanceScreen (line 292) is missing `x-api-key` header → 401
+## Known Bugs (Resolved)
+- `handleScan` in IssuanceScreen: Routed through backend `/api/scan/indent` proxy with server-side API key management. [RESOLVED]
 
 ## Commands
 ```bash

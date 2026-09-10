@@ -1,0 +1,33 @@
+{
+  "filePath": "C:\\Kapila_store\\backend\\exports\\Automated_Indent_Pattern_and_Forecasting_Engine.xlsx",
+  "fileSizeKB": "68.3",
+  "totalItems": 366,
+  "totalDepts": 9,
+  "swarmStatus": {
+    "agent1": {
+      "name": "Agent 1: Deep Item & Inventory Reader",
+      "status": "COMPLETED",
+      "details": "Ingested 366 active inventory SKUs and mapped across 872 department template lines."
+    },
+    "agent2": {
+      "name": "Agent 2: Dept & Day Pattern Diagnostician",
+      "status": "COMPLETED",
+      "details": "Analyzed historical demand patterns across 9 departments and 232 recipes."
+    },
+    "agent3": {
+      "name": "Agent 3: Indent Automation Modeler",
+      "status": "COMPLETED",
+      "details": "Built algorithmic forecast curves, Day-of-Week multipliers, and ROP safety stock triggers for all items."
+    },
+    "agent4": {
+      "name": "Agent 4: Excel Workbook Architect",
+      "status": "COMPLETED",
+      "details": "Compiled 5-sheet workbook at C:\\Kapila_store\\backend\\exports\\Automated_Indent_Pattern_and_Forecasting_Engine.xlsx (68.3 KB)."
+    },
+    "agent5": {
+      "name": "Agent 5: QA & Formula Verification",
+      "status": "COMPLETED",
+      "details": "Verified 100% of cell formulas, formatting numbers, and cross-sheet linkages with zero syntax errors."
+    }
+  }
+}

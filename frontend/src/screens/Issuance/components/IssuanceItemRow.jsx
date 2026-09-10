@@ -16,6 +16,8 @@ export default function IssuanceItemRow({
   unitPrice = 0,
   cost = 0,
   baseUnit = "kg",
+  onInspect = () => {},
+  isInspected = false,
 }) {
   const numQty = parseFloat(issueQty) || 0;
   const numAvail = parseFloat(available) || 0;
@@ -34,8 +36,15 @@ export default function IssuanceItemRow({
 
   return (
     <tr
+      onClick={() => onInspect(idx)}
       style={{
-        backgroundColor: isConfirmed ? "rgba(16, 185, 129, 0.04)" : idx % 2 === 0 ? "#ffffff" : "#fafafa",
+        backgroundColor: isInspected 
+          ? "rgba(244, 200, 75, 0.12)" 
+          : isConfirmed 
+          ? "rgba(16, 185, 129, 0.04)" 
+          : idx % 2 === 0 ? "#ffffff" : "#fafafa",
+        borderLeft: isInspected ? "3px solid var(--color-gold, #f4c84b)" : "none",
+        cursor: "pointer",
         transition: "background-color 0.15s ease",
       }}
       onMouseEnter={(e) => {

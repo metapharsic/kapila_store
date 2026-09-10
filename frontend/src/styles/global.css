@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap');
+
+:root {
+  /* --- Typography Fonts --- */
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-sans:    'DM Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* --- Warm Cream / Off-White Canvas --- */
+  --bg-page:        #f5f0e6;
+  --bg-page-subtle: #eae6dc;
+  --bg-page-warm:   #f0ece3;
+  --bg-card:        #ffffff;
+  --bg-modal:       #ffffff;
+  --bg-hover:       rgba(0, 0, 0, 0.04);
+  --bg-active:      rgba(244, 200, 75, 0.15);
+
+  /* --- Near-Black Sidebar --- */
+  --bg-sidebar:         #111113;
+  --bg-sidebar-elevate: #18181b;
+  --bg-sidebar-hover:   #1f1f23;
+  --bg-sidebar-active:  rgba(244, 200, 75, 0.14);
+  --border-sidebar:     rgba(255, 255, 255, 0.08);
+  --text-sidebar:       #e4e4e7;
+  --text-sidebar-muted: #71717a;
+  --text-sidebar-hover: #ffffff;
+  --text-sidebar-active:#f4c84b;
+
+  /* --- Sidebar Aliases --- */
+  --sidebar-bg:         var(--bg-sidebar);
+  --sidebar-border:     var(--border-sidebar);
+  --sidebar-text:       #a1a1aa;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg:  var(--bg-sidebar-active);
+  --sidebar-active-text:var(--text-sidebar-active);
+  --sidebar-hover-bg:   var(--bg-sidebar-hover);
+  --sidebar-category:   #71717a;
+
+  /* --- Dark Charcoal Text & Ink --- */
+  --text-main:          #18181b;
+  --text-muted:         #52525b;
+  --text-dim:           #71717a;
+  --text-light:         #ffffff;
+
+  /* --- Gold Accents --- */
+  --color-gold:         #f4c84b;
+  --color-gold-hover:   #f0bb2a;
+  --color-gold-dark:    #b48214;
+  --color-gold-dim:     rgba(244, 200, 75, 0.15);
+  --color-gold-glow:    rgba(244, 200, 75, 0.28);
+
+  /* --- Status Colors --- */
+  --color-success:      #10b981;
+  --color-warning:      #f59e0b;
+  --color-danger:       #ef4444;
+  --color-info:         #3b82f6;
+
+  /* --- Borders & Radii --- */
+  --border-color:       rgba(0, 0, 0, 0.08);
+  --border-subtle:      rgba(0, 0, 0, 0.05);
+  --border-strong:      rgba(0, 0, 0, 0.16);
+  --radius-sm:          8px;
+  --radius-md:          12px;
+  --radius-lg:          16px;
+  --radius-xl:          20px;
+  --radius-full:        9999px;
+
+  /* --- Shadows --- */
+  --shadow-sm:          0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:          0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg:          0 10px 28px rgba(0, 0, 0, 0.08);
+  --shadow-sidebar:     4px 0 20px rgba(0, 0, 0, 0.4);
+
+  /* --- Redesign Compatibility Aliases --- */
+  --color-bg-page:        var(--bg-page);
+  --color-bg-card:        var(--bg-card);
+  --color-bg-sidebar:     var(--bg-sidebar);
+  --color-border:         var(--border-color);
+  --color-border-strong:  var(--border-strong);
+  --color-accent-primary: var(--color-gold);
+  --color-accent-primary-light: var(--color-gold-dim);
+  --color-text-primary:   var(--text-main);
+  --color-text-muted:     var(--text-muted);
+
+  /* --- Type Scale --- */
+  --text-label: 12px;
+  --text-body:  13.5px;
+  --text-h4:    16px;
+  --text-h3:    20px;
+  --text-h2:    28px;
+  --text-h1:    36px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text-main);
+  margin: 0;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* --- Common UI Utilities --- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.chip:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+.chip.active {
+  background: var(--color-gold-dim);
+  color: var(--color-gold-dark);
+  border-color: var(--color-gold);
+  font-weight: 600;
+}
+
+.stock-table th, .stock-table td {
+  padding: 12px 14px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse { animation: pulse 2s infinite; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.2s ease-out; }
+
+/* Responsive Grid Utilities */
+.resp-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.resp-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.resp-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+@media (max-width: 767px) {
+  .resp-grid-2, .resp-grid-3, .resp-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}

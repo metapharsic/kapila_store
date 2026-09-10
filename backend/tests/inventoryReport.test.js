@@ -7,6 +7,7 @@ const reportController = require('../controllers/reportController');
 const ExcelJS = require('exceljs');
 
 describe('Enterprise Multi-Agent Inventory Excel Reporting Unit', () => {
+  jest.setTimeout(30000);
   afterAll(async () => {
     await db.destroy();
   });

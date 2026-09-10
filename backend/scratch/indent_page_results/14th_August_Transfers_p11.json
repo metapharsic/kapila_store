@@ -1,0 +1,59 @@
+{
+  "date": "2026-08-15",
+  "voucher_no": null,
+  "from_dept": "Central Store",
+  "to_dept": "STAFF",
+  "items": [
+    {
+      "name": "Sugar",
+      "qty": 7,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Carrot",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Maida",
+      "qty": 5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Alu/Potato",
+      "qty": 1,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Onion",
+      "qty": 2,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Dalda",
+      "qty": 0.5,
+      "unit": "kg",
+      "rate": null,
+      "amount": null
+    },
+    {
+      "name": "Sun Flower Oil",
+      "qty": 5,
+      "unit": "ltr",
+      "rate": null,
+      "amount": null
+    }
+  ],
+  "source_file": "14th_August_Transfers_p11.jpg",
+  "normalized_dept": "STAFF"
+}

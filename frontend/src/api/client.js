@@ -73,6 +73,7 @@ async function request(method, path, body, params, didRetry = false) {
 export const api = {
   get: (path, params) => request("GET", path, null, params),
   post: (path, body) => request("POST", path, body),
+  put: (path, body) => request("PUT", path, body),
   patch: (path, body) => request("PATCH", path, body),
   delete: (path, body) => request("DELETE", path, body),
 
