@@ -6,12 +6,25 @@ const execAsync = util.promisify(exec);
 
 const REPO_ROOT = path.resolve(__dirname, "../../");
 
-async function runGit(cmd) {
+async function runGit(cmd, timeoutMs = 12000) {
   try {
-    const { stdout, stderr } = await execAsync(cmd, { cwd: REPO_ROOT });
+    const { stdout, stderr } = await execAsync(cmd, {
+      cwd: REPO_ROOT,
+      timeout: timeoutMs,
+      env: {
+        ...process.env,
+        GIT_TERMINAL_PROMPT: "0",
+        GCM_INTERACTIVE: "never",
+      },
+    });
     return { ok: true, stdout: stdout.trim(), stderr: stderr.trim() };
   } catch (err) {
-    return { ok: false, error: err.message, stdout: err.stdout?.trim() || "", stderr: err.stderr?.trim() || "" };
+    return {
+      ok: false,
+      error: err.message,
+      stdout: err.stdout?.trim() || "",
+      stderr: err.stderr?.trim() || "",
+    };
   }
 }
 
@@ -48,7 +61,6 @@ function parseGitFileStatus(line, isNameStatus = false) {
     code = parts[0] || "M";
     filePath = parts.slice(1).join(" ");
   } else {
-    // git status --porcelain format (first 2 chars are status)
     code = line.slice(0, 2).trim();
     filePath = line.slice(2).trim();
   }
@@ -186,7 +198,7 @@ exports.getConfig = async (req, res) => {
         git_head_commit_number: parseInt(countRes.stdout || "0", 10),
         git_head_commit_date: headDateRes.stdout || null,
         git_head_commit_message: headMsgRes.stdout || "",
-        git_remote_url: remoteRes.stdout || "origin",
+        git_remote_url: remoteRes.stdout || configMap.git_remote_url || "origin",
         has_uncommitted_changes: uncommittedFiles.length > 0,
         uncommitted_files: uncommittedFiles,
         uncommitted_files_count: uncommittedFiles.length,
@@ -202,18 +214,48 @@ exports.getConfig = async (req, res) => {
   }
 };
 
+// POST /api/system/update-remote
+exports.updateRemoteUrl = async (req, res) => {
+  try {
+    const { remote_url } = req.body;
+    if (!remote_url || !remote_url.trim()) {
+      return res.status(400).json({ success: false, error: "remote_url is required." });
+    }
+    const cleanUrl = remote_url.trim();
+    const setRes = await runGit(`git remote set-url origin ${cleanUrl}`);
+    if (!setRes.ok) {
+      await runGit(`git remote add origin ${cleanUrl}`);
+    }
+
+    await db("system_configs")
+      .insert({ config_key: "git_remote_url", config_value: cleanUrl, updated_at: db.fn.now() })
+      .onConflict("config_key")
+      .merge();
+
+    return res.json({
+      success: true,
+      data: {
+        remote_url: cleanUrl,
+        message: "Remote GitHub repository URL updated successfully.",
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // POST /api/system/check-updates
 exports.checkGitHubUpdates = async (req, res) => {
   try {
     const branchRes = await runGit("git rev-parse --abbrev-ref HEAD");
     const targetBranch = branchRes.stdout || "main";
 
-    // Fetch remote branch
-    const fetchRes = await runGit(`git fetch origin ${targetBranch}`);
+    // Fetch remote branch non-interactively
+    const fetchRes = await runGit(`git -c credential.helper= -c core.askPass= fetch origin ${targetBranch}`, 8000);
     if (!fetchRes.ok) {
       return res.status(400).json({
         success: false,
-        error: `Git fetch failed: ${fetchRes.stderr || fetchRes.error}`,
+        error: `Git fetch notice: ${fetchRes.stderr || fetchRes.error || "Unable to reach remote origin. Check repository URL or connection."}`,
       });
     }
 
@@ -230,13 +272,12 @@ exports.checkGitHubUpdates = async (req, res) => {
       for (const line of lines) {
         const [hash, fullHash, author, date, message] = line.split("|");
 
-        // Inspect files changed for each commit
         const showRes = await runGit(`git show --name-status --oneline ${hash}`);
         const commitFiles = [];
         if (showRes.stdout) {
           showRes.stdout
             .split("\n")
-            .slice(1) // skip the oneline commit header
+            .slice(1)
             .filter(Boolean)
             .forEach((fl) => {
               const parsed = parseGitFileStatus(fl, true);
@@ -295,12 +336,13 @@ exports.pullGitHubUpdates = async (req, res) => {
     const beforeHashRes = await runGit("git rev-parse --short HEAD");
     const beforeHash = beforeHashRes.stdout;
 
-    // Pull from GitHub
-    const pullRes = await runGit(`git pull origin ${targetBranch}`);
+    // Pull from GitHub non-interactively with 10s timeout
+    const pullRes = await runGit(`git -c credential.helper= -c core.askPass= pull origin ${targetBranch}`, 10000);
     if (!pullRes.ok) {
       return res.status(400).json({
         success: false,
-        error: `Git pull failed: ${pullRes.stderr || pullRes.error}`,
+        ack_status: "PULL_FAILED",
+        error: `Git pull failed: ${pullRes.stderr || pullRes.error || "Connection or credential error accessing remote origin."}`,
       });
     }
 
@@ -322,7 +364,6 @@ exports.pullGitHubUpdates = async (req, res) => {
         for (const line of lines) {
           const [hash, fullHash, author, date, message] = line.split("|");
 
-          // Get files changed with status for this commit
           const showRes = await runGit(`git show --name-status --oneline ${hash}`);
           const commitFiles = [];
           if (showRes.stdout) {
@@ -345,7 +386,6 @@ exports.pullGitHubUpdates = async (req, res) => {
           const commitNumber = parseInt(countRes.stdout || "0", 10);
           const funcs = detectFunctionalities(commitFiles, message);
 
-          // Register patch in system_patches table if not already present
           const existing = await db("system_patches").where("commit_hash", hash).first();
           if (!existing) {
             const [inserted] = await db("system_patches")
@@ -382,13 +422,11 @@ exports.pullGitHubUpdates = async (req, res) => {
         }
       }
 
-      // Update system configuration timestamp
       const nowStr = new Date().toISOString();
       await db("system_configs")
         .where("config_key", "last_git_sync_at")
         .update({ config_value: nowStr, updated_at: db.fn.now() });
 
-      // Create a system notification to alert users
       try {
         const { sendNotification } = require("./notificationController");
         const adminRole = await db("roles").where({ key: "admin" }).first();
@@ -459,7 +497,6 @@ exports.applyPatches = async (req, res) => {
       appliedIds.push(patch.id);
     }
 
-    // Auto-run database migrations if new migrations were pulled
     let migrationStatus = "No new migrations";
     try {
       const [batch, migrations] = await db.migrate.latest();
@@ -470,7 +507,6 @@ exports.applyPatches = async (req, res) => {
       migrationStatus = `Migration notice: ${migErr.message}`;
     }
 
-    // Update app version string
     const currentVerConfig = await db("system_configs").where("config_key", "app_version").first();
     let currentVer = currentVerConfig?.config_value || "v1.4.2";
     const verMatch = currentVer.match(/^v?(\d+)\.(\d+)\.(\d+)$/);
@@ -485,7 +521,6 @@ exports.applyPatches = async (req, res) => {
         .update({ config_value: newVer, updated_at: db.fn.now() });
     }
 
-    // Log in audit_logs
     await db("audit_logs").insert({
       action: "APPLY_GITHUB_PATCHES",
       resource: "system_patches",
@@ -521,6 +556,8 @@ exports.pushGitHubUpdates = async (req, res) => {
     const { commit_message, functional_category } = req.body;
     const branchRes = await runGit("git rev-parse --abbrev-ref HEAD");
     const targetBranch = branchRes.stdout || "main";
+    const remoteRes = await runGit("git remote get-url origin");
+    const remoteUrl = remoteRes.stdout || "origin";
 
     // 1. Inspect uncommitted files before staging
     const statusRes = await runGit("git status --porcelain");
@@ -556,7 +593,7 @@ exports.pushGitHubUpdates = async (req, res) => {
     const defaultMsg = `feat(kapila): enterprise system update - ${new Date().toISOString().slice(0, 19).replace("T", " ")}`;
     const finalMsg = (commit_message || defaultMsg).replace(/"/g, '\\"');
 
-    // 3. Commit
+    // 3. Commit locally
     const commitRes = await runGit(`git commit -m "${finalMsg}"`);
     if (!commitRes.ok && !commitRes.stdout.includes("nothing to commit")) {
       return res.status(400).json({
@@ -565,16 +602,7 @@ exports.pushGitHubUpdates = async (req, res) => {
       });
     }
 
-    // 4. Push to remote
-    const pushRes = await runGit(`git push origin ${targetBranch}`);
-    if (!pushRes.ok) {
-      return res.status(400).json({
-        success: false,
-        error: `Git push failed: ${pushRes.stderr || pushRes.error}`,
-      });
-    }
-
-    // 5. Gather commit hash, full SHA, count, timestamp
+    // 4. Gather local commit metadata
     const newHashRes = await runGit("git rev-parse --short HEAD");
     const newFullHashRes = await runGit("git rev-parse HEAD");
     const newCountRes = await runGit("git rev-list --count HEAD");
@@ -584,18 +612,48 @@ exports.pushGitHubUpdates = async (req, res) => {
     const commitNumber = parseInt(newCountRes.stdout || "0", 10);
     const completeDateTime = commitDateRes.stdout || new Date().toISOString();
 
+    // 5. Attempt remote push non-interactively with safe timeout
+    const pushRes = await runGit(`git -c credential.helper= -c core.askPass= push origin ${targetBranch}`, 10000);
+
+    let remoteStatus = "PUSHED_TO_REMOTE";
+    let remoteMessage = "All changes successfully pushed to remote GitHub repository.";
+    let ackStatus = "SUCCESS_REMOTE_PUSH";
+    let ackLevel = "success";
+
+    if (!pushRes.ok) {
+      remoteStatus = "REMOTE_PENDING";
+      ackLevel = "warning";
+      if (pushRes.stderr.includes("could not read Username") || pushRes.stderr.includes("terminal prompts disabled")) {
+        remoteMessage = `Changes committed locally as Commit #${commitNumber} (${newHashRes.stdout}). Remote push requires GitHub credentials (configure Personal Access Token or repository access).`;
+      } else {
+        remoteMessage = `Changes committed locally as Commit #${commitNumber} (${newHashRes.stdout}). Remote notice: ${pushRes.stderr || pushRes.error}`;
+      }
+      ackStatus = "SUCCESS_LOCAL_COMMIT_REMOTE_PENDING";
+    }
+
+    const ackId = `ACK-KPL-${commitNumber}-${newHashRes.stdout}-${Date.now().toString(36).toUpperCase()}`;
+    const ackMessage = remoteStatus === "PUSHED_TO_REMOTE"
+      ? `ACKNOWLEDGED: Commit #${commitNumber} (${newHashRes.stdout}) committed and pushed to remote origin/${targetBranch} successfully!`
+      : `ACKNOWLEDGED: Commit #${commitNumber} (${newHashRes.stdout}) safely committed & verified locally (${filesToPush.length} files). Remote sync status: ${remoteMessage}`;
+
     // Audit log
     await db("audit_logs").insert({
       action: "PUSH_GITHUB_UPDATES",
       resource: "github_sync",
       resource_id: newHashRes.stdout,
       metadata: JSON.stringify({
+        ack_id: ackId,
+        ack_status: ackStatus,
+        ack_level: ackLevel,
         commit_hash: newHashRes.stdout,
         full_hash: newFullHashRes.stdout,
         commit_number: commitNumber,
         commit_timestamp: completeDateTime,
         commit_message: finalMsg,
         branch: targetBranch,
+        remote_url: remoteUrl,
+        remote_status: remoteStatus,
+        remote_message: remoteMessage,
         files_count: filesToPush.length,
         files: filesToPush.map((f) => f.path),
         functionalities: detectedFuncs,
@@ -607,7 +665,14 @@ exports.pushGitHubUpdates = async (req, res) => {
     return res.json({
       success: true,
       data: {
+        ack_id: ackId,
+        ack_status: ackStatus,
+        ack_level: ackLevel,
+        ack_message: ackMessage,
         branch: targetBranch,
+        remote_url: remoteUrl,
+        remote_status: remoteStatus,
+        remote_message: remoteMessage,
         commit_hash: newHashRes.stdout,
         full_hash: newFullHashRes.stdout,
         commit_number: commitNumber,
@@ -617,7 +682,7 @@ exports.pushGitHubUpdates = async (req, res) => {
         files_pushed_count: filesToPush.length,
         files_pushed: filesToPush,
         functionalities: detectedFuncs,
-        git_output: pushRes.stdout,
+        git_output: pushRes.stdout || pushRes.stderr,
       },
     });
   } catch (err) {

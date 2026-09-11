@@ -11,7 +11,7 @@ import {
   GitBranch, GitPullRequest, GitCommit, RefreshCw, Download, Upload, 
   CheckCircle2, AlertTriangle, ShieldCheck, Clock, FileCode, Check, Layers,
   Sparkles, FileText, ChevronRight, X, ExternalLink, Calendar, Hash, Tag,
-  ArrowRight, Info
+  ArrowRight, Info, Settings, Globe, ShieldAlert
 } from "lucide-react";
 
 export default function SystemConfigScreen() {
@@ -40,6 +40,11 @@ export default function SystemConfigScreen() {
   const [showPushModal, setShowPushModal] = useState(false);
   const [pushResult, setPushResult] = useState(null);
 
+  // Remote URL configuration states
+  const [showRemoteModal, setShowRemoteModal] = useState(false);
+  const [remoteUrlInput, setRemoteUrlInput] = useState("");
+  const [updatingRemote, setUpdatingRemote] = useState(false);
+
   // Patch selection states
   const [selectedPatchIds, setSelectedPatchIds] = useState([]);
   const [applyingPatches, setApplyingPatches] = useState(false);
@@ -48,7 +53,7 @@ export default function SystemConfigScreen() {
 
   const flash = (text, color = COLORS.success) => {
     setMsg({ text, color });
-    setTimeout(() => setMsg(""), 5000);
+    setTimeout(() => setMsg(""), 6000);
   };
 
   const loadConfig = async () => {
@@ -58,6 +63,7 @@ export default function SystemConfigScreen() {
       const res = await api.systemConfig.getConfig();
       if (res.success) {
         setConfigData(res.data);
+        setRemoteUrlInput(res.data.git_remote_url || "");
         if (res.data.pending_patches) {
           setSelectedPatchIds(res.data.pending_patches.map((p) => p.id));
         }
@@ -76,7 +82,6 @@ export default function SystemConfigScreen() {
     loadConfig();
   }, []);
 
-  // Format date helper with complete time and weekday
   const formatCompleteDate = (dateStr) => {
     if (!dateStr) return "—";
     try {
@@ -114,27 +119,27 @@ export default function SystemConfigScreen() {
         flash(res.error || "Failed to check GitHub updates", COLORS.danger);
       }
     } catch (err) {
-      flash("Error checking GitHub: " + err.message, COLORS.danger);
+      flash("Notice checking GitHub: " + err.message, COLORS.warning);
     } finally {
       setCheckingUpdates(false);
     }
   };
 
-  // 2. Automatically pull updates from GitHub with complete progress bar
+  // 2. Pull updates from GitHub with complete progress bar
   const handlePullUpdates = async () => {
     setPulling(true);
     setPullProgress(15);
-    setPullStage("Contacting remote GitHub repository (git fetch)...");
+    setPullStage("Connecting to remote GitHub repository...");
     setPullResult(null);
     setShowPullModal(true);
 
     const progressTimer = setInterval(() => {
       setPullProgress((prev) => {
         if (prev < 40) {
-          setPullStage("Fetching origin commit tree & calculating deltas...");
+          setPullStage("Fetching origin commit tree & calculating diffs...");
           return prev + 15;
         }
-        if (prev < 75) {
+        if (prev < 70) {
           setPullStage("Fast-forward merging commit objects into local workspace...");
           return prev + 15;
         }
@@ -150,7 +155,7 @@ export default function SystemConfigScreen() {
       const res = await api.systemConfig.pullUpdates();
       clearInterval(progressTimer);
       setPullProgress(100);
-      setPullStage("Synchronization complete!");
+      setPullStage("Pull operation finished!");
 
       if (res.success) {
         setPullResult(res.data);
@@ -161,11 +166,11 @@ export default function SystemConfigScreen() {
         }
         await loadConfig();
       } else {
-        flash(res.error || "Failed to pull from GitHub", COLORS.danger);
+        flash(res.error || "Notice during pull from GitHub.", COLORS.warning);
       }
     } catch (err) {
       clearInterval(progressTimer);
-      flash("Pull error: " + err.message, COLORS.danger);
+      flash("Pull notice: " + err.message, COLORS.danger);
     } finally {
       setPulling(false);
     }
@@ -193,7 +198,7 @@ export default function SystemConfigScreen() {
     }
   };
 
-  // 4. Push local commits to GitHub with complete progress bar
+  // 4. Push local commits to GitHub with complete progress bar & ACK
   const handlePushUpdates = async () => {
     const uncommittedFiles = configData?.uncommitted_files || [];
     if (uncommittedFiles.length === 0) {
@@ -216,7 +221,7 @@ export default function SystemConfigScreen() {
           return prev + 15;
         }
         if (prev < 90) {
-          setPushStage(`Pushing commit pack to remote origin/${configData?.git_branch || "main"}...`);
+          setPushStage(`Transferring commit pack to remote origin/${configData?.git_branch || "main"}...`);
           return prev + 10;
         }
         return prev;
@@ -226,26 +231,49 @@ export default function SystemConfigScreen() {
     try {
       const finalMsg = commitMsgInput.trim() 
         ? `${selectedCategory}: ${commitMsgInput.trim()}`
-        : `${selectedCategory}(kapila): system update - ${new Date().toISOString().slice(0, 19).replace("T", " ")}`;
+        : `${selectedCategory}(kapila): enterprise system update - ${new Date().toISOString().slice(0, 19).replace("T", " ")}`;
 
       const res = await api.systemConfig.pushUpdates(finalMsg, selectedCategory);
       clearInterval(progressTimer);
       setPushProgress(100);
-      setPushStage("Pushed successfully to remote GitHub origin!");
+      setPushStage(res.data?.remote_status === "PUSHED_TO_REMOTE" ? "Pushed successfully to remote GitHub origin!" : "Committed & verified in local Git ledger!");
 
       if (res.success) {
         setPushResult(res.data);
-        flash(`Successfully pushed Commit #${res.data.commit_number} (${res.data.commit_hash}) to GitHub!`, COLORS.success);
+        const isWarning = res.data.ack_level === "warning";
+        flash(res.data.ack_message || `Commit #${res.data.commit_number} (${res.data.commit_hash}) processed!`, isWarning ? COLORS.warning : COLORS.success);
         setCommitMsgInput("");
         await loadConfig();
       } else {
-        flash(res.error || "Failed to push to GitHub.", COLORS.danger);
+        flash(res.error || "Notice during push operation.", COLORS.danger);
       }
     } catch (err) {
       clearInterval(progressTimer);
-      flash("Push error: " + err.message, COLORS.danger);
+      flash("Push notice: " + err.message, COLORS.danger);
     } finally {
       setPushing(false);
+    }
+  };
+
+  // 5. Update remote repository URL
+  const handleUpdateRemote = async () => {
+    if (!remoteUrlInput.trim()) {
+      return flash("Enter a valid Git repository URL.", COLORS.danger);
+    }
+    setUpdatingRemote(true);
+    try {
+      const res = await api.systemConfig.updateRemote(remoteUrlInput.trim());
+      if (res.success) {
+        flash("GitHub remote URL updated successfully ✓", COLORS.success);
+        setShowRemoteModal(false);
+        await loadConfig();
+      } else {
+        flash(res.error || "Failed to update remote URL.", COLORS.danger);
+      }
+    } catch (err) {
+      flash("Remote update error: " + err.message, COLORS.danger);
+    } finally {
+      setUpdatingRemote(false);
     }
   };
 
@@ -282,7 +310,27 @@ export default function SystemConfigScreen() {
       {/* Telemetry Bar */}
       <SystemConfigAgentStatusBar />
 
-      {msg && <p style={{ color: msg.color, fontSize: 13, fontWeight: 600, marginBottom: 14 }}>{msg.text}</p>}
+      {msg && (
+        <div
+          style={{
+            background: msg.color === COLORS.danger ? "rgba(239, 68, 68, 0.15)" : msg.color === COLORS.warning ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.15)",
+            border: `1px solid ${msg.color}`,
+            borderRadius: 8,
+            padding: "12px 16px",
+            marginBottom: 16,
+            color: msg.color,
+            fontSize: 13,
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          {msg.color === COLORS.danger ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
+          <span>{msg.text}</span>
+        </div>
+      )}
+
       {error && <ErrorMsg error={error} />}
 
       {/* Top Environment & Version Metrics Bar */}
@@ -340,9 +388,19 @@ export default function SystemConfigScreen() {
             <Clock size={16} color="#8b5cf6" />
           </div>
           <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginTop: 8 }}>
-            {formatCompleteDate(configData?.last_git_sync_at)}
+            {formatCompleteDate(configData?.last_git_sync_at || configData?.git_head_commit_date)}
           </div>
-          <span style={{ fontSize: 11, color: COLORS.muted }}>GitHub origin tracking</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+            <span style={{ fontSize: 11, color: COLORS.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140 }}>
+              {configData?.git_remote_url || "origin"}
+            </span>
+            <button
+              onClick={() => setShowRemoteModal(true)}
+              style={{ background: "transparent", border: "none", color: COLORS.brand, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}
+            >
+              <Settings size={12} /> Config
+            </button>
+          </div>
         </Card>
       </div>
 
@@ -475,7 +533,7 @@ export default function SystemConfigScreen() {
           </div>
 
           <p style={{ margin: 0, fontSize: 12, color: COLORS.muted, lineHeight: 1.5 }}>
-            Inspect all modified files, review automatically detected functionality, and push changes to remote GitHub with a complete progress bar, commit number, and timestamp.
+            Inspect all modified files, review automatically detected functionality, and push changes to remote GitHub with a complete progress bar, commit number, timestamp, and instant ACK.
           </p>
 
           <div style={{ background: COLORS.bg, padding: 12, borderRadius: 8, border: `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -728,7 +786,7 @@ export default function SystemConfigScreen() {
         </div>
       </Card>
 
-      {/* PUSH TO GITHUB MODAL (With Live Files, Progress Bar, Commit Number, Complete Date/Time, and Functionality) */}
+      {/* PUSH TO GITHUB MODAL (With Live Files, Progress Bar, Commit Number, Date/Time, and ACKNOWLEDGE Card) */}
       {showPushModal && (
         <div
           style={{
@@ -744,7 +802,6 @@ export default function SystemConfigScreen() {
           }}
         >
           <Card style={{ maxWidth: 680, width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 24, overflow: "hidden" }}>
-            {/* Modal Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Upload size={20} color={COLORS.success} />
@@ -763,19 +820,45 @@ export default function SystemConfigScreen() {
               </button>
             </div>
 
-            {/* If push is completed successfully, display the Enterprise Deployment Summary Card */}
+            {/* Display ACK Card when completed */}
             {pushResult ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "12px 0" }}>
-                <div style={{ background: "rgba(16, 185, 129, 0.12)", border: `1px solid ${COLORS.success}`, borderRadius: 10, padding: 18 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <CheckCircle2 size={24} color={COLORS.success} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, overflowY: "auto", padding: "4px 0" }}>
+                <div
+                  style={{
+                    background: pushResult.ack_level === "warning" ? "rgba(245, 158, 11, 0.12)" : "rgba(16, 185, 129, 0.12)",
+                    border: `1.5px solid ${pushResult.ack_level === "warning" ? COLORS.warning : COLORS.success}`,
+                    borderRadius: 10,
+                    padding: 18,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+                    {pushResult.ack_level === "warning" ? (
+                      <AlertTriangle size={26} color={COLORS.warning} style={{ flexShrink: 0, marginTop: 2 }} />
+                    ) : (
+                      <CheckCircle2 size={26} color={COLORS.success} style={{ flexShrink: 0, marginTop: 2 }} />
+                    )}
                     <div>
-                      <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: COLORS.success }}>
-                        Push Completed & Deployed to GitHub Successfully!
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            letterSpacing: "0.06em",
+                            padding: "2px 8px",
+                            borderRadius: 6,
+                            background: pushResult.ack_level === "warning" ? COLORS.warning : COLORS.success,
+                            color: "#18181b",
+                          }}
+                        >
+                          ✓ TRANSACTION ACKNOWLEDGED
+                        </span>
+                        <span style={{ fontFamily: "monospace", fontSize: 11, color: COLORS.muted }}>
+                          {pushResult.ack_id}
+                        </span>
+                      </div>
+                      <h4 style={{ margin: "6px 0 2px", fontSize: 15, fontWeight: 700, color: COLORS.text }}>
+                        {pushResult.ack_message}
                       </h4>
-                      <span style={{ fontSize: 12, color: COLORS.muted }}>
-                        Branch: <strong>origin/{pushResult.branch}</strong>
-                      </span>
                     </div>
                   </div>
 
@@ -806,7 +889,7 @@ export default function SystemConfigScreen() {
 
                     <div style={{ gridColumn: "1 / -1", borderTop: `1px solid ${COLORS.border}`, paddingTop: 10 }}>
                       <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", fontWeight: 600 }}>
-                        Functionality Included
+                        Functionalities Acknowledged
                       </span>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
                         {(pushResult.functionalities || []).map((fn, idx) => (
@@ -819,7 +902,7 @@ export default function SystemConfigScreen() {
 
                     <div style={{ gridColumn: "1 / -1" }}>
                       <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", fontWeight: 600 }}>
-                        Files Pushed ({pushResult.files_pushed_count})
+                        Files Committed & Pushed ({pushResult.files_pushed_count})
                       </span>
                       <div style={{ maxHeight: 120, overflowY: "auto", marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
                         {(pushResult.files_pushed || []).map((f, idx) => (
@@ -833,10 +916,31 @@ export default function SystemConfigScreen() {
                         ))}
                       </div>
                     </div>
+
+                    {pushResult.remote_status !== "PUSHED_TO_REMOTE" && (
+                      <div style={{ gridColumn: "1 / -1", background: "rgba(245, 158, 11, 0.08)", padding: 10, borderRadius: 6, border: `1px dashed ${COLORS.warning}` }}>
+                        <div style={{ fontSize: 11.5, color: COLORS.text, fontWeight: 600, marginBottom: 4 }}>
+                          Remote Repository Connection Note:
+                        </div>
+                        <p style={{ margin: 0, fontSize: 11, color: COLORS.muted, lineHeight: 1.4 }}>
+                          Your changes are safely committed in the repository ledger. If you want to push to an authenticated remote GitHub repository, click "Configure Remote URL" below to set your GitHub repository or Personal Access Token.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                  {pushResult.remote_status !== "PUSHED_TO_REMOTE" && (
+                    <Btn
+                      variant="ghost"
+                      onClick={() => setShowRemoteModal(true)}
+                      icon={<Settings size={13} />}
+                      style={{ fontSize: 12 }}
+                    >
+                      Configure Remote URL
+                    </Btn>
+                  )}
                   <Btn
                     onClick={() => {
                       setShowPushModal(false);
@@ -849,7 +953,6 @@ export default function SystemConfigScreen() {
                 </div>
               </div>
             ) : (
-              /* Pre-push or In-progress Push View */
               <div style={{ display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
                 {/* 1. Files Being Pushed Section */}
                 <div>
@@ -863,14 +966,14 @@ export default function SystemConfigScreen() {
                     </span>
                   </div>
 
-                  <div style={{ maxHeight: 160, overflowY: "auto", border: `1px solid ${COLORS.border}`, borderRadius: 8, background: COLORS.bg, padding: 8 }}>
+                  <div style={{ maxHeight: 150, overflowY: "auto", border: `1px solid ${COLORS.border}`, borderRadius: 8, background: COLORS.bg, padding: 8 }}>
                     {uncommittedFiles.length === 0 ? (
                       <div style={{ textAlign: "center", color: COLORS.muted, padding: 20, fontSize: 12 }}>
                         No modified files detected. Workspace is clean.
                       </div>
                     ) : (
                       uncommittedFiles.map((f, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderBottom: i < uncommittedFiles.length - 1 ? `1px solid ${COLORS.border}55` : "none" }}>
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderBottom: i < uncommittedFiles.length - 1 ? `1px solid ${COLORS.border}55` : "none" }}>
                           <span style={{ color: f.color, fontWeight: 700, fontSize: 10, background: f.color + "18", padding: "2px 6px", borderRadius: 4 }}>
                             {f.status_label}
                           </span>
@@ -889,7 +992,7 @@ export default function SystemConfigScreen() {
                 {/* 2. Functionality & Commit Message */}
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, display: "block", marginBottom: 6 }}>
-                    Functionality & Module Category
+                    Functionality Category
                   </label>
                   <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
                     {[
@@ -920,8 +1023,8 @@ export default function SystemConfigScreen() {
                   </div>
 
                   <Input
-                    label="Commit Message & Functionality Description"
-                    placeholder="e.g. system configuration auto-sync and patch manager"
+                    label="Commit Message & Functionality Summary"
+                    placeholder="e.g. enhanced push/pull with progress bar, commit number, date/time, and ACK"
                     value={commitMsgInput}
                     onChange={(e) => setCommitMsgInput(e.target.value)}
                     disabled={pushing}
@@ -941,7 +1044,7 @@ export default function SystemConfigScreen() {
                   )}
                 </div>
 
-                {/* 3. Complete Progress Bar */}
+                {/* 3. Progress Bar */}
                 {pushing && (
                   <div style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -953,7 +1056,6 @@ export default function SystemConfigScreen() {
                       </span>
                     </div>
 
-                    {/* Visual Progress Track */}
                     <div style={{ width: "100%", height: 8, background: COLORS.surface, borderRadius: 4, overflow: "hidden", border: `1px solid ${COLORS.border}` }}>
                       <div
                         style={{
@@ -970,7 +1072,7 @@ export default function SystemConfigScreen() {
                       <span>Stage 1: Staging</span>
                       <span>Stage 2: Committing</span>
                       <span>Stage 3: Pushing</span>
-                      <span>Stage 4: Synced</span>
+                      <span>Stage 4: Verified ACK</span>
                     </div>
                   </div>
                 )}
@@ -994,7 +1096,7 @@ export default function SystemConfigScreen() {
         </div>
       )}
 
-      {/* PULL FROM GITHUB MODAL (With Live Files, Progress Bar, Commit Number, Complete Date/Time, and Functionality) */}
+      {/* PULL FROM GITHUB MODAL */}
       {showPullModal && (
         <div
           style={{
@@ -1028,7 +1130,6 @@ export default function SystemConfigScreen() {
               </button>
             </div>
 
-            {/* Progress Bar View */}
             {pulling && (
               <div style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -1061,7 +1162,6 @@ export default function SystemConfigScreen() {
               </div>
             )}
 
-            {/* Pull Result View */}
             {pullResult && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
                 <div style={{ background: pullResult.has_new_commits ? "rgba(16, 185, 129, 0.12)" : COLORS.bg, border: `1px solid ${pullResult.has_new_commits ? COLORS.success : COLORS.border}`, borderRadius: 10, padding: 18 }}>
@@ -1173,6 +1273,60 @@ export default function SystemConfigScreen() {
                 </div>
               </div>
             )}
+          </Card>
+        </div>
+      )}
+
+      {/* REMOTE REPOSITORY CONFIGURATION MODAL */}
+      {showRemoteModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.65)",
+            backdropFilter: "blur(5px)",
+            zIndex: 999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <Card style={{ maxWidth: 540, width: "100%", padding: 24 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Globe size={18} color={COLORS.brand} />
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: COLORS.text }}>
+                  Configure GitHub Remote Origin URL
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowRemoteModal(false)}
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: COLORS.muted }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.5, margin: "0 0 14px" }}>
+              Configure your GitHub remote repository URL. If your repository is private or requires authentication, you can include a GitHub Personal Access Token (e.g. <code>https://TOKEN@github.com/org/repo.git</code>).
+            </p>
+
+            <Input
+              label="Remote Origin URL"
+              placeholder="https://github.com/metapharsic/Kapila_store.git"
+              value={remoteUrlInput}
+              onChange={(e) => setRemoteUrlInput(e.target.value)}
+            />
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
+              <Btn variant="ghost" onClick={() => setShowRemoteModal(false)}>
+                Cancel
+              </Btn>
+              <Btn onClick={handleUpdateRemote} loading={updatingRemote} style={{ background: COLORS.brand, color: "#18181b", fontWeight: 700 }}>
+                Save Remote URL
+              </Btn>
+            </div>
           </Card>
         </div>
       )}

@@ -362,6 +362,7 @@ export const systemConfig = {
   applyPatches: (patch_ids)  => api.post("/system/apply-patches", { patch_ids }),
   pushUpdates:  (commit_message, functional_category) => 
     api.post("/system/push-updates", typeof commit_message === "object" ? commit_message : { commit_message, functional_category }),
+  updateRemote: (remote_url) => api.post("/system/update-remote", { remote_url }),
 };
 
 

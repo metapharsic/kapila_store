@@ -8,5 +8,6 @@ router.post("/check-updates", requirePermission("users.view"), systemConfigContr
 router.post("/pull-updates", requirePermission("users.view"), systemConfigController.pullGitHubUpdates);
 router.post("/apply-patches", requirePermission("users.view"), systemConfigController.applyPatches);
 router.post("/push-updates", requirePermission("users.view"), systemConfigController.pushGitHubUpdates);
+router.post("/update-remote", requirePermission("users.view"), systemConfigController.updateRemoteUrl);
 
 module.exports = router;
