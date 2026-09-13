@@ -150,42 +150,58 @@ async function queryLedger(filters = {}, pagination = {}) {
     item_code,
     date_from,
     date_to
-  } = filters;
+  } = filters || {};
 
   const page = Math.max(1, parseInt(pagination.page) || 1);
   const limit = Math.min(500, Math.max(1, parseInt(pagination.limit) || 20));
   const offset = pagination.offset !== undefined ? pagination.offset : (page - 1) * limit;
-  const sort = pagination.sort || "created_at";
+  
+  const ALLOWED_SORTS = [
+    "created_at",
+    "id",
+    "qty",
+    "unit_price",
+    "total_value",
+    "item_name",
+    "item_code",
+    "transaction_type",
+    "department"
+  ];
+  let sort = pagination.sort === "date" ? "created_at" : (pagination.sort || "created_at");
+  if (!ALLOWED_SORTS.includes(sort)) {
+    sort = "created_at";
+  }
   const order = pagination.order === "asc" ? "asc" : "desc";
 
   const applyFilters = (qb) => {
-    if (type) {
-      qb.where("transaction_type", type);
+    if (type && typeof type === "string" && type.trim() !== "" && type.trim() !== "ALL") {
+      qb.where("transaction_type", type.trim());
     }
-    if (department) {
-      qb.whereILike("department", `%${department}%`);
+    if (department && typeof department === "string" && department.trim() !== "" && department.trim() !== "ALL") {
+      qb.whereILike("department", `%${department.trim()}%`);
     }
-    if (supplier) {
-      qb.whereILike("supplier", `%${supplier}%`);
+    if (supplier && typeof supplier === "string" && supplier.trim() !== "") {
+      qb.whereILike("supplier", `%${supplier.trim()}%`);
     }
-    if (item_code) {
-      qb.where("item_code", item_code);
+    if (item_code && typeof item_code === "string" && item_code.trim() !== "") {
+      qb.where("item_code", item_code.trim());
     }
-    if (date_from) {
-      qb.where("created_at", ">=", `${date_from} 00:00:00`);
+    if (date_from && typeof date_from === "string" && date_from.trim() !== "") {
+      qb.where("created_at", ">=", `${date_from.trim()} 00:00:00`);
     }
-    if (date_to) {
-      qb.where("created_at", "<=", `${date_to} 23:59:59`);
+    if (date_to && typeof date_to === "string" && date_to.trim() !== "") {
+      qb.where("created_at", "<=", `${date_to.trim()} 23:59:59`);
     }
-    if (q) {
+    if (q && typeof q === "string" && q.trim() !== "") {
+      const term = `%${q.trim()}%`;
       qb.where((inner) => {
-        inner.whereILike("item_name", `%${q}%`)
-          .orWhereILike("item_code", `%${q}%`)
-          .orWhereILike("department", `%${q}%`)
-          .orWhereILike("supplier", `%${q}%`)
-          .orWhereILike("batch_no", `%${q}%`)
-          .orWhereILike("invoice_no", `%${q}%`)
-          .orWhereILike("reference_doc_no", `%${q}%`);
+        inner.whereILike("item_name", term)
+          .orWhereILike("item_code", term)
+          .orWhereILike("department", term)
+          .orWhereILike("supplier", term)
+          .orWhereILike("batch_no", term)
+          .orWhereILike("invoice_no", term)
+          .orWhereILike("reference_doc_no", term);
       });
     }
   };
@@ -193,18 +209,23 @@ async function queryLedger(filters = {}, pagination = {}) {
   const [{ count }] = await db("stock_ledger").modify(applyFilters).count("id as count");
 
   const [aggregates] = await db("stock_ledger").modify(applyFilters).select(
-    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'ADJUSTMENT_ADD', 'OPENING_BALANCE') THEN qty ELSE 0 END), 0) as total_inflow_qty"),
-    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'ADJUSTMENT_ADD', 'OPENING_BALANCE') THEN total_value ELSE 0 END), 0) as total_inflow_value"),
-    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('OUTWARD_ISSUE', 'ADJUSTMENT_DEDUCT', 'RETURN_TO_VENDOR') THEN qty ELSE 0 END), 0) as total_outflow_qty"),
-    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('OUTWARD_ISSUE', 'ADJUSTMENT_DEDUCT', 'RETURN_TO_VENDOR') THEN total_value ELSE 0 END), 0) as total_outflow_value")
+    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'ADJUSTMENT_ADD', 'OPENING_BALANCE', 'TRANSFER_IN') THEN qty ELSE 0 END), 0) as total_inflow_qty"),
+    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'ADJUSTMENT_ADD', 'OPENING_BALANCE', 'TRANSFER_IN') THEN total_value ELSE 0 END), 0) as total_inflow_value"),
+    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('OUTWARD_ISSUE', 'ADJUSTMENT_DEDUCT', 'RETURN_TO_VENDOR', 'TRANSFER_OUT', 'TRANSFER_LOSS') THEN qty ELSE 0 END), 0) as total_outflow_qty"),
+    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('OUTWARD_ISSUE', 'ADJUSTMENT_DEDUCT', 'RETURN_TO_VENDOR', 'TRANSFER_OUT', 'TRANSFER_LOSS') THEN total_value ELSE 0 END), 0) as total_outflow_value")
   );
 
-  const rows = await db("stock_ledger")
+  const rawRows = await db("stock_ledger")
     .modify(applyFilters)
     .orderBy(sort, order)
     .orderBy("id", "desc")
     .offset(offset)
     .limit(limit);
+
+  const rows = rawRows.map((r) => ({
+    ...r,
+    date: r.created_at ? new Date(r.created_at).toISOString().slice(0, 10) : null
+  }));
 
   return {
     rows,

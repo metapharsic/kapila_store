@@ -94,18 +94,49 @@ export default function StockScreen() {
       setLedgerSummary(res.summary || null);
       setLedgerPage(p);
       if (params.filters) setLedgerFilters(mergedFilters);
-    } catch {}
-    setLedgerLoading(false);
+    } catch (err) {
+      console.error("[loadLedger] Error loading stock ledger:", err);
+      setMsg("Failed to load stock ledger: " + (err.message || "Network error"));
+      setTimeout(() => setMsg(""), 4000);
+    } finally {
+      setLedgerLoading(false);
+    }
   };
 
   const exportLedgerCSV = () => {
-    const headers = ["date", "item_code", "name", "type", "qty", "unit", "price", "value", "detail"];
-    const rows = ledgerData.map((r) =>
-      headers.map((h) => (r[h] !== undefined && r[h] !== null ? `"${String(r[h]).replace(/"/g, '""')}"` : '""')).join(",")
-    );
+    const headers = [
+      "Timestamp",
+      "Transaction Type",
+      "Item Code",
+      "Item Name",
+      "Destination / Party",
+      "Quantity",
+      "Unit",
+      "Unit Price (INR)",
+      "Total Value (INR)",
+      "Balance Before",
+      "Balance After",
+      "Reference Document",
+      "User / Reason"
+    ];
+    const rows = ledgerData.map((r) => [
+      `"${r.created_at ? new Date(r.created_at).toLocaleString("en-IN") : ""}"`,
+      `"${r.transaction_type || ""}"`,
+      `"${r.item_code || ""}"`,
+      `"${(r.item_name || r.name || "").replace(/"/g, '""')}"`,
+      `"${(r.department || r.supplier || "Central Store").replace(/"/g, '""')}"`,
+      r.qty !== undefined && r.qty !== null ? r.qty : 0,
+      `"${r.unit || ""}"`,
+      r.unit_price !== undefined && r.unit_price !== null ? r.unit_price : 0,
+      r.total_value !== undefined && r.total_value !== null ? r.total_value : 0,
+      r.balance_qty_before !== undefined && r.balance_qty_before !== null ? r.balance_qty_before : "",
+      r.balance_qty_after !== undefined && r.balance_qty_after !== null ? r.balance_qty_after : "",
+      `"${r.reference_doc_no || r.reference_doc_type || ""}"`,
+      `"${(r.reason || r.notes || "").replace(/"/g, '""')}"`
+    ].join(","));
     const blob = new Blob([headers.join(",") + "\n" + rows.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `kapila_ledger_${today()}.csv`; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = `Kapila_Stock_Ledger_${today()}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { COLORS } from "../../styles/colors";
 import Pagination from "../../components/Pagination";
 import {
@@ -25,7 +25,8 @@ const DEPARTMENTS = [
   "CHINESE & DOSA",
   "MOCKTAILS & CONTINENTAL",
   "RESTAURANT",
-  "ROOM SERVICE"
+  "ROOM SERVICE",
+  "CENTRAL STORE"
 ];
 
 const getInitialsAvatar = (name) => {
@@ -127,9 +128,31 @@ const LedgerTab = ({
   onExport = () => {},
   onExportExcel = () => {}
 }) => {
+  const [searchTerm, setSearchTerm] = useState(filters.q || "");
+
+  useEffect(() => {
+    setSearchTerm(filters.q || "");
+  }, [filters.q]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if ((filters.q || "") !== searchTerm) {
+        onFilterChange({ ...filters, q: searchTerm });
+      }
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   const handleChange = (field, value) => {
     onFilterChange({ ...filters, [field]: value });
   };
+
+  const handleReset = () => {
+    setSearchTerm("");
+    onFilterChange({ type: "", department: "", q: "", date_from: "", date_to: "" });
+  };
+
+  const hasActiveFilters = Boolean(filters.type || filters.department || filters.q || filters.date_from || filters.date_to);
 
   const FilterBar = () => (
     <div style={{
@@ -142,12 +165,12 @@ const LedgerTab = ({
       background: "rgba(15, 23, 42, 0.4)"
     }}>
       {/* Search Input */}
-      <div style={{ display: "flex", alignItems: "center", position: "relative", minWidth: 200, flex: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", position: "relative", minWidth: 220, flex: 1 }}>
         <Search size={14} style={{ position: "absolute", left: 10, color: COLORS.muted }} />
         <input
           type="text"
-          value={filters.q || ""}
-          onChange={(e) => handleChange("q", e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search SKU, item name, ref #, invoice…"
           style={{
             width: "100%",
@@ -237,6 +260,28 @@ const LedgerTab = ({
           title="Date to"
         />
       </div>
+
+      {/* Reset Filters button */}
+      {hasActiveFilters && (
+        <button
+          onClick={handleReset}
+          style={{
+            padding: "6px 10px",
+            fontSize: 12,
+            borderRadius: 6,
+            border: `1px solid ${COLORS.border}`,
+            background: "rgba(239, 68, 68, 0.1)",
+            color: "#f87171",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4
+          }}
+          title="Reset all filters"
+        >
+          <RotateCcw size={12} /> Reset
+        </button>
+      )}
 
       {/* Export Actions */}
       <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>

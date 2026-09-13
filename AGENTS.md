@@ -34,12 +34,12 @@ kapila/
    - *Alerts & POs*: WhatsApp PO generation (`https://wa.me/?text=...`) and clipboard copying for low stock items.
    - *Supplier Comparisons*: Auto-ranking active supplier rates under item input to recommend the cheapest.
    - *Expiry tracking*: Spoilage warning widget displaying items expiring in under 3 days.
-   - *Stock Ledger & LIFO*: Double-entry transactional ledger tracking FIFO/LIFO batches, pack size variations, and warehouse positioning (Rack / Shelf / Bin).
+   - *Stock Ledger & LIFO*: Complete double-entry transactional ledger engine (`stock_ledger`) tracking FIFO/LIFO batches, pack size variations, warehouse positioning (Rack / Shelf / Bin), running audit balances (`balance_qty_before`, `balance_qty_after`), and financial valuations across all movement types (`INWARD_GRN`, `INWARD_PURCHASE`, `OUTWARD_ISSUE`, `ADJUSTMENT_ADD`, `ADJUSTMENT_DEDUCT`, `RETURN_TO_VENDOR`, `OPENING_BALANCE`, `TRANSFER_IN`, `TRANSFER_OUT`, `TRANSFER_LOSS`). Features live financial telemetry summaries, debounced multi-field searching, department filters (including `CENTRAL STORE`), instant filter reset, and high-fidelity streaming Excel (`.xlsx`) and CSV exports.
 2. **Stock Reconciliation (Multi-Agent Engine)**
    - *Agent Scanner*: Instant searchable combobox with category grouping, keyboard navigation, and automatic unit matching.
    - *Agent Loader*: Batch theoretical stock loading, real-time variance calculation against physical counts, pack conversion math.
    - *Agent Auditor*: Comprehensive historical reconciliation sessions audit trail, expandable item breakdown, unit-rate valuation.
-   - *Agent Veritas*: Two-stage verification dialog with impact ledger preview, automatic inventory level adjustment and double-entry ledger postings.
+   - *Agent Veritas*: Two-stage verification dialog with impact ledger preview, automatic inventory level adjustment and atomic double-entry ledger postings (`ADJUSTMENT_ADD` / `ADJUSTMENT_DEDUCT` with session document links).
 3. **Indent** — Department nightly material requests
    - *Recipe Planner & Auto-Indent*: Scaled recipe-based portion calculator and historical weekday average trend recommendation engine.
    - *Multi-Agent Indent Processor & Harmonizer*: Multi-department batch ingestion, item alias normalization, unit conversion reconciliation.

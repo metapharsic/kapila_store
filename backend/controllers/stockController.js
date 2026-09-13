@@ -344,72 +344,7 @@ async function remove(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// GET /api/stock/ledger
-// Query params: type (Purchase|Issue|Leftover|Adjustment), q (item name search),
-// date_from, date_to — all applied client-side after merging the 4 sources since
-// they come from different tables with no common query surface.
-async function getLedger(req, res, next) {
-  try {
-    const { offset = 0, limit = 50 } = req.pagination || { offset: 0, limit: 50 };
-    const { type, q, date_from, date_to } = req.query;
 
-    const purchases = db("stock")
-      .select("date", "name", db.raw("'Purchase' as type"), "qty", "unit", "price", "supplier as detail", "created_at", "item_code");
-
-    // unit_price was previously dropped here (hardcoded NULL) even though
-    // issuance_items carries a real per-unit price — ledger showed every
-    // issue with a blank cost. Use it so issue rows show real value too.
-    const issuances = db("issuance_items")
-      .join("issuances", "issuances.id", "issuance_items.issuance_id")
-      .select("issuances.date", "issuance_items.name", db.raw("'Issue' as type"), "issuance_items.issued as qty", "issuance_items.unit", "issuance_items.unit_price as price", "issuances.dept as detail", "issuances.created_at", "issuance_items.item_code");
-
-    const distinctStock = db("stock").select("name", "item_code", "unit").distinctOn("name").as("ds");
-
-    const leftovers = db("leftovers")
-      .leftJoin(distinctStock, db.raw("LOWER(leftovers.item)"), db.raw("LOWER(ds.name)"))
-      .select("leftovers.date", "leftovers.item as name", db.raw("'Leftover' as type"), "leftovers.qty", "ds.unit", db.raw("NULL::numeric as price"), "leftovers.dept as detail", "leftovers.created_at", "ds.item_code");
-
-    const adjustments = db("stock_adjustments")
-      .join("stock", "stock.id", "stock_adjustments.stock_id")
-      .select(
-        "stock_adjustments.date",
-        "stock.name",
-        db.raw("'Adjustment' as type"),
-        "stock_adjustments.qty",
-        "stock.unit",
-        db.raw("NULL::numeric as price"),
-        db.raw("CONCAT(stock_adjustments.reason, ' (', COALESCE(stock_adjustments.notes, 'No details'), ')') as detail"),
-        "stock_adjustments.created_at",
-        "stock.item_code"
-      );
-
-    const sources = { Purchase: purchases, Issue: issuances, Leftover: leftovers, Adjustment: adjustments };
-    const wanted = type && sources[type] ? [type] : Object.keys(sources);
-    const results = await Promise.all(wanted.map((t) => sources[t]));
-
-    let ledger = results.flat();
-
-    if (q) {
-      const needle = q.toLowerCase();
-      ledger = ledger.filter((r) => (r.name || "").toLowerCase().includes(needle));
-    }
-    if (date_from) ledger = ledger.filter((r) => r.date >= date_from);
-    if (date_to) ledger = ledger.filter((r) => r.date <= date_to);
-
-    ledger = ledger
-      .map((r) => ({ ...r, value: r.price != null ? parseFloat(r.qty) * parseFloat(r.price) : null }))
-      .sort((a, b) => {
-        const diff = new Date(b.created_at || b.date) - new Date(a.created_at || a.date);
-        if (diff !== 0) return diff;
-        return (a.item_code || "").localeCompare(b.item_code || "");
-      });
-
-    const total = ledger.length;
-    const paginated = ledger.slice(offset, offset + limit);
-
-    res.json({ success: true, data: paginated, total, page: req.pagination?.page || 1, limit });
-  } catch (err) { next(err); }
-}
 
 // GET /api/stock/insights
 async function getInsights(req, res, next) {
@@ -512,6 +447,27 @@ async function reconcile(req, res, next) {
               notes: notes || `FIFO deduction of ${deduction} units during physical reconciliation.`,
               session_id: sessionId,
             });
+
+            await stockLedgerService.recordEntry(trx, {
+              stock_id: batch.id,
+              item_code: batch.item_code || item_code,
+              item_name: batch.name,
+              category: batch.category,
+              transaction_type: "ADJUSTMENT_DEDUCT",
+              qty: deduction,
+              unit: batch.unit,
+              unit_price: parseFloat(batch.price) || 0,
+              batch_no: batch.batch_no,
+              department: "CENTRAL STORE",
+              supplier: batch.supplier,
+              reference_doc_type: "RECONCILIATION",
+              reference_doc_id: sessionId,
+              reference_doc_no: `REC-${sessionId}`,
+              reason: reason || "Physical Count Shortage",
+              notes: notes || `FIFO audit deduction of ${deduction} units during physical reconciliation session #${sessionId}.`,
+              created_by: conducted_by || req.user?.name || "Stock Auditor"
+            });
+
             toDeduct -= deduction;
           }
           results.push({ item_code, discrepancy, value_impact: valueImpact, anomaly, status: "shortage" });
@@ -529,6 +485,26 @@ async function reconcile(req, res, next) {
               notes: notes || `Surplus of ${discrepancy} units added during physical reconciliation.`,
               session_id: sessionId,
             });
+
+            await stockLedgerService.recordEntry(trx, {
+              stock_id: latestBatch.id,
+              item_code: latestBatch.item_code || item_code,
+              item_name: latestBatch.name,
+              category: latestBatch.category,
+              transaction_type: "ADJUSTMENT_ADD",
+              qty: discrepancy,
+              unit: latestBatch.unit,
+              unit_price: parseFloat(latestBatch.price) || 0,
+              batch_no: latestBatch.batch_no,
+              department: "CENTRAL STORE",
+              supplier: latestBatch.supplier,
+              reference_doc_type: "RECONCILIATION",
+              reference_doc_id: sessionId,
+              reference_doc_no: `REC-${sessionId}`,
+              reason: reason || "Physical Count Surplus",
+              notes: notes || `Surplus of ${discrepancy} units added during physical reconciliation session #${sessionId}.`,
+              created_by: conducted_by || req.user?.name || "Stock Auditor"
+            });
           } else {
             const lastBatch = await trx("stock").where("item_code", item_code).orderBy("date", "desc").first();
             if (lastBatch) {
@@ -542,6 +518,26 @@ async function reconcile(req, res, next) {
                 stock_id: newBatch.id, qty: discrepancy, reason: reason || "Audit Correction",
                 date: todayStr, notes: notes || `Created new batch during physical reconciliation.`,
                 session_id: sessionId,
+              });
+
+              await stockLedgerService.recordEntry(trx, {
+                stock_id: newBatch.id,
+                item_code: newBatch.item_code || item_code,
+                item_name: newBatch.name,
+                category: newBatch.category,
+                transaction_type: "ADJUSTMENT_ADD",
+                qty: discrepancy,
+                unit: newBatch.unit,
+                unit_price: parseFloat(newBatch.price) || 0,
+                batch_no: newBatch.batch_no,
+                department: "CENTRAL STORE",
+                supplier: newBatch.supplier,
+                reference_doc_type: "RECONCILIATION",
+                reference_doc_id: sessionId,
+                reference_doc_no: `REC-${sessionId}`,
+                reason: reason || "Physical Count Surplus",
+                notes: notes || `Created new batch for surplus of ${discrepancy} units during physical reconciliation session #${sessionId}.`,
+                created_by: conducted_by || req.user?.name || "Stock Auditor"
               });
             }
           }

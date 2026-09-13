@@ -7,7 +7,7 @@ const { requirePermission, requireAnyPermission } = require("../middleware/autho
 const sorts = ["name", "date", "remaining", "qty", "created_at"];
 
 router.get("/ledger/export-excel", requirePermission("stock.view"), ctrl.exportLedgerExcel);
-router.get("/ledger", requirePermission("stock.view"), paginate(["date", "created_at"]), ctrl.getLedger);
+router.get("/ledger", requirePermission("stock.view"), paginate(["created_at", "qty", "unit_price", "total_value"]), ctrl.getLedger);
 router.get("/insights", requirePermission("stock.view"), ctrl.getInsights);
 router.get("/supplier-rates", requirePermission("stock.view"), ctrl.getSupplierRates);
 router.get("/available", requireAnyPermission(["stock.view", "indents.create", "issuances.create"]), ctrl.getAvailableStock);

@@ -340,5 +340,65 @@ describe('Stock Ledger Phase 1 - Double-Entry Ledger & P2P Integration Suite', (
       expect(sheet).toBeDefined();
       expect(sheet.rowCount).toBeGreaterThan(3);
     });
+
+    it('should gracefully handle sort=date by mapping to created_at and provide virtual date', async () => {
+      const req = {
+        query: { page: 1, limit: 5, sort: 'date' },
+        pagination: { page: 1, limit: 5, offset: 0, sort: 'date', order: 'desc' }
+      };
+      const res = { json: jest.fn() };
+      const next = jest.fn();
+
+      await stockController.getLedger(req, res, next);
+      expect(res.json).toHaveBeenCalled();
+      const body = res.json.mock.calls[0][0];
+      expect(body.success).toBe(true);
+      expect(body.data.length).toBeGreaterThan(0);
+      expect(body.data[0]).toHaveProperty('created_at');
+      expect(body.data[0]).toHaveProperty('date');
+    });
+
+    it('should record ADJUSTMENT_ADD and ADJUSTMENT_DEDUCT into stock_ledger upon physical reconciliation', async () => {
+      // Create a temporary batch for reconciliation testing
+      const [reconStock] = await db('stock').insert({
+        name: 'Recon Test Item',
+        item_code: TEST_ITEM_CODE + '_REC',
+        qty: 20,
+        remaining: 20,
+        unit: 'kg',
+        price: 100,
+        date: new Date().toISOString().slice(0, 10),
+        supplier: 'Recon Supplier'
+      }).returning('*');
+
+      // Test shortage reconciliation (-5 kg)
+      const reqShortage = {
+        body: {
+          items: [{ item_code: reconStock.item_code, physical_qty: 15, reason: 'Physical Shortage Test' }],
+          session_name: 'Test Recon Shortage Session'
+        },
+        user: { id: 1, name: 'Recon Auditor' }
+      };
+      const resShortage = { json: jest.fn() };
+      const nextShortage = jest.fn();
+
+      await stockController.reconcile(reqShortage, resShortage, nextShortage);
+      expect(resShortage.json).toHaveBeenCalled();
+
+      // Verify stock_ledger entry was created
+      const shortageLedgerEntry = await db('stock_ledger')
+        .where('item_code', reconStock.item_code)
+        .andWhere('transaction_type', 'ADJUSTMENT_DEDUCT')
+        .first();
+
+      expect(shortageLedgerEntry).toBeDefined();
+      expect(Number(shortageLedgerEntry.qty)).toBe(5);
+      expect(shortageLedgerEntry.reference_doc_type).toBe('RECONCILIATION');
+
+      // Cleanup recon stock
+      await db('stock_ledger').where('item_code', reconStock.item_code).del();
+      await db('stock_adjustments').where('stock_id', reconStock.id).del();
+      await db('stock').where('id', reconStock.id).del();
+    });
   });
 });
