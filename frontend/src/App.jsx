@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import kapilaLogo from "./assets/kapila-logo.png";
 import { COLORS } from "./styles/colors";
 import "./styles/global.css";
 import { AppProvider, useAppContext } from "./context/AppContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedScreen from "./components/ProtectedScreen";
+import SidebarOmniSearch from "./components/SidebarOmniSearch";
 import { 
   LayoutDashboard, Package, Factory, Building2, Receipt, Inbox, Bell, 
   Scale, ArrowLeftRight, CalendarRange, ClipboardList, Send, ChefHat, 
@@ -171,6 +172,22 @@ function Inner() {
     .filter((cat) => cat.items.length > 0);
   const visibleNavItems = visibleNavCategories.flatMap((cat) => cat.items);
 
+  const [sidebarSearchQuery, setSidebarSearchQuery] = useState("");
+
+  const filteredNavCategories = useMemo(() => {
+    const q = sidebarSearchQuery.trim().toLowerCase();
+    if (q.length < 2) return visibleNavCategories;
+    return visibleNavCategories
+      .map((cat) => {
+        const catMatches = cat.title.toLowerCase().includes(q);
+        const matchingItems = cat.items.filter((item) =>
+          catMatches || item.label.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
+        );
+        return { ...cat, items: matchingItems };
+      })
+      .filter((cat) => cat.items.length > 0);
+  }, [visibleNavCategories, sidebarSearchQuery]);
+
   useEffect(() => {
     if (isAuthenticated) {
       refreshStockNames();
@@ -310,7 +327,7 @@ function Inner() {
             transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 100,
             flexShrink: 0,
-            overflowY: "auto",
+            overflow: "visible",
             scrollbarWidth: "thin"
           }}>
           {/* Logo */}
@@ -353,9 +370,30 @@ function Inner() {
             </div>
           </div>
 
+          {/* ═══ Multi-Agent OmniSearch (2-Letter Item & Page Search Bar) ═══ */}
+          <SidebarOmniSearch
+            categories={visibleNavCategories}
+            onNavigate={(screenId) => {
+              handleNavigation(screenId);
+            }}
+            onQueryChange={setSidebarSearchQuery}
+            isMobile={isMobile}
+            onCloseMobile={() => {
+              if (isMobile) setIsSidebarOpen(false);
+            }}
+          />
+
           {/* Nav */}
           <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto", scrollbarWidth: "none" }}>
-            {visibleNavCategories.map((cat) => (
+            {filteredNavCategories.length === 0 ? (
+              <div style={{ padding: "16px 12px", textAlign: "center", fontSize: 12, color: "var(--sidebar-category)" }}>
+                No pages match "{sidebarSearchQuery}"
+                <div style={{ marginTop: 4, color: "var(--color-gold)", fontSize: 11 }}>
+                  Showing items in OmniSearch popover →
+                </div>
+              </div>
+            ) : (
+              filteredNavCategories.map((cat) => (
               <div key={cat.title} style={{ marginBottom: 4 }}>
                 <div style={{
                   fontSize: 10, fontWeight: 700, color: "var(--sidebar-category)",
@@ -418,7 +456,7 @@ function Inner() {
                   );
                 })}
               </div>
-            ))}
+            )))}
           </nav>
 
           {/* Footer */}
