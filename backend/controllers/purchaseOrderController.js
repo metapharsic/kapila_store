@@ -672,16 +672,24 @@ async function provision(req, res, next) {
         }
       }
 
+      const totalPOs = await trx("purchase_orders").count("id as count");
+      const poTotal = parseInt(totalPOs[0]?.count || 0);
+
       return {
         suppliersCount: Object.keys(supplierMap).length,
         quotesCount: quotesToSeed.length,
-        posCreated: createdCount
+        posCreated: createdCount,
+        totalPOs: poTotal
       };
     });
 
+    const msg = result.posCreated > 0
+      ? `Provisioned ${result.posCreated} purchase orders, ${result.suppliersCount} suppliers, and ${result.quotesCount} supplier rate quotes.`
+      : `Enterprise procurement dataset is verified and active (${result.totalPOs} purchase orders, ${result.suppliersCount} suppliers, ${result.quotesCount} rate quotes).`;
+
     res.json({
       success: true,
-      message: `Provisioned ${result.posCreated} purchase orders, ${result.suppliersCount} suppliers, and ${result.quotesCount} supplier rate quotes.`,
+      message: msg,
       data: result
     });
   } catch (err) {

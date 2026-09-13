@@ -175,6 +175,10 @@ app.get("/api/kafka-health", authenticate, async (req: Request, res: Response) =
   res.status(ok ? 200 : 503).json({ ok, broker: process.env.KAFKA_BROKER || "localhost:9092" });
 });
 
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ success: false, error: `Route not found: ${req.method} ${req.path}` });
+});
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
