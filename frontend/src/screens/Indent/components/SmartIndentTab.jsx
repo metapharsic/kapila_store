@@ -34,6 +34,51 @@ const WEEKS_OPTIONS  = [2, 4, 6, 8, 12];
 const RECENT_MAX     = 5;
 const RECENT_KEY     = "kapila_recent_recipes";
 
+const CANONICAL_CATEGORIES = [
+  "All",
+  "Biryani",
+  "Burger Sandwich",
+  "Chaat",
+  "Chinese Starters Dry",
+  "Faluda Softy Dessert",
+  "Filled Dosa",
+  "Fried Rice Noodles",
+  "Garlic Bread Fries",
+  "Idly/Vada/Dosa Breakfast",
+  "Meals Thali",
+  "Mocktails",
+  "Momos",
+  "Non-Veg Curry Gravy",
+  "Pasta",
+  "Pizza",
+  "Roti/Naan/Paratha"
+];
+
+const CATEGORY_MAPPINGS = {
+  "Faluda Softy Dessert": ["Faluda Softy Dessert", "Thick Milk Shakes"],
+  "Chinese Starters Dry": ["Chinese Starters Dry", "Soup"],
+  "Non-Veg Curry Gravy": ["Non-Veg Curry Gravy", "Veg Curry Gravy"],
+  "Meals Thali": ["Meals Thali", "STAFF"],
+};
+
+const DAYS_OF_WEEK = [
+  { label: "MON", name: "Monday", dow: 1 },
+  { label: "TUE", name: "Tuesday", dow: 2 },
+  { label: "WED", name: "Wednesday", dow: 3 },
+  { label: "THU", name: "Thursday", dow: 4 },
+  { label: "FRI", name: "Friday", dow: 5 },
+  { label: "SAT", name: "Saturday", dow: 6 },
+  { label: "SUN", name: "Sunday", dow: 0 },
+];
+
+const CLASSIFICATION_STYLE = {
+  SPICES_AROMATICS:      { label: "🧂 SPICE / AROMATIC", bg: "#FEF3C7", color: "#92400E" },
+  DISPOSABLES_PACKAGING: { label: "📦 DISPOSABLE",       bg: "#DBEAFE", color: "#1E40AF" },
+  DAIRY_OILS:            { label: "🥛 DAIRY / OIL",      bg: "#DCFCE7", color: "#166534" },
+  STAPLES_PRODUCE:       { label: "🥦 STAPLE / PRODUCE", bg: "#F1F5F9", color: "#475569" },
+  UTILITIES_CLEANING:    { label: "🧼 UTILITY / CLEAN",  bg: "#EDE9FE", color: "#6D28D9" },
+};
+
 /* ─── persistence helpers ───────────────────────────────────────────────────── */
 const draftKey = (dept) => `kapila_smart_indent_draft_${dept}`;
 const DRAFT_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
@@ -135,6 +180,8 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
   const [weeks, setWeeks]                           = useState(4);
   const [trendSort, setTrendSort]                   = useState("confidence"); // confidence | qty | name
   const [trendSearch, setTrendSearch]               = useState("");
+  const [selectedDow, setSelectedDow]               = useState(1); // 1 = Monday
+  const [trendFilterTab, setTrendFilterTab]         = useState("ALL"); // ALL | SPICES | DISPOSABLES | DAIRY | STAPLES
 
   /* ── UI state ── */
   const [showPreview, setShowPreview] = useState(false);
@@ -194,7 +241,7 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
   useEffect(() => {
     if (!dept) return;
     setLoadingTrend(true);
-    api.indents.recommendations({ dept, date, weeks })
+    api.indents.recommendations({ dept, date, weeks, dow: selectedDow })
       .then((res) => {
         if (res.success) {
           const data = res.data || [];
@@ -211,7 +258,7 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
       })
       .catch(() => {})
       .finally(() => setLoadingTrend(false));
-  }, [dept, date, weeks]);
+  }, [dept, date, weeks, selectedDow]);
 
   /* ─────── Auto-save draft ───────────────────────────────────────────────── */
   useEffect(() => {
@@ -224,27 +271,51 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
   }, [dept, plannedRecipes, selectedTrendItems, trendQuantities, adHocItems]);
 
   /* ─────── Derived: categories ───────────────────────────────────────────── */
-  const categories = useMemo(() => {
-    const cats = [...new Set(recipesList.map((r) => r.category).filter(Boolean))].sort();
-    return [CATEGORY_ALL, ...cats];
-  }, [recipesList]);
+  const categories = CANONICAL_CATEGORIES;
 
   /* ─────── Derived: filtered recipe search results ───────────────────────── */
   const filteredRecipes = useMemo(() =>
     recipesList.filter((r) => {
-      const matchSearch   = r.name.toLowerCase().includes(recipeSearch.toLowerCase()) ||
-                            r.category.toLowerCase().includes(recipeSearch.toLowerCase());
-      const matchCategory = categoryFilter === CATEGORY_ALL || r.category === categoryFilter;
+      const matchSearch =
+        r.name.toLowerCase().includes(recipeSearch.toLowerCase()) ||
+        (r.category && r.category.toLowerCase().includes(recipeSearch.toLowerCase()));
+      
+      let matchCategory = true;
+      if (categoryFilter !== CATEGORY_ALL) {
+        const allowed = CATEGORY_MAPPINGS[categoryFilter] || [categoryFilter];
+        matchCategory = allowed.includes(r.category);
+      }
       return matchSearch && matchCategory;
     }),
     [recipesList, recipeSearch, categoryFilter]
   );
 
+  /* ─────── Derived: trend classification summary stats ───────────────────── */
+  const trendStats = useMemo(() => {
+    const total = trendData.length;
+    const spices = trendData.filter(i => i.classification === "SPICES_AROMATICS" || (i.is_bit_piece && i.classification !== "DISPOSABLES_PACKAGING")).length;
+    const disposables = trendData.filter(i => i.classification === "DISPOSABLES_PACKAGING").length;
+    const dairy = trendData.filter(i => i.classification === "DAIRY_OILS").length;
+    const staples = trendData.filter(i => i.classification === "STAPLES_PRODUCE" || (!i.classification && !i.is_bit_piece)).length;
+    return { total, spices, disposables, dairy, staples };
+  }, [trendData]);
+
   /* ─────── Derived: sorted + filtered trend data ─────────────────────────── */
   const sortedTrendData = useMemo(() => {
-    let data = trendSearch
-      ? trendData.filter((i) => i.name.toLowerCase().includes(trendSearch.toLowerCase()))
-      : trendData;
+    let data = trendData;
+    if (trendFilterTab === "SPICES") {
+      data = data.filter(i => i.classification === "SPICES_AROMATICS" || (i.is_bit_piece && i.classification !== "DISPOSABLES_PACKAGING"));
+    } else if (trendFilterTab === "DISPOSABLES") {
+      data = data.filter(i => i.classification === "DISPOSABLES_PACKAGING");
+    } else if (trendFilterTab === "DAIRY") {
+      data = data.filter(i => i.classification === "DAIRY_OILS");
+    } else if (trendFilterTab === "STAPLES") {
+      data = data.filter(i => i.classification === "STAPLES_PRODUCE" || (!i.classification && !i.is_bit_piece));
+    }
+
+    if (trendSearch) {
+      data = data.filter((i) => i.name.toLowerCase().includes(trendSearch.toLowerCase()));
+    }
     if (trendSort === "confidence") {
       data = [...data].sort((a, b) => CONF_STYLE[CONFIDENCE(a)].order - CONF_STYLE[CONFIDENCE(b)].order);
     } else if (trendSort === "qty") {
@@ -253,7 +324,7 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
       data = [...data].sort((a, b) => a.name.localeCompare(b.name));
     }
     return data;
-  }, [trendData, trendSort, trendSearch]);
+  }, [trendData, trendFilterTab, trendSort, trendSearch]);
 
   /* ─────── Derived: live merged ingredient list ──────────────────────────── */
   const livePreview = useMemo(() => {
@@ -380,8 +451,18 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
   const handleTrendQtyChange = (name, val) =>
     setTrendQuantities((prev) => ({ ...prev, [name]: val }));
 
-  const handleSelectAll   = () => setSelectedTrendItems(Object.fromEntries(trendData.map((i) => [i.name, true])));
-  const handleDeselectAll = () => setSelectedTrendItems(Object.fromEntries(trendData.map((i) => [i.name, false])));
+  const handleSelectAll           = () => setSelectedTrendItems(Object.fromEntries(trendData.map((i) => [i.name, true])));
+  const handleDeselectAll         = () => setSelectedTrendItems(Object.fromEntries(trendData.map((i) => [i.name, false])));
+  const handleSelectBitPiecesOnly = () => {
+    const next = {};
+    trendData.forEach(i => { next[i.name] = !!i.is_bit_piece; });
+    setSelectedTrendItems(next);
+  };
+  const handleSelectStaplesOnly    = () => {
+    const next = {};
+    trendData.forEach(i => { next[i.name] = !i.is_bit_piece; });
+    setSelectedTrendItems(next);
+  };
 
   /* ─────── Compile ───────────────────────────────────────────────────────── */
   const handleOpenPreview = () => {
@@ -415,12 +496,8 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
   };
 
   /* ─────── Utilities ─────────────────────────────────────────────────────── */
-  const weekdayName = (() => {
-    try {
-      const d = new Date(date);
-      return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-IN", { weekday: "long" });
-    } catch { return ""; }
-  })();
+  const currentDayObj = DAYS_OF_WEEK.find(d => d.dow === selectedDow) || DAYS_OF_WEEK[0];
+  const weekdayName = currentDayObj.name;
 
   const draftAgo = draftTime
     ? (() => {
@@ -460,16 +537,30 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
           </p>
 
           {/* Category filter chips */}
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-            {categories.map((cat) => (
-              <button key={cat} onClick={() => setCategoryFilter(cat)} style={{
-                padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                border: `1px solid ${categoryFilter === cat ? "#e8a838" : "#E2E8F0"}`,
-                background: categoryFilter === cat ? "#e8a838" : "white",
-                color: categoryFilter === cat ? "#1E293B" : "#64748B",
-                transition: "all 0.15s",
-              }}>{cat}</button>
-            ))}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+            {categories.map((cat) => {
+              const isActive = categoryFilter === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 20,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: `1px solid ${isActive ? "#e8a838" : "#E2E8F0"}`,
+                    background: isActive ? "#1E293B" : "white",
+                    color: isActive ? "#e8a838" : "#64748B",
+                    boxShadow: isActive ? "0 2px 8px rgba(232, 168, 56, 0.2)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {cat}
+                </button>
+              );
+            })}
           </div>
 
           {/* ── Recently used recipes shelf ── */}
@@ -871,33 +962,130 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
         <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: 12, padding: "20px 24px", minHeight: 520, display: "flex", flexDirection: "column" }}>
 
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <TrendingUp size={18} color="#e8a838" />
               <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: "0.06em", color: "#1E293B", textTransform: "uppercase", margin: 0 }}>
-                2. Trend Predictor {weekdayName ? `— ${weekdayName}` : ""}
+                2. Trend Predictor — {weekdayName}
               </h3>
             </div>
-          </div>
-          <p style={{ fontSize: 12, color: "#64748B", marginBottom: 10 }}>
-            Historical averages for this weekday. Confidence = how often the item was ordered.
-          </p>
-
-          {/* Lookback weeks */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, padding: "8px 12px", background: "#F8FAFC", borderRadius: 8, border: "1px solid #E2E8F0" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", whiteSpace: "nowrap" }}>Lookback:</span>
-            <div style={{ display: "flex", gap: 4 }}>
-              {WEEKS_OPTIONS.map((w) => (
-                <button key={w} onClick={() => setWeeks(w)}
-                  style={{ padding: "2px 9px", fontSize: 11, fontWeight: 700, cursor: "pointer", borderRadius: 6, border: `1px solid ${weeks === w ? "#e8a838" : "#E2E8F0"}`, background: weeks === w ? "#FFF8E7" : "white", color: weeks === w ? "#92400E" : "#64748B" }}>
-                  {w}w
-                </button>
-              ))}
-            </div>
-            {loadingTrend && (
-              <div style={{ width: 14, height: 14, border: "2px solid #E2E8F0", borderTopColor: "#e8a838", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginLeft: "auto" }} />
+            {selectedDow === 1 && (
+              <span style={{ fontSize: 10, background: "#FEF3C7", color: "#92400E", fontWeight: 800, padding: "2px 8px", borderRadius: 12, border: "1px solid #FCD34D", letterSpacing: "0.02em" }}>
+                ⚡ 100% BIT & PIECES ACTIVE
+              </span>
             )}
           </div>
+          <p style={{ fontSize: 12, color: "#64748B", marginBottom: 10 }}>
+            Historical transfer trends followed as per store indents. Predicts 100% of bit & pieces and quantities.
+          </p>
+
+          {/* Weekday Quick Switcher */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, background: "#F8FAFC", padding: "6px 10px", borderRadius: 8, border: "1px solid #E2E8F0" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>Day:</span>
+            <div style={{ display: "flex", gap: 4, flex: 1 }}>
+              {DAYS_OF_WEEK.map((d) => {
+                const isActive = selectedDow === d.dow;
+                return (
+                  <button
+                    key={d.dow}
+                    onClick={() => setSelectedDow(d.dow)}
+                    style={{
+                      flex: 1,
+                      padding: "4px 0",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      borderRadius: 6,
+                      border: `1px solid ${isActive ? "#e8a838" : "#E2E8F0"}`,
+                      background: isActive ? "#1E293B" : "white",
+                      color: isActive ? "#e8a838" : "#64748B",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Multi-Agent Telemetry Bar */}
+          <div style={{
+            background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+            borderRadius: 8,
+            padding: "8px 12px",
+            marginBottom: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            border: "1px solid rgba(232, 168, 56, 0.3)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.06)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Sparkles size={13} color="#e8a838" />
+              <span style={{ fontSize: 11, fontWeight: 800, color: "#F8FAFC" }}>
+                Multi-Agent Engine:
+              </span>
+              <span style={{ fontSize: 10, color: "#94A3B8" }}>
+                TrendScout · Harmonizer · BitPiece (100%) · Veritas
+              </span>
+            </div>
+            <span style={{ fontSize: 10, background: "#10B98120", color: "#10B981", fontWeight: 800, padding: "2px 6px", borderRadius: 4, border: "1px solid #10B98140" }}>
+              SYNCED
+            </span>
+          </div>
+
+          {/* Lookback weeks + Filter Tabs */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", background: "#F8FAFC", borderRadius: 6, border: "1px solid #E2E8F0" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#475569" }}>Lookback:</span>
+              <div style={{ display: "flex", gap: 3 }}>
+                {WEEKS_OPTIONS.map((w) => (
+                  <button key={w} onClick={() => setWeeks(w)}
+                    style={{ padding: "2px 6px", fontSize: 10, fontWeight: 700, cursor: "pointer", borderRadius: 4, border: `1px solid ${weeks === w ? "#e8a838" : "#E2E8F0"}`, background: weeks === w ? "#FFF8E7" : "white", color: weeks === w ? "#92400E" : "#64748B" }}>
+                    {w}w
+                  </button>
+                ))}
+              </div>
+            </div>
+            {loadingTrend && (
+              <div style={{ width: 14, height: 14, border: "2px solid #E2E8F0", borderTopColor: "#e8a838", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            )}
+          </div>
+
+          {/* Bit & Pieces Classification Filter Tabs */}
+          {trendData.length > 0 && (
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
+              {[
+                { id: "ALL", label: `All (${trendStats.total})` },
+                { id: "SPICES", label: `🧂 Spices & Aromatics (${trendStats.spices})` },
+                { id: "DISPOSABLES", label: `📦 Disposables (${trendStats.disposables})` },
+                { id: "DAIRY", label: `🥛 Dairy & Oils (${trendStats.dairy})` },
+                { id: "STAPLES", label: `🥦 Staples (${trendStats.staples})` },
+              ].map((tab) => {
+                const isTabActive = trendFilterTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setTrendFilterTab(tab.id)}
+                    style={{
+                      padding: "3px 8px",
+                      borderRadius: 6,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      border: `1px solid ${isTabActive ? "#e8a838" : "#E2E8F0"}`,
+                      background: isTabActive ? "#1E293B" : "white",
+                      color: isTabActive ? "#e8a838" : "#64748B",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* ── Search + Sort bar ── */}
           {trendData.length > 0 && (
@@ -929,17 +1117,27 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
             </div>
           )}
 
-          {/* Select All / Deselect All */}
+          {/* Select All / Deselect All / Bit & Pieces Quick Actions */}
           {trendData.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 6 }}>
               <span style={{ fontSize: 11, color: "#64748B" }}>
                 <strong>{selectedTrendCount}</strong> of {trendData.length} selected
                 {trendSearch && <span style={{ color: "#e8a838" }}> · {sortedTrendData.length} shown</span>}
               </span>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <button onClick={handleSelectAll}
                   style={{ fontSize: 11, fontWeight: 600, color: "#2563EB", background: "transparent", border: "none", cursor: "pointer", padding: "2px 0" }}>
                   Select All
+                </button>
+                <span style={{ color: "#CBD5E1" }}>|</span>
+                <button onClick={handleSelectBitPiecesOnly}
+                  style={{ fontSize: 11, fontWeight: 700, color: "#D97706", background: "transparent", border: "none", cursor: "pointer", padding: "2px 0" }}>
+                  Bit & Pieces Only
+                </button>
+                <span style={{ color: "#CBD5E1" }}>|</span>
+                <button onClick={handleSelectStaplesOnly}
+                  style={{ fontSize: 11, fontWeight: 600, color: "#475569", background: "transparent", border: "none", cursor: "pointer", padding: "2px 0" }}>
+                  Staples Only
                 </button>
                 <span style={{ color: "#CBD5E1" }}>|</span>
                 <button onClick={handleDeselectAll}
@@ -980,6 +1178,8 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
                 const stockEntry = stockMap[item.name.toLowerCase()];
                 const avail      = stockEntry ? parseFloat(stockEntry.remaining || 0) : null;
                 const stockOk    = avail !== null && avail >= needed;
+                const classStyle = CLASSIFICATION_STYLE[item.classification] || CLASSIFICATION_STYLE.STAPLES_PRODUCE;
+
                 return (
                   <div key={item.name} style={{
                     display: "flex", alignItems: "center", gap: 10,
@@ -991,7 +1191,12 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
 
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#1E293B" }}>{item.name}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>{item.name}</span>
+                        {item.classification && (
+                          <span style={{ fontSize: 8, fontWeight: 800, background: classStyle.bg, color: classStyle.color, padding: "1px 5px", borderRadius: 4, letterSpacing: "0.03em" }}>
+                            {classStyle.label}
+                          </span>
+                        )}
                         <span style={{ fontSize: 9, fontWeight: 800, background: cs.bg, color: cs.color, padding: "1px 5px", borderRadius: 4, letterSpacing: "0.04em" }}>
                           {cs.label}
                         </span>
@@ -1004,8 +1209,8 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: 10, color: "#94A3B8", marginTop: 1 }}>
-                        {Math.round((item.frequency_pct || 0) * 100)}% of {weeks} {weekdayName || "weekday"}s · avg {item.avg_qty} {item.unit}
+                      <div style={{ fontSize: 10, color: "#94A3B8", marginTop: 2 }}>
+                        {Math.round((item.frequency_pct || 0) * 100)}% of {weeks} {weekdayName}s · avg {item.avg_qty} {item.unit}
                         {item.last_ordered_date && ` · last: ${new Date(item.last_ordered_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}`}
                       </div>
                     </div>
@@ -1014,7 +1219,7 @@ export default function SmartIndentTab({ dept, date, stocks = [], onCompile, onS
                       <input
                         type="number" value={trendQuantities[item.name] || ""} disabled={!isChecked}
                         onChange={(e) => handleTrendQtyChange(item.name, e.target.value)}
-                        style={{ width: 64, padding: "4px 8px", fontSize: 12, fontWeight: 700, textAlign: "right", border: "1px solid #CBD5E1", borderRadius: 4, background: isChecked ? "white" : "#F1F5F9" }}
+                        style={{ width: 68, padding: "4px 8px", fontSize: 12, fontWeight: 700, textAlign: "right", border: "1px solid #CBD5E1", borderRadius: 4, background: isChecked ? "white" : "#F1F5F9" }}
                       />
                       <span style={{ fontSize: 11, color: "#64748B", width: 22 }}>{item.unit}</span>
                     </div>

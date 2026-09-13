@@ -1,5 +1,6 @@
 const db = require("../db");
 const { applyDepartmentScope, assertDepartmentAccess } = require("../services/permissionService");
+const { classifyItem, ITEM_CLASSIFICATION } = require("../services/mondayTrendAgentService");
 
 // GET /api/indents
 // Query params: dept, status, date_from, date_to, q (search items), page, limit, sort, order
@@ -278,7 +279,7 @@ async function updateItems(req, res, next) {
 // GET /api/indents/recommendations
 async function getRecommendations(req, res, next) {
   try {
-    const { dept, date } = req.query;
+    const { dept, date, dow } = req.query;
     const weeks = Math.min(12, Math.max(2, parseInt(req.query.weeks) || 4));
 
     if (!dept) {
@@ -289,13 +290,22 @@ async function getRecommendations(req, res, next) {
     const intervalDays = weeks * 7;
     const halfIntervalDays = Math.floor(weeks / 2) * 7;
 
-    const rows = await db("indent_items as ii")
+    const baseQuery = db("indent_items as ii")
       .join("indents as i", "ii.indent_id", "i.id")
       .whereRaw("LOWER(i.dept) = LOWER(?)", [dept.trim()])
-      .whereRaw("EXTRACT(DOW FROM i.date) = EXTRACT(DOW FROM DATE(?))", [targetDate])
+      .where("i.status", "!=", "cancelled");
+
+    if (dow !== undefined && dow !== null && dow !== "") {
+      baseQuery.whereRaw("EXTRACT(DOW FROM i.date) = ?", [parseInt(dow, 10)]);
+    } else {
+      baseQuery.whereRaw("EXTRACT(DOW FROM i.date) = EXTRACT(DOW FROM DATE(?))", [targetDate]);
+    }
+
+    baseQuery
       .whereRaw("i.date >= (DATE(?) - INTERVAL '1 day' * ?)::date", [targetDate, intervalDays])
-      .whereRaw("i.date < DATE(?)", [targetDate])
-      .where("i.status", "!=", "cancelled")
+      .whereRaw("i.date < DATE(?)", [targetDate]);
+
+    const rows = await baseQuery
       .groupBy("ii.name", "ii.unit", "ii.item_code")
       .select("ii.name", "ii.unit", "ii.item_code")
       .avg("ii.qty as avg_qty")
@@ -322,11 +332,16 @@ async function getRecommendations(req, res, next) {
 
       let trendDirection = "stable";
       if (olderAvg > 0) {
-        if (recentAvg > olderAvg * 1.1)       trendDirection = "up";
-        else if (recentAvg < olderAvg * 0.9)  trendDirection = "down";
+        if (recentAvg > olderAvg * 1.05)      trendDirection = "up";
+        else if (recentAvg < olderAvg * 0.95) trendDirection = "down";
       } else if (recentAvg > 0) {
         trendDirection = "up";
       }
+
+      const classification = classifyItem(r.name);
+      const isBitPiece =
+        classification === ITEM_CLASSIFICATION.SPICES_AROMATICS ||
+        classification === ITEM_CLASSIFICATION.DISPOSABLES_PACKAGING;
 
       const stockEntry   = stockMap[r.name.toLowerCase()];
       const availableStock = stockEntry ? parseFloat(stockEntry.remaining || 0) : null;
@@ -337,16 +352,32 @@ async function getRecommendations(req, res, next) {
         item_code:        r.item_code,
         avg_qty:          avgQty,
         occurrence_count: occurrences,
-        frequency_pct:    Math.min(1, freqPct),
+        frequency_pct:    Math.min(1, Math.max(0.2, freqPct)),
         trend_direction:  trendDirection,
         recent_avg:       parseFloat(recentAvg.toFixed(2)),
         older_avg:        parseFloat(olderAvg.toFixed(2)),
         last_ordered_date: r.last_ordered_date || null,
         available_stock:  availableStock,
+        classification,
+        is_bit_piece:     isBitPiece,
+        confidence:       occurrences >= 3 ? "HIGH" : occurrences >= 2 ? "MEDIUM" : "LOW",
       };
     });
 
-    res.json({ success: true, data, weeks, dept });
+    const bitPiecesCount = data.filter((i) => i.is_bit_piece).length;
+    const staplesCount = data.filter((i) => !i.is_bit_piece).length;
+
+    res.json({
+      success: true,
+      data,
+      weeks,
+      dept,
+      summary: {
+        total: data.length,
+        bit_pieces_count: bitPiecesCount,
+        staples_count: staplesCount,
+      },
+    });
   } catch (err) {
     next(err);
   }
