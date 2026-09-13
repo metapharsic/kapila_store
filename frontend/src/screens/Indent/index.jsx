@@ -337,7 +337,8 @@ export default function IndentScreen() {
       ...prev,
       items: prev.items.map(it => ({ ...it, qty: "" }))
     }));
-    setMsg("All quantities reset to zero. ✓");
+    try { localStorage.removeItem("kapila_indent_draft"); } catch {}
+    setMsg("All quantities reset to zero and draft cleared. ✓");
     setTimeout(() => setMsg(""), 2500);
   };
 
@@ -488,14 +489,24 @@ export default function IndentScreen() {
   useEffect(() => {
     load();
 
+    const INDENT_DRAFT_TTL_MS = 2 * 60 * 60 * 1000;
     const savedDraft = localStorage.getItem("kapila_indent_draft");
     if (savedDraft) {
       try {
         const parsed = JSON.parse(savedDraft);
-        setForm(parsed);
-        const itemNames = parsed.items.map(it => it.name).filter(Boolean);
-        fetchStockLevels(itemNames);
-      } catch {}
+        const timestamp = parsed._timestamp || parsed.timestamp;
+        if (timestamp && Date.now() - timestamp <= INDENT_DRAFT_TTL_MS) {
+          const draftForm = parsed.form || parsed;
+          setForm(draftForm);
+          const itemNames = (draftForm.items || []).map(it => it.name).filter(Boolean);
+          fetchStockLevels(itemNames);
+        } else {
+          // Stale draft or legacy draft without timestamp -> reset to zero/clean
+          localStorage.removeItem("kapila_indent_draft");
+        }
+      } catch {
+        localStorage.removeItem("kapila_indent_draft");
+      }
     }
 
     api.departments.list().then((res) => {
@@ -557,10 +568,12 @@ export default function IndentScreen() {
     }).catch(console.error);
   }, [indentPreFill]);
 
-  // Save changes to draft
+  // Save changes to draft with timestamp (holding cache)
   useEffect(() => {
-    if (form.dept) {
-      localStorage.setItem("kapila_indent_draft", JSON.stringify(form));
+    if (form.dept && form.items && form.items.some(it => (parseFloat(it.qty) || 0) > 0 || (it.notes && it.notes.trim().length > 0))) {
+      localStorage.setItem("kapila_indent_draft", JSON.stringify({ form, timestamp: Date.now() }));
+    } else if (form.items && form.items.every(it => !it.qty || (parseFloat(it.qty) || 0) === 0)) {
+      try { localStorage.removeItem("kapila_indent_draft"); } catch {}
     }
   }, [form]);
 

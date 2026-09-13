@@ -36,10 +36,12 @@ const RECENT_KEY     = "kapila_recent_recipes";
 
 /* ─── persistence helpers ───────────────────────────────────────────────────── */
 const draftKey = (dept) => `kapila_smart_indent_draft_${dept}`;
+const DRAFT_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 const saveDraft = (dept, plannedRecipes, selectedItems, quantities, adHocItems) => {
   try {
     localStorage.setItem(draftKey(dept), JSON.stringify({
+      timestamp: Date.now(),
       plannedRecipes: plannedRecipes.map(({ recipe, plates }) => ({
         recipe: { id: recipe.id, name: recipe.name, category: recipe.category, base_plates: recipe.base_plates, items: recipe.items },
         plates,
@@ -54,7 +56,13 @@ const saveDraft = (dept, plannedRecipes, selectedItems, quantities, adHocItems) 
 const loadDraft = (dept) => {
   try {
     const raw = localStorage.getItem(draftKey(dept));
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed.timestamp || (Date.now() - parsed.timestamp > DRAFT_TTL_MS)) {
+      clearDraft(dept);
+      return null;
+    }
+    return parsed;
   } catch { return null; }
 };
 

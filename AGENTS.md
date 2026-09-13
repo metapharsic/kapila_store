@@ -62,6 +62,11 @@ kapila/
 - No backwards-compat shims — just change the code
 - All monetary/qty values are `float`, dates are `YYYY-MM-DD` strings
 - `localStorage` keys are namespaced: `kapila_*`
+- **Indent Zero-Reset & Draft Cache Holding Protocol**:
+  - All indents when opened for the first time MUST reset item quantities to zero (`0`) and items unselected (`selected: false`).
+  - Active/in-progress drafts are held in namespaced local cache (`kapila_chef_draft_${dept}`, `kapila_indent_draft`, `kapila_smart_indent_draft_${dept}`) for a 2-hour operational window (`TTL = 2 * 60 * 60 * 1000`).
+  - If a draft is older than 2 hours or no cache exists, the cache is automatically evicted and all lines reset to clean zero.
+  - Upon successful requisition submission or clicking "Reset to Zero", the cached draft for that department/flow is immediately purged so the next opening starts clean at zero.
 - API calls must include `x-api-key` header for Anthropic endpoints
 - Prefer editing existing files over creating new ones
 

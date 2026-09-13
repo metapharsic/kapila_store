@@ -59,6 +59,40 @@ export const CANONICAL_DEPTS = [
   "ROOM SERVICE",
 ];
 
+// Requisition Draft Cache (holds half-saved chef requisitions for 2 hours)
+const CHEF_DRAFT_KEY = (dept) => `kapila_chef_draft_${(dept || "GENERAL").toUpperCase()}`;
+const CHEF_DRAFT_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours holding window
+
+const loadChefDraft = (dept) => {
+  try {
+    const raw = localStorage.getItem(CHEF_DRAFT_KEY(dept));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed.timestamp || Date.now() - parsed.timestamp > CHEF_DRAFT_TTL_MS) {
+      localStorage.removeItem(CHEF_DRAFT_KEY(dept));
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const saveChefDraft = (dept, data) => {
+  try {
+    localStorage.setItem(CHEF_DRAFT_KEY(dept), JSON.stringify({
+      ...data,
+      timestamp: Date.now(),
+    }));
+  } catch {}
+};
+
+const clearChefDraft = (dept) => {
+  try {
+    localStorage.removeItem(CHEF_DRAFT_KEY(dept));
+  } catch {}
+};
+
 export default function ChefIndentDeskTab({ onIndentCreated }) {
   const { user, roles } = useAuth();
   const { stocks = [] } = useAppContext();
@@ -75,6 +109,7 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
   const [priority, setPriority] = useState("NORMAL");
   const [chefNotes, setChefNotes] = useState("");
   const [isRecordingNote, setIsRecordingNote] = useState(false);
+  const [draftRestoredNotice, setDraftRestoredNotice] = useState(null);
 
   const PRESET_PREP_NOTES = [
     "⚡ Morning Prep (6 AM)",
@@ -217,33 +252,92 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
   };
 
   // Load items when active subcategory changes
-  const loadSubcatItems = async (code) => {
+  const loadSubcatItems = async (code, targetDept = selectedDept) => {
     if (!code) return;
     try {
       const res = await api.indents.subcategoryItems(code);
       if (res.success && res.data) {
         const items = res.data.items || [];
         setTemplateItems(items);
-        // Initialize line items with positive defaults
+
+        // Check if there is an active draft within the 2-hour TTL for this department
+        const cachedDraft = loadChefDraft(targetDept);
+        const draftItemsMap = cachedDraft?.items || {};
+
+        if (cachedDraft) {
+          if (cachedDraft.shift) setShift(cachedDraft.shift);
+          if (cachedDraft.priority) setPriority(cachedDraft.priority);
+          if (cachedDraft.remarks) setChefNotes(cachedDraft.remarks);
+        }
+
+        // Initialize line items:
+        // If half-saved in draft, restore the cached quantity & selection!
+        // If opening for the first time / no active draft, RESET TO ZERO (0) and unselected!
         setLineItems(
-          items.map((it) => ({
-            id: it.id,
-            name: it.item_name,
-            sku: it.sku,
-            unit: it.unit,
-            pack_size: it.standard_pack_size,
-            cost: parseFloat(it.live_price || it.default_cost || 0),
-            in_stock: parseFloat(it.current_stock || 0),
-            requestedQty: parseFloat(it.default_qty || 1),
-            selected: true,
-            notes: "",
-          }))
+          items.map((it) => {
+            const cached = draftItemsMap[it.item_name] || draftItemsMap[it.sku] || draftItemsMap[it.id];
+            const hasDraft = cached !== undefined && parseFloat(cached.requestedQty || 0) > 0;
+            return {
+              id: it.id,
+              name: it.item_name,
+              sku: it.sku,
+              unit: it.unit,
+              pack_size: it.standard_pack_size,
+              cost: parseFloat(it.live_price || it.default_cost || 0),
+              in_stock: parseFloat(it.current_stock || 0),
+              requestedQty: hasDraft ? parseFloat(cached.requestedQty) : 0,
+              selected: hasDraft ? Boolean(cached.selected ?? true) : false,
+              notes: cached?.notes || "",
+            };
+          })
         );
+
+        if (cachedDraft && (Object.keys(draftItemsMap).length > 0 || (cachedDraft.remarks && cachedDraft.remarks.trim().length > 0))) {
+          const minsAgo = Math.max(1, Math.round((Date.now() - cachedDraft.timestamp) / 60000));
+          setDraftRestoredNotice(`Draft restored from cache (saved ${minsAgo}m ago)`);
+        } else {
+          setDraftRestoredNotice(null);
+        }
       }
     } catch (err) {
       console.error(err);
     }
   };
+
+  // Auto-save draft cache while the chef works (debounced / on change)
+  useEffect(() => {
+    if (!selectedDept) return;
+    const activeItems = lineItems.filter(
+      (it) => (parseFloat(it.requestedQty) || 0) > 0 || (it.notes && it.notes.trim().length > 0)
+    );
+    const hasNotes = chefNotes && chefNotes.trim().length > 0;
+
+    if (activeItems.length > 0 || hasNotes) {
+      const existing = loadChefDraft(selectedDept) || { items: {} };
+      const mergedItems = { ...(existing.items || {}) };
+
+      lineItems.forEach((it) => {
+        const qty = parseFloat(it.requestedQty) || 0;
+        if (qty > 0 || (it.notes && it.notes.trim().length > 0)) {
+          mergedItems[it.name] = {
+            requestedQty: qty,
+            selected: it.selected,
+            notes: it.notes || "",
+          };
+        } else {
+          delete mergedItems[it.name];
+        }
+      });
+
+      saveChefDraft(selectedDept, {
+        dept: selectedDept,
+        shift,
+        priority,
+        remarks: chefNotes,
+        items: mergedItems,
+      });
+    }
+  }, [lineItems, chefNotes, shift, priority, selectedDept]);
 
   // Load store queue indents
   const loadQueue = async () => {
@@ -282,7 +376,7 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
 
   useEffect(() => {
     if (activeSubcatCode) {
-      loadSubcatItems(activeSubcatCode);
+      loadSubcatItems(activeSubcatCode, selectedDept);
     }
   }, [activeSubcatCode]);
 
@@ -303,12 +397,14 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
 
   const handleDeptChange = (newDept) => {
     setSelectedDept(newDept);
-    // When switching department, auto-select first subcategory of that department if current is not in it
+    // When switching department, auto-select first subcategory of that department
     const deptSubcats = subcategories.filter((s) => s.department_name === newDept);
     if (deptSubcats.length > 0) {
       const isCurrentInDept = deptSubcats.some((s) => s.code === activeSubcatCode);
       if (!isCurrentInDept) {
         setActiveSubcatCode(deptSubcats[0].code);
+      } else {
+        loadSubcatItems(activeSubcatCode, newDept);
       }
     }
   };
@@ -340,18 +436,22 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
     });
   };
 
-  // Reset all item quantities to 0 and deselect them
+  // Reset all item quantities to 0, deselect them, and clear draft cache
   const handleResetAllToZero = () => {
+    clearChefDraft(selectedDept);
     setLineItems((prev) =>
       prev.map((it) => ({
         ...it,
         requestedQty: 0,
         selected: false,
+        notes: "",
       }))
     );
+    setChefNotes("");
+    setDraftRestoredNotice(null);
     setMsg({
       type: "info",
-      text: "All requisition item quantities reset to zero (0). Enter only what you need for this shift.",
+      text: "All requisition item quantities reset to zero (0). Draft cache cleared.",
     });
   };
 
@@ -543,12 +643,22 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
 
       const res = await api.indents.chefSubmit(payload);
       if (res.success) {
+        clearChefDraft(selectedDept);
+        setLineItems((prev) =>
+          prev.map((it) => ({
+            ...it,
+            requestedQty: 0,
+            selected: false,
+            notes: "",
+          }))
+        );
+        setChefNotes("");
+        setDraftRestoredNotice(null);
         const noteSummary = payload.remarks ? ` with station prep notes attached: "${payload.remarks}"` : "";
         setMsg({
           type: "success",
           text: `Requisition filed successfully! Tracking #${res.data.trackingNumber} (${res.data.totalItemsCount} items, est. ₹${res.data.totalEstimatedValue.toLocaleString("en-IN")})${noteSummary}`,
         });
-        setChefNotes("");
         loadTelemetry();
         if (onIndentCreated) onIndentCreated();
       } else {
@@ -1125,6 +1235,25 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
 
               {/* Reset to Zero, Restore Defaults, and Add Item Buttons */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                {draftRestoredNotice && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "5px 10px",
+                      borderRadius: 6,
+                      background: "rgba(59, 130, 246, 0.12)",
+                      border: "1px solid rgba(59, 130, 246, 0.28)",
+                      color: "#1d4ed8",
+                      fontSize: "0.76rem",
+                      fontWeight: 700,
+                    }}
+                  >
+                    <span>💾 {draftRestoredNotice}</span>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   onClick={handleResetAllToZero}
