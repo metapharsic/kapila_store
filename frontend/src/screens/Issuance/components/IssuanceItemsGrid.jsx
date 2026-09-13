@@ -25,6 +25,7 @@ export default function IssuanceItemsGrid({
   confirmedItems = new Set(), onToggleConfirm = () => {}, onToggleAll = () => {},
   onIssue, onSelectIndent, isMobile = false,
   stocks, getItemPrice, getItemBaseUnit, onUnitChange, msg,
+  onApprove, approving, isStoreManager,
 }) {
   const [inspectedItemIdx, setInspectedItemIdx] = useState(0);
   const items = selectedIndent?.items || [];
@@ -86,6 +87,28 @@ export default function IssuanceItemsGrid({
                 </span>
               );
             })()}
+            {selectedIndent.status === "pending" && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                padding: "2px 10px", borderRadius: 20,
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.03em",
+                background: "#FEF3C7", color: "#92400E",
+                border: "1px solid #FCD34D", whiteSpace: "nowrap",
+              }}>
+                ⏳ Pending Review
+              </span>
+            )}
+            {selectedIndent.status === "approved" && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                padding: "2px 10px", borderRadius: 20,
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.03em",
+                background: "#D1FAE5", color: "#065F46",
+                border: "1px solid #6EE7B7", whiteSpace: "nowrap",
+              }}>
+                ✓ Approved
+              </span>
+            )}
           </div>
           {onSelectIndent && (
             <button
@@ -292,21 +315,49 @@ export default function IssuanceItemsGrid({
                 {msg}
               </span>
             )}
-            <button
-              onClick={onIssue}
-              disabled={confirmedCount === 0}
-              style={{
-                height: isMobile ? 48 : 40,
-                padding: isMobile ? "0 20px" : "0 24px",
-                flex: isMobile ? 1 : "unset",
-                backgroundColor: "#111827", opacity: confirmedCount > 0 ? 1 : 0.5,
-                color: "#ffffff", border: "none", borderRadius: 8,
-                fontSize: 14, fontWeight: 700, cursor: confirmedCount > 0 ? "pointer" : "not-allowed",
-                transition: "all 0.15s", letterSpacing: "0.01em",
-              }}
-            >
-              Issue &amp; Update Stock
-            </button>
+            {selectedIndent.status === "pending" ? (
+              <button
+                type="button"
+                onClick={onApprove}
+                disabled={approving}
+                style={{
+                  height: isMobile ? 48 : 40,
+                  padding: isMobile ? "0 20px" : "0 24px",
+                  flex: isMobile ? 1 : "unset",
+                  backgroundColor: "#e8a838",
+                  color: "#18181b",
+                  border: "none",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: approving ? "wait" : "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: "0 2px 8px rgba(232, 168, 56, 0.35)",
+                }}
+              >
+                <CheckCircle size={16} />
+                <span>{approving ? "Approving Requisition..." : "Approve Indent & Enable Issuance"}</span>
+              </button>
+            ) : (
+              <button
+                onClick={onIssue}
+                disabled={confirmedCount === 0}
+                style={{
+                  height: isMobile ? 48 : 40,
+                  padding: isMobile ? "0 20px" : "0 24px",
+                  flex: isMobile ? 1 : "unset",
+                  backgroundColor: "#111827", opacity: confirmedCount > 0 ? 1 : 0.5,
+                  color: "#ffffff", border: "none", borderRadius: 8,
+                  fontSize: 14, fontWeight: 700, cursor: confirmedCount > 0 ? "pointer" : "not-allowed",
+                  transition: "all 0.15s", letterSpacing: "0.01em",
+                }}
+              >
+                Issue &amp; Update Stock
+              </button>
+            )}
           </div>
         </div>
       )}

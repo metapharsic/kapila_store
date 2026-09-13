@@ -126,17 +126,26 @@ async function create(req, res, next) {
     let item_code;
     const existing = await db("stock")
       .whereRaw("LOWER(name) = LOWER(?)", [name.trim()])
-      .select("item_code")
+      .select("item_code", "unit")
       .first();
       
     if (existing) {
       item_code = existing.item_code;
+      if (existing.unit) {
+        const { areUnitsCompatible } = require("../utils/units");
+        if (!areUnitsCompatible(unit, existing.unit, name)) {
+          return res.status(400).json({
+            success: false,
+            error: `Unit '${unit}' is dimensionally incompatible with existing stock unit '${existing.unit}' for '${name}'.`
+          });
+        }
+      }
     } else if (req.body.item_code && req.body.item_code.trim()) {
       item_code = req.body.item_code.trim().toUpperCase();
     } else {
       // Find maximum item code in database to generate the next one
       const maxRow = await db("stock")
-        .whereILike("item_code", "KPL-%")
+        .whereRaw("item_code ~ '^KPL-[0-9]+$'")
         .select("item_code")
         .orderByRaw("CAST(SUBSTRING(item_code FROM 5) AS INTEGER) DESC")
         .first();
@@ -223,7 +232,16 @@ async function update(req, res, next) {
     const updates = {};
     if (min_alert_qty !== undefined) updates.min_alert_qty = min_alert_qty === null ? null : Math.max(0, parseFloat(min_alert_qty));
     if (name !== undefined) updates.name = name;
-    if (unit !== undefined) updates.unit = unit;
+    if (unit !== undefined) {
+      const { areUnitsCompatible } = require("../utils/units");
+      if (!areUnitsCompatible(unit, current.unit, current.name)) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot change unit to '${unit}': dimensionally incompatible with current stock unit '${current.unit}'.`
+        });
+      }
+      updates.unit = unit;
+    }
     if (price !== undefined) updates.price = parseFloat(price) || 0;
     if (item_code !== undefined) updates.item_code = item_code;
     if (category !== undefined) updates.category = category || null;

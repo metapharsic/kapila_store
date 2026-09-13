@@ -1,8 +1,7 @@
 import KplCodeBadge from "../../../components/KplCodeBadge";
 import { COLORS } from "../../../styles/colors";
 import { Lock, Square, CheckSquare2, ShieldCheck } from "lucide-react";
-
-const UNIT_OPTIONS = ["kg", "g", "L", "ml", "pcs", "dozen", "box", "bottle", "pkt", "tin", "jar", "bulk"];
+import { getCompatibleUnits, areUnitsCompatible } from "../../../utils/units";
 
 export default function IssuanceItemRow({
   idx,
@@ -22,17 +21,17 @@ export default function IssuanceItemRow({
   const numQty = parseFloat(issueQty) || 0;
   const numAvail = parseFloat(available) || 0;
   const isInsufficient = numAvail < numQty;
-  const isMismatch = cost === null;
+  const isDimensionMismatch = !areUnitsCompatible(item.unit, baseUnit, item.name);
+  const isMismatch = cost === null || isDimensionMismatch;
+  const allowedUnits = getCompatibleUnits(baseUnit);
+  const unitOptions = allowedUnits.includes(item.unit) ? allowedUnits : [item.unit, ...allowedUnits];
+
   // Unit is editable only when the item is matched to real stock (has item_code)
   // and not yet confirmed. Fixing it here persists to the stock's base unit.
   const canEditUnit = !!onUnitChange && !isConfirmed && item.item_code && item.item_code !== "KPL-NEW";
 
-  // Cost mismatch is informational only (display can't convert unit → price),
-  // it must never block confirming — backend re-validates the real unit
-  // conversion at issuance time and throws a clear error if truly incompatible.
-  // A permanent, unrecoverable-without-master-data-edit lock here was trapping
-  // whole indents that had even one item with a stale/mismatched unit.
-  const isDisableConfirm = numAvail <= 0;
+  const isDisableConfirm = numAvail <= 0 || isDimensionMismatch;
+
 
   return (
     <tr
@@ -153,8 +152,8 @@ export default function IssuanceItemRow({
               outline: "none",
             }}
           >
-            {UNIT_OPTIONS.map((u) => (
-              <option key={u} value={u}>{u}</option>
+            {unitOptions.map((u) => (
+              <option key={u} value={u}>{u}{u === item.unit && isDimensionMismatch ? " ⚠️ (Incompatible)" : ""}</option>
             ))}
           </select>
         ) : (
@@ -169,7 +168,7 @@ export default function IssuanceItemRow({
 
       {/* COST */}
       <td style={tdStyle({ width: 90, fontWeight: 600, color: COLORS.accent })}>
-        {cost !== null ? `₹${cost.toFixed(2)}` : <span style={{ color: COLORS.danger, fontSize: 11, cursor: "help" }} title={`Cannot convert ${item.unit} to ${baseUnit}. Update base unit in Master Data or fix indent unit.`}>⚠ Mismatch</span>}
+        {cost !== null && !isDimensionMismatch ? `₹${cost.toFixed(2)}` : <span style={{ color: COLORS.danger, fontSize: 11, cursor: "help" }} title={`Cannot convert ${item.unit} to ${baseUnit}. Item is tracked in ${baseUnit}.`}>⚠️ Mismatch</span>}
       </td>
 
       {/* ✓ (CONFIRMED) CHECKBOX */}
@@ -185,12 +184,15 @@ export default function IssuanceItemRow({
           title={
             isConfirmed 
               ? "Item confirmed — cannot be undone. Use Issue & Update Stock to submit." 
-              : cost === null
-                ? `Cannot convert ${item.unit} to ${baseUnit || "kg"}. Please update the item base unit in Master Data or fix the indent unit.`
-                : numAvail <= 0 
-                  ? "Cannot confirm — item is out of stock" 
-                  : "Confirm item"
+              : isDimensionMismatch
+                ? `Cannot confirm: unit '${item.unit}' is incompatible with stock unit '${baseUnit}'. Change unit before confirming.`
+                : cost === null
+                  ? `Cannot convert ${item.unit} to ${baseUnit || "kg"}. Please update the item base unit or fix the indent unit.`
+                  : numAvail <= 0 
+                    ? "Cannot confirm — item is out of stock" 
+                    : "Confirm item"
           }
+
           style={{
             background: "none",
             border: "none",

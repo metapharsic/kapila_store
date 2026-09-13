@@ -1,0 +1,66 @@
+# ==============================================================================
+# KAPILA INVENTORY SYSTEM — RALPH LOOP PROGRESS TRACKER
+# ==============================================================================
+# Instructions for Ralph Agent:
+# 1. Read this file and `git log -n 5` at the start of each iteration.
+# 2. Pick the HIGHEST priority item from [ACTIVE BACKLOG] that is marked [ ] PENDING.
+# 3. Implement the feature/fix cleanly following rules in `AGENTS.md`.
+# 4. Verify your work:
+#    - Frontend: `npm run build` in `frontend/`
+#    - Backend:  `npm test` in `backend/`
+# 5. Commit your changes using Git with a clear commit message.
+# 6. Mark the item as [x] COMPLETED in this file with commit hash and timestamp.
+# 7. If all items in [ACTIVE BACKLOG] are [x] COMPLETED, output "ALL_TASKS_COMPLETED"
+#    at the very end of this file.
+# ==============================================================================
+
+[PROJECT_STATE]
+Phase: Production Hardening & Automation
+Last Updated: 2026-09-11
+Current Sprint: Unit Compatibility, Indent Safeguards & Reconciliation
+
+[COMPLETED_MILESTONES]
+- [x] Unit Dimension Compatibility Engine (Weight vs Volume vs Count)
+      Commit: Staged
+      Details: Enforced getCompatibleUnits & areUnitsCompatible across Indent and Issuance screens, preventing silent 1:1 stock corruption.
+- [x] Indent Screen Dynamic Unit Selector & Incompatible Unit Visual Warning Badges
+      Commit: Staged
+      Details: Filtered dropdowns, highlighted mismatches in red, updated line cost logic and blocked submission on invalid units.
+- [x] Backend Indent and Issuance Unit Validation Safeguards
+      Commit: Staged
+      Details: Added dimensional checks in indentController, issuanceController and indentAgentService.
+- [x] GitHub CLI (gh) Installation on Host System
+      Commit: Verified
+      Details: Installed gh v2.100.0 via winget.
+
+- [x] Unit Conversion & Compatibility Jest Test Suite (tests/units.test.js)
+      Commit: Verified
+      Details: 11 automated Jest tests validating physical dimensions, conversion multipliers, sub-unit monetary valuations, and error cases.
+- [x] Approval Controller Indent Amount Valuation Fix (approvalController.js)
+      Commit: Verified
+      Details: Unit conversion multiplier applied in calculateIndentAmount for canApprove, listPending, and approveRequest.
+- [x] Store Fulfillment FIFO Unit-Converted Stock Deduction (indentAgentService.js)
+      Commit: Verified
+      Details: Implemented unit dimension checks, multiplier scaling, and FIFO batch draining with accurate stock ledger postings.
+- [x] Inward Stock Unit Safeguards across PO, GRN, and Stock Master
+      Commit: Verified
+      Details: Enforced areUnitsCompatible in stockController.create/update, grnController.create, purchaseOrderController.create, and frontend screens.
+
+[ACTIVE_BACKLOG]
+# Format: [ ] Task description | Priority: High/Medium/Low | Scope: FE/BE/DB
+
+- [ ] [BACKLOG-02] Add unit dimension badge to Stock Master & Add Item Drawer
+      Priority: Medium
+      Scope: Frontend (Stock/AddItemDrawer.jsx, Stock/EditItemDrawer.jsx)
+      Description: Display dimension indicator (Weight / Volume / Count) when choosing or editing stock units.
+
+- [ ] [BACKLOG-03] Implement automated PR validation action with CodeRabbit integration
+      Priority: Medium
+      Scope: CI/CD (.github/workflows/verify.yml)
+      Description: Ensure GitHub Actions runs frontend build and backend tests on pull requests.
+
+[LOOP_TELEMETRY]
+Total Iterations: 1
+Active Agent: Antigravity / Ralph
+Status: IN_PROGRESS
+

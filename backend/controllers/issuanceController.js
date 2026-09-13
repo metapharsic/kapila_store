@@ -172,10 +172,10 @@ async function create(req, res, next) {
           if (normalizeUnit(it.unit) === normalizeUnit(stockUnit)) {
             multiplier = 1;
           } else {
-            console.warn(`[Issuance] Incompatible unit '${it.unit}' for '${it.name}' (stock unit: '${stockUnit}'). Defaulting to 1:1.`);
-            multiplier = 1;
+            throw new Error(`Cannot issue '${it.name}' with unit '${it.unit}': incompatible with stock unit '${stockUnit}'. Please select a compatible unit.`);
           }
         }
+
 
         toDeduct = toDeduct * multiplier;
 

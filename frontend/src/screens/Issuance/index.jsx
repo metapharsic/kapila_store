@@ -42,6 +42,35 @@ export default function StoreIssuancePage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [lastIssuedDept, setLastIssuedDept] = useState(null);
   const [sendingDigest, setSendingDigest] = useState(false);
+  const [approving, setApproving] = useState(false);
+
+  const handleApproveIndent = async (indentId) => {
+    const targetId = indentId || selectedIndent?.id;
+    if (!targetId) return;
+    try {
+      setApproving(true);
+      const res = await api.indents.processFulfillment(targetId, {
+        action: "APPROVE",
+        processedBy: isStoreManager ? "Store Manager" : "Central Storekeeper",
+      });
+      if (res.success) {
+        setMsg("Indent approved successfully ✓ Ready for immediate issuance.");
+        setTimeout(() => setMsg(""), 5000);
+        const r = await api.indents.list({ status: "approved,partial,pending", limit: 100 });
+        if (r.success) {
+          setPendingIndents(r.data);
+          const updated = r.data.find((i) => i.id === targetId);
+          if (updated) setSelectedIndent(updated);
+        }
+      } else {
+        setMsg("Error: " + (res.error || "Failed to approve indent."));
+      }
+    } catch (e) {
+      setMsg("Error: " + e.message);
+    } finally {
+      setApproving(false);
+    }
+  };
 
   const { items, total, page, loading, error, fetch: fetchHistory } = usePaginatedApi(api.issuances.list);
 
@@ -620,6 +649,7 @@ export default function StoreIssuancePage() {
                   confirmedItems={confirmedItems} onToggleConfirm={handleToggleConfirm} onToggleAll={handleToggleAll}
                   isMobile={isMobile} stocks={stocks} getItemPrice={getItemPrice} getItemBaseUnit={getItemBaseUnit}
                   onUnitChange={handleUnitChange}
+                  onApprove={handleApproveIndent} approving={approving} isStoreManager={isStoreManager}
                 />
               </div>
               
@@ -663,10 +693,14 @@ export default function StoreIssuancePage() {
               confirmedItems={confirmedItems}
               onToggleConfirm={handleToggleConfirm}
               onToggleAll={handleToggleAll}
+              isMobile={isMobile}
               stocks={stocks}
               getItemPrice={getItemPrice}
               getItemBaseUnit={getItemBaseUnit}
               onUnitChange={handleUnitChange}
+              onApprove={handleApproveIndent}
+              approving={approving}
+              isStoreManager={isStoreManager}
             />
           </div>
 

@@ -31,6 +31,13 @@ export const stock = {
 
 export const indents = {
   list:            (params) => api.get("/indents", params),
+  telemetry:       () => api.get("/indents/telemetry"),
+  subcategories:   (params) => api.get("/indents/subcategories", params),
+  subcategoryItems:(idOrCode) => api.get(`/indents/subcategories/${encodeURIComponent(idOrCode)}`),
+  createSubcategory:(body) => api.post("/indents/subcategories", body),
+  createSubcategoryItem:(subcatId, body) => api.post(`/indents/subcategories/${subcatId}/items`, body),
+  chefSubmit:      (body) => api.post("/indents/chef-submit", body),
+  processFulfillment:(id, body) => api.post(`/indents/${id}/process`, body),
   recommendations: (params) => api.get("/indents/recommendations", params),
   smartAutofill:   (body)   => api.post("/indents/smart-autofill", body),
   voiceParse:      (text)   => api.post("/indents/voice-parse", { text }),

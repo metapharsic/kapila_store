@@ -7,6 +7,7 @@ export default function IssuanceTopSection({
   issueQtys, availableStock, onQtyChange, onShowHistory,
   confirmedItems, onToggleConfirm, onToggleAll, isMobile = false,
   stocks, getItemPrice, getItemBaseUnit, onUnitChange,
+  onApprove, approving, isStoreManager,
 }) {
   if (selectedIndent) {
     return (
@@ -18,6 +19,7 @@ export default function IssuanceTopSection({
           onIssue={onIssue} onSelectIndent={onSelectIndent}
           isMobile={isMobile} stocks={stocks} getItemPrice={getItemPrice}
           getItemBaseUnit={getItemBaseUnit} onUnitChange={onUnitChange} msg={msg}
+          onApprove={onApprove} approving={approving} isStoreManager={isStoreManager}
         />
       </div>
     );
@@ -33,6 +35,7 @@ export default function IssuanceTopSection({
           issueQtys={issueQtys} availableStock={availableStock}
           onScan={onScan} scanning={scanning} scanText={scanText}
           msg={msg} onShowHistory={onShowHistory}
+          onApprove={onApprove} approving={approving} isStoreManager={isStoreManager}
         />
       </div>
     );
@@ -48,6 +51,7 @@ export default function IssuanceTopSection({
           issueQtys={issueQtys} availableStock={availableStock}
           onScan={onScan} scanning={scanning} scanText={scanText}
           msg={msg} onShowHistory={onShowHistory}
+          onApprove={onApprove} approving={approving} isStoreManager={isStoreManager}
         />
       </div>
       {/* RIGHT — items grid, ~70% */}
@@ -59,6 +63,7 @@ export default function IssuanceTopSection({
           onIssue={onIssue} onSelectIndent={onSelectIndent}
           isMobile={false} stocks={stocks} getItemPrice={getItemPrice}
           getItemBaseUnit={getItemBaseUnit} onUnitChange={onUnitChange}
+          onApprove={onApprove} approving={approving} isStoreManager={isStoreManager}
         />
       </div>
     </div>

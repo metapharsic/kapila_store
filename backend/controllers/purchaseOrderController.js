@@ -98,6 +98,36 @@ async function create(req, res, next) {
 
     const po_number = await generatePONumber(date);
 
+    // Verify unit compatibility against existing stock
+    const { areUnitsCompatible } = require("../utils/units");
+    const itemCodes = items.map(i => (i.item_code || "").trim().toUpperCase()).filter(Boolean);
+    const itemNames = items.map(i => (i.name || "").trim().toLowerCase()).filter(Boolean);
+
+    const existingStocks = await db("stock")
+      .where((qb) => {
+        if (itemCodes.length) qb.whereIn(db.raw("UPPER(item_code)"), itemCodes);
+        if (itemNames.length) qb.orWhereIn(db.raw("LOWER(name)"), itemNames);
+      })
+      .select("item_code", "name", "unit");
+
+    const stockMap = new Map();
+    for (const s of existingStocks) {
+      if (s.item_code) stockMap.set(s.item_code.trim().toUpperCase(), s);
+      if (s.name) stockMap.set(s.name.trim().toLowerCase(), s);
+    }
+
+    for (const it of items) {
+      const codeKey = (it.item_code || "").trim().toUpperCase();
+      const nameKey = (it.name || "").trim().toLowerCase();
+      const matched = (codeKey && stockMap.get(codeKey)) || stockMap.get(nameKey);
+      if (matched && matched.unit && !areUnitsCompatible(it.unit, matched.unit, it.name)) {
+        return res.status(400).json({
+          success: false,
+          error: `Item '${it.name}' unit '${it.unit}' is dimensionally incompatible with inventory stock unit '${matched.unit}'.`
+        });
+      }
+    }
+
     // Compute total amount
     let total_amount = 0;
     const poItems = items.map(it => {

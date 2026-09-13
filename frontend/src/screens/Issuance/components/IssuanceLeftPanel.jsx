@@ -5,15 +5,15 @@ import { ChevronDown, FileImage, Camera, QrCode, Calendar } from "lucide-react";
 
 const formatIndentLabel = (indent) => {
   const dept = indent.dept || "";
-  const statusLabel = indent.status === "approved" ? "Approved" : indent.status === "partial" ? "Partial" : "Pending";
+  const statusLabel = indent.status === "approved" ? "✓ Approved" : indent.status === "partial" ? "⚡ Partial" : "⏳ Pending Review";
   try {
     const d = new Date(indent.date);
     const dateStr = isNaN(d.getTime())
       ? indent.date
       : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-    return `${dept} · ${dateStr} (${statusLabel})`;
+    return `#${indent.id} · ${dept} · ${dateStr} [${statusLabel}]`;
   } catch {
-    return `${dept} (${statusLabel})`;
+    return `#${indent.id} · ${dept} [${statusLabel}]`;
   }
 };
 

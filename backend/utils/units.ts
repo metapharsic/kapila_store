@@ -126,3 +126,63 @@ export const CANONICAL_UNITS = [
   "bottle", "pkt", "tin", "jar", "bulk",
   "plates", "portions",
 ];
+
+export const getUnitDimension = (unit: string | null | undefined): string => {
+  const u = normalizeUnit(unit);
+  if (["kg", "g"].includes(u)) return "weight";
+  if (["L", "ml"].includes(u)) return "volume";
+  if (["pcs", "dozen"].includes(u)) return "count";
+  if (["box", "pkt", "bottle", "tin", "jar", "bulk"].includes(u)) return "packaging";
+  return "other";
+};
+
+export const getCompatibleUnits = (baseUnit: string | null | undefined): string[] => {
+  if (!baseUnit) {
+    return ["kg", "g", "L", "ml", "pcs", "dozen", "box", "pkt", "bottle", "tin", "jar", "bulk"];
+  }
+  const dim = getUnitDimension(baseUnit);
+  if (dim === "weight") {
+    return ["kg", "g", "pkt", "box", "bulk"];
+  }
+  if (dim === "volume") {
+    return ["L", "ml", "bottle", "tin", "jar", "box", "bulk"];
+  }
+  if (dim === "count") {
+    return ["pcs", "dozen", "box", "pkt", "bulk"];
+  }
+  if (dim === "packaging") {
+    return ["pcs", "pkt", "box", "bottle", "tin", "jar", "bulk"];
+  }
+  return ["kg", "g", "L", "ml", "pcs", "dozen", "box", "pkt", "bottle", "tin", "jar", "bulk"];
+};
+
+export const areUnitsCompatible = (fromUnit: string | null | undefined, toUnit: string | null | undefined, itemName: string = ""): boolean => {
+  if (!fromUnit || !toUnit) return true;
+  const f = normalizeUnit(fromUnit);
+  const t = normalizeUnit(toUnit);
+  if (f === t) return true;
+
+  const dimF = getUnitDimension(f);
+  const dimT = getUnitDimension(t);
+
+  // Weight vs Volume is fundamentally incompatible
+  if ((dimF === "weight" && dimT === "volume") || (dimF === "volume" && dimT === "weight")) {
+    return false;
+  }
+
+  // Pure count (pcs, dozen) cannot convert to weight or volume without explicit pack size in itemName
+  if ((dimF === "count" && (dimT === "weight" || dimT === "volume")) ||
+      (dimT === "count" && (dimF === "weight" || dimF === "volume"))) {
+    const mult = getConversionMultiplier(fromUnit, toUnit, itemName);
+    return mult !== null;
+  }
+
+  // If conversion multiplier resolves, they are compatible
+  const mult = getConversionMultiplier(fromUnit, toUnit, itemName);
+  if (mult !== null) return true;
+
+  const allowedForT = getCompatibleUnits(t).map(u => u.toLowerCase());
+  const allowedForF = getCompatibleUnits(f).map(u => u.toLowerCase());
+  return allowedForT.includes(f.toLowerCase()) || allowedForF.includes(t.toLowerCase());
+};
+

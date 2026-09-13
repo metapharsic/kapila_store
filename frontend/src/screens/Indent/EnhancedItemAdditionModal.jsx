@@ -5,6 +5,7 @@ import {
   ChevronRight, Layers, FilePlus, RefreshCw
 } from "lucide-react";
 import { COLORS, UNITS } from "../../styles/colors";
+import { getCompatibleUnits, areUnitsCompatible, CANONICAL_UNITS } from "../../utils/units";
 import * as api from "../../api";
 
 const CATEGORIES = [
@@ -57,6 +58,26 @@ export default function EnhancedItemAdditionModal({
   const [savingCustom, setSavingCustom] = useState(false);
   
   const searchInputRef = useRef(null);
+
+  // Auto-detect if custom item matches existing stock item
+  const matchedStock = useMemo(() => {
+    if (!customForm.name.trim()) return null;
+    const n = customForm.name.trim().toLowerCase();
+    return stocks.find(s => s && s.name && s.name.trim().toLowerCase() === n) || null;
+  }, [customForm.name, stocks]);
+
+  const customAllowedUnits = useMemo(() => {
+    if (matchedStock?.unit) {
+      return getCompatibleUnits(matchedStock.unit);
+    }
+    return CANONICAL_UNITS;
+  }, [matchedStock]);
+
+  useEffect(() => {
+    if (matchedStock?.unit && !areUnitsCompatible(customForm.unit, matchedStock.unit, customForm.name)) {
+      setCustomForm(prev => ({ ...prev, unit: matchedStock.unit }));
+    }
+  }, [matchedStock]);
 
   // Focus search on open
   useEffect(() => {
@@ -286,6 +307,10 @@ export default function EnhancedItemAdditionModal({
 
     if (!customForm.name.trim()) {
       setCustomError("Please enter an item name.");
+      return;
+    }
+    if (matchedStock && !areUnitsCompatible(customForm.unit, matchedStock.unit, customForm.name)) {
+      setCustomError(`Unit "${customForm.unit}" is dimensionally incompatible with inventory stock unit "${matchedStock.unit}" for ${matchedStock.name}.`);
       return;
     }
     const qtyNum = parseFloat(customForm.qty);
@@ -1078,6 +1103,12 @@ export default function EnhancedItemAdditionModal({
                       boxSizing: "border-box"
                     }}
                   />
+                  {matchedStock && (
+                    <div style={{ marginTop: "6px", fontSize: "11px", color: "#60A5FA", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Info size={13} />
+                      Matched warehouse item: <strong>{matchedStock.name}</strong> ({matchedStock.item_code || "KPL"}) — Stock base unit: <strong>{matchedStock.unit}</strong>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
@@ -1124,13 +1155,9 @@ export default function EnhancedItemAdditionModal({
                         boxSizing: "border-box"
                       }}
                     >
-                      {UNITS.map(u => (
+                      {customAllowedUnits.map(u => (
                         <option key={u} value={u}>{u}</option>
                       ))}
-                      <option value="pcs">pcs</option>
-                      <option value="bunches">bunches</option>
-                      <option value="boxes">boxes</option>
-                      <option value="tins">tins</option>
                     </select>
                   </div>
                 </div>

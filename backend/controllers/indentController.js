@@ -57,8 +57,43 @@ async function create(req, res, next) {
     }
     await assertDepartmentAccess(req.user, deptExists.name);
 
+    const { getConversionMultiplier, areUnitsCompatible } = require("../utils/units");
+    const itemNames = items.map((it) => (it.name || "").toLowerCase()).filter(Boolean);
+    const itemCodes = items.map((it) => (it.item_code || "").trim().toUpperCase()).filter(Boolean);
+    const priceRows = (itemNames.length || itemCodes.length)
+      ? await db("stock")
+          .where((qb) => {
+            if (itemCodes.length) qb.whereIn(db.raw("UPPER(item_code)"), itemCodes);
+            if (itemNames.length) qb.orWhereRaw("LOWER(name) = ANY(?)", [itemNames]);
+          })
+          .select("item_code", "name", "price", "unit")
+      : [];
+    const priceMap = {};
+    priceRows.forEach((r) => {
+      if (r.name) priceMap[r.name.toLowerCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
+      if (r.item_code) priceMap[r.item_code.trim().toUpperCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
+    });
+
+    for (const it of items) {
+      const codeKey = (it.item_code || "").trim().toUpperCase();
+      const nameKey = (it.name || "").toLowerCase();
+      const stockInfo = (codeKey && priceMap[codeKey]) || priceMap[nameKey];
+      if (stockInfo && !areUnitsCompatible(it.unit, stockInfo.unit, it.name)) {
+        return res.status(400).json({
+          success: false,
+          error: `Item '${it.name}' (${it.item_code || "N/A"}) has unit '${it.unit}', which is incompatible with master stock unit '${stockInfo.unit}'.`
+        });
+      }
+    }
+
     const result = await db.transaction(async (trx) => {
-      const [indent] = await trx("indents").insert({ dept: deptExists.name, date, status: "pending", indent_type }).returning("*");
+      const [indent] = await trx("indents").insert({
+        dept: deptExists.name,
+        date,
+        status: "pending",
+        indent_type,
+        created_by: req.user?.id || null,
+      }).returning("*");
       const rows = items.map((it) => ({
         indent_id: indent.id,
         name: it.name,
@@ -70,24 +105,6 @@ async function create(req, res, next) {
 
       // Estimate indent value from latest known price per item so amount-based
       // approval routing (small → store manager, large → admin) actually works.
-      const { getConversionMultiplier } = require("../utils/units");
-      const itemNames = items.map((it) => (it.name || "").toLowerCase()).filter(Boolean);
-      const itemCodes = items.map((it) => (it.item_code || "").trim().toUpperCase()).filter(Boolean);
-      const priceRows = (itemNames.length || itemCodes.length)
-        ? await trx("stock")
-            .where((qb) => {
-              if (itemCodes.length) qb.whereIn(trx.raw("UPPER(item_code)"), itemCodes);
-              if (itemNames.length) qb.orWhereRaw("LOWER(name) = ANY(?)", [itemNames]);
-            })
-            .select("item_code", "name", "price", "unit")
-        : [];
-      const priceMap = {};
-      priceRows.forEach((r) => {
-        if (r.name) priceMap[r.name.toLowerCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
-        if (r.item_code) priceMap[r.item_code.trim().toUpperCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
-      });
-      // Rate is priced per the STOCK's unit — convert indent qty into that unit
-      // before multiplying, else e.g. 500g × ₹/kg rate inflates cost 1000x.
       const itemValues = items.map((it) => {
         const codeKey = (it.item_code || "").trim().toUpperCase();
         const nameKey = (it.name || "").toLowerCase();
@@ -113,6 +130,7 @@ async function create(req, res, next) {
     });
 
     res.status(201).json({ success: true, data: result });
+
 
     const { checkHighValueAlert } = require("../utils/highValueAlert");
     checkHighValueAlert({
@@ -213,6 +231,35 @@ async function updateItems(req, res, next) {
       return res.status(400).json({ success: false, error: "Cannot replace items — some have already been issued." });
     }
 
+    const { areUnitsCompatible } = require("../utils/units");
+    const itemNames = items.map((it) => (it.name || "").toLowerCase()).filter(Boolean);
+    const itemCodes = items.map((it) => (it.item_code || "").trim().toUpperCase()).filter(Boolean);
+    const priceRows = (itemNames.length || itemCodes.length)
+      ? await db("stock")
+          .where((qb) => {
+            if (itemCodes.length) qb.whereIn(db.raw("UPPER(item_code)"), itemCodes);
+            if (itemNames.length) qb.orWhereRaw("LOWER(name) = ANY(?)", [itemNames]);
+          })
+          .select("item_code", "name", "price", "unit")
+      : [];
+    const priceMap = {};
+    priceRows.forEach((r) => {
+      if (r.name) priceMap[r.name.toLowerCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
+      if (r.item_code) priceMap[r.item_code.trim().toUpperCase()] = { price: parseFloat(r.price) || 0, unit: r.unit };
+    });
+
+    for (const it of items) {
+      const codeKey = (it.item_code || "").trim().toUpperCase();
+      const nameKey = (it.name || "").toLowerCase();
+      const stockInfo = (codeKey && priceMap[codeKey]) || priceMap[nameKey];
+      if (stockInfo && !areUnitsCompatible(it.unit, stockInfo.unit, it.name)) {
+        return res.status(400).json({
+          success: false,
+          error: `Item '${it.name}' (${it.item_code || "N/A"}) has unit '${it.unit}', which is incompatible with master stock unit '${stockInfo.unit}'.`
+        });
+      }
+    }
+
     const updatedItems = await db.transaction(async (trx) => {
       await trx("indent_items").where("indent_id", existing.id).delete();
       const rows = items.map((it) => ({ indent_id: existing.id, name: it.name, qty: it.qty, unit: it.unit, item_code: it.item_code }));
@@ -220,6 +267,7 @@ async function updateItems(req, res, next) {
     });
 
     res.json({ success: true, data: { ...existing, items: updatedItems } });
+
   } catch (err) { next(err); }
 }
 
@@ -652,6 +700,85 @@ async function getAutomatedIndentPreview(req, res, next) {
   }
 }
 
+async function getTelemetry(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const telemetry = await IndentAgentService.getAuditTelemetry();
+    res.json({ success: true, data: telemetry });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getSubcategories(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const subcategories = await IndentAgentService.getSubcategories(req.query.dept);
+    res.json({ success: true, data: subcategories });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getSubcategoryDetails(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const result = await IndentAgentService.getSubcategoryItems(req.params.idOrCode);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function createSubcategory(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const subcat = await IndentAgentService.createSubcategory(req.body);
+    res.json({ success: true, data: subcat });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function createSubcategoryItem(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const item = await IndentAgentService.createSubcategoryItem({
+      ...req.body,
+      subcategory_id: req.params.id,
+    });
+    res.json({ success: true, data: item });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function chefSubmit(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const result = await IndentAgentService.submitChefIndent(req.body, req.user);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function processFulfillment(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const result = await IndentAgentService.processStoreFulfillment(
+      {
+        ...req.body,
+        indentId: req.params.id,
+      },
+      req.user
+    );
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   list, 
   create, 
@@ -665,6 +792,14 @@ module.exports = {
   getTemplates,
   getTemplateByName,
   exportAutomatedIndentExcel,
-  getAutomatedIndentPreview
+  getAutomatedIndentPreview,
+  getTelemetry,
+  getSubcategories,
+  getSubcategoryDetails,
+  createSubcategory,
+  createSubcategoryItem,
+  chefSubmit,
+  processFulfillment,
 };
+
 

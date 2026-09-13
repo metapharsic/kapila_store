@@ -139,10 +139,16 @@ async function create(req, res, next) {
       // 2. Insert GRN items and corresponding stock batches
       const savedItems = [];
       for (const it of items) {
+        const { areUnitsCompatible } = require("../utils/units");
+
         if (po_id) {
           const poItem = poItems.find(p => p.item_code === it.item_code || p.name.toLowerCase() === it.name.toLowerCase());
           if (!poItem) {
             throw new Error(`Item '${it.name || it.item_code}' is not part of Purchase Order #${po_id}.`);
+          }
+
+          if (poItem.unit && !areUnitsCompatible(it.unit, poItem.unit, it.name)) {
+            throw new Error(`Unit '${it.unit}' for '${it.name}' is dimensionally incompatible with PO unit '${poItem.unit}'.`);
           }
 
           // Qty Cap check
@@ -161,6 +167,18 @@ async function create(req, res, next) {
           if (parseFloat(it.unit_price) > parseFloat(poItem.unit_price) * 1.10) {
             throw new Error(`Unit price for '${it.name}' (${it.unit_price}) exceeds PO price (${poItem.unit_price}) by more than 10% tolerance.`);
           }
+        }
+
+        const existingStock = await trx("stock")
+          .where((qb) => {
+            if (it.item_code) qb.where("item_code", it.item_code);
+            else qb.whereRaw("LOWER(name) = LOWER(?)", [it.name.trim()]);
+          })
+          .select("unit")
+          .first();
+
+        if (existingStock && existingStock.unit && !areUnitsCompatible(it.unit, existingStock.unit, it.name)) {
+          throw new Error(`Unit '${it.unit}' for '${it.name}' is dimensionally incompatible with warehouse stock unit '${existingStock.unit}'.`);
         }
         const [savedItem] = await trx("goods_receipt_items")
           .insert({

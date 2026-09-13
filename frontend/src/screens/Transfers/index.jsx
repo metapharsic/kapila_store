@@ -24,6 +24,7 @@ import Pagination from "../../components/Pagination";
 import SearchBar from "../../components/SearchBar";
 import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS, DEPARTMENTS, UNITS } from "../../styles/colors";
+import { getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
 import { today } from "../../utils/dates";
@@ -161,6 +162,14 @@ export default function TransfersScreen() {
     const valid = lineItems.filter((it) => it.name && parseFloat(it.qty) > 0);
     if (valid.length === 0) {
       return flash("Add at least one valid item with quantity greater than zero.", COLORS.coral);
+    }
+
+    for (const it of valid) {
+      const match = catalog.find((c) => c.name && c.name.toLowerCase() === it.name.toLowerCase()) ||
+                    stocks.find((s) => s.name && s.name.toLowerCase() === it.name.toLowerCase());
+      if (match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name)) {
+        return flash(`Unit '${it.unit}' for '${it.name}' is dimensionally incompatible with inventory unit '${match.unit}'.`, COLORS.coral);
+      }
     }
 
     // Overdraft check if from Store
@@ -679,21 +688,35 @@ export default function TransfersScreen() {
                       />
                     </td>
                     <td style={{ padding: "6px 8px" }}>
-                      <select
-                        value={it.unit}
-                        onChange={(e) => updateLine(idx, "unit", e.target.value)}
-                        style={{
-                          background: COLORS.bg,
-                          border: `1px solid ${COLORS.border}`,
-                          color: COLORS.text,
-                          borderRadius: 4,
-                          padding: "6px 8px",
-                          fontSize: 11,
-                          width: 65,
-                        }}
-                      >
-                        {UNITS.map((u) => <option key={u}>{u}</option>)}
-                      </select>
+                      {(() => {
+                        const match = catalog.find((c) => c.name && c.name.toLowerCase() === (it.name || "").toLowerCase()) ||
+                                      stocks.find((s) => s.name && s.name.toLowerCase() === (it.name || "").toLowerCase());
+                        const allowedUnits = match?.unit ? getCompatibleUnits(match.unit) : UNITS;
+                        const isIncompatible = match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name);
+
+                        return (
+                          <div>
+                            <select
+                              value={it.unit}
+                              onChange={(e) => updateLine(idx, "unit", e.target.value)}
+                              style={{
+                                background: isIncompatible ? "#FEE2E2" : COLORS.bg,
+                                border: `1px solid ${isIncompatible ? COLORS.coral : COLORS.border}`,
+                                color: COLORS.text,
+                                borderRadius: 4,
+                                padding: "6px 8px",
+                                fontSize: 11,
+                                width: 65,
+                              }}
+                            >
+                              {allowedUnits.map((u) => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                            {isIncompatible && (
+                              <div style={{ fontSize: 9, color: COLORS.coral, marginTop: 2 }}>Stock is {match.unit}</div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td style={{ padding: "6px 8px" }}>
                       <input

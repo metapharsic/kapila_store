@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+      - "master"
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/.gitnexus/**"
+    - "!**/package-lock.json"
+    - "!**/*.xlsx"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.traineddata"
+  tools:
+    ast-grep:
+      enabled: true
+    eslint:
+      enabled: true
+    shellcheck:
+      enabled: true
+
+knowledge_base:
+  instructions: |
+    Project: Hotel Kapila Inventory Management System
+    Architecture: React (Vite) frontend + Node.js/Express backend + PostgreSQL database.
+
+    Enterprise Review Rules:
+    1. Inventory & Unit Dimensions:
+       - Strictly enforce physical unit dimensions (weight: kg/g vs. volume: L/ml vs. count: pcs/dozen).
+       - Never allow cross-dimension conversions without an explicit pack specification.
+       - Never default to silent 1:1 deduction when conversion multipliers fail.
+    2. Monetary & Numeric Standards:
+       - All monetary and quantity values must be floats.
+       - Currency displays must use Indian Rupee (INR / ₹) with en-IN numbering convention.
+    3. Date Formatting:
+       - All business dates must strictly adhere to 'YYYY-MM-DD' string formats.
+    4. Security & Authorization:
+       - Every Express API route must enforce role-based access using requirePermission or requireAnyPermission middleware.
+       - Validate tenant and department boundaries on transactional endpoints.
+    5. UI/UX Integrity:
+       - Dark theme styling using established tokens: gold accent #e8a838, DM Serif Display + DM Sans typography.
+       - Form and table inputs must feature real-time validation and visual mismatch warnings.

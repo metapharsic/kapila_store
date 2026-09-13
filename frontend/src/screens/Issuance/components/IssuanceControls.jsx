@@ -6,11 +6,23 @@ import { ChevronDown } from "lucide-react";
 export default function IssuanceControls({ pendingIndents, selected, onSelect, onIssue }) {
   
   const formatIndentLabel = (indent) => {
-    const dept = indent.dept;
-    const date = new Date(indent.date).toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-    return `${dept} · ${date}`;
+    const dept = indent.dept || "";
+    const date = indent.date
+      ? new Date(indent.date).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
+    const statusTag =
+      indent.status === "approved"
+        ? "✓ Approved"
+        : indent.status === "pending"
+        ? "⏳ Pending Review"
+        : indent.status === "partial"
+        ? "⚡ Partial"
+        : indent.status;
+    return `#${indent.id} · ${dept} · ${date} [${statusTag}]`;
   };
 
   const sufficientCount = selected?.items?.filter(it => !it.isInsufficient).length || 0;

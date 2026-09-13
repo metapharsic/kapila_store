@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Section from "../../components/Section";
 import SmartIndentTab from "./components/SmartIndentTab";
+import ChefIndentDeskTab from "./components/ChefIndentDeskTab";
 import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
@@ -14,7 +15,7 @@ import * as api from "../../api";
 import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { useLocalSpeech } from "../../hooks/useLocalSpeech";
-import { getConversionMultiplier } from "../../utils/units";
+import { getConversionMultiplier, getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
 import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList, FileSpreadsheet, Send, Sparkles, RotateCcw, TrendingUp, AlertTriangle, CheckCircle2, Minus } from "lucide-react";
 import EnhancedItemAdditionModal from "./EnhancedItemAdditionModal";
 
@@ -229,8 +230,11 @@ function getLineCost(stocks, item, availableStock = {}) {
   const rate = getItemRate(stocks, item, availableStock);
   const qty = parseFloat(item.qty) || 0;
   if (!matches.length) return rate * qty;
-  const stockUnit = matches[0]?.unit || item.unit;
-  const mult = getConversionMultiplier(item.unit, stockUnit);
+  const stockUnit = matches[0]?.unit || availableStock[cleanName]?.unit || item.unit;
+  if (!areUnitsCompatible(item.unit, stockUnit, item.name)) {
+    return 0;
+  }
+  const mult = getConversionMultiplier(item.unit, stockUnit, item.name);
   const normQty = mult !== null ? qty * mult : qty;
   return rate * normQty;
 }
@@ -774,10 +778,13 @@ export default function IndentScreen() {
     setForm(f => {
       const newItems = f.items.map((it, i) => {
         if (i !== idx) return it;
+        const nextUnit = (stockMatch && it.unit && !areUnitsCompatible(it.unit, stockMatch.unit, itemName))
+          ? stockMatch.unit
+          : (stockMatch?.unit || it.unit || "kg");
         return {
           ...it,
           name: itemName,
-          unit: stockMatch?.unit || it.unit || "kg",
+          unit: nextUnit,
           item_code: stockMatch?.item_code || it.item_code || "",
           matchVia: stockMatch ? "corrected" : it.matchVia,
           suggestedName: null,
@@ -1144,8 +1151,22 @@ export default function IndentScreen() {
       setTimeout(() => setMsg(""), 3000);
       return;
     }
+
+    // Check for unit compatibility against known stock units
+    for (const item of validItems) {
+      const cleanName = (item.name || "").toLowerCase().trim();
+      const availObj = availableStock[cleanName];
+      const stockMatch = stocks.find(s => (item.item_code && s.item_code === item.item_code) || s.name.toLowerCase().trim() === cleanName);
+      const baseStockUnit = availObj?.unit || stockMatch?.unit || item.stock_unit || item.default_unit;
+      if (baseStockUnit && item.unit && !areUnitsCompatible(item.unit, baseStockUnit, item.name)) {
+        setMsg(`⚠️ Cannot submit: '${item.name}' has unit '${item.unit}' which is incompatible with stock unit '${baseStockUnit}'.`);
+        setTimeout(() => setMsg(""), 5000);
+        return;
+      }
+    }
     try {
       await api.indents.create({ ...form, indent_type: form.indent_type || "routine", items: validItems.map((i) => ({ ...i, qty: parseFloat(i.qty), unit: i.unit || "kg", item_code: i.item_code || "KPL-NEW" })) });
+
       localStorage.removeItem("kapila_indent_draft");
       setForm({ dept: deptsList[0]?.name || "", date: today(), indent_type: "routine", items: [{ name: "", qty: "", unit: "kg", item_code: "" }] });
       
@@ -1238,32 +1259,51 @@ export default function IndentScreen() {
             >
               ⚡ Smart Auto-Indent & Recipes
             </button>
-            {isStoreManager && (
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("history");
-                  load({ page: 1 });
-                }}
-                style={{
-                  background: activeTab === "history" ? "#EFF6FF" : "transparent",
-                  border: "none",
-                  borderBottom: activeTab === "history" ? "2px solid #2563EB" : "2px solid transparent",
-                  color: activeTab === "history" ? "#1E3A8A" : "#64748B",
-                  padding: "8px 16px",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  borderRadius: activeTab === "history" ? "6px 6px 0 0" : 0,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px"
-                }}
-              >
-                📋 All Indents History (Register)
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setActiveTab("desk")}
+              style={{
+                background: activeTab === "desk" ? "rgba(244, 200, 75, 0.15)" : "transparent",
+                border: "none",
+                borderBottom: activeTab === "desk" ? "2px solid #e8a838" : "2px solid transparent",
+                color: activeTab === "desk" ? "#b45309" : "#64748B",
+                padding: "8px 16px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+                borderRadius: activeTab === "desk" ? "6px 6px 0 0" : 0,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+            >
+              🍴 Chef Desk & Multi-Agent Engine
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("history");
+                load({ page: 1 });
+              }}
+              style={{
+                background: activeTab === "history" ? "#EFF6FF" : "transparent",
+                border: "none",
+                borderBottom: activeTab === "history" ? "2px solid #2563EB" : "2px solid transparent",
+                color: activeTab === "history" ? "#1E3A8A" : "#64748B",
+                padding: "8px 16px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+                borderRadius: activeTab === "history" ? "6px 6px 0 0" : 0,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+            >
+              📋 All Indents History (Register)
+            </button>
           </div>
 
           <button
@@ -1906,6 +1946,12 @@ export default function IndentScreen() {
                         const isActive = activeRowIdx === idx;
                         const isQtyMissing = item.qtyMissing || (item.qty === "" && item.name);
 
+                        const stockMatch = stocks.find(s => (item.item_code && s.item_code === item.item_code) || s.name?.toLowerCase().trim() === cleanName);
+                        const baseStockUnit = availObj?.unit || stockMatch?.unit || item.stock_unit || item.default_unit;
+                        const isUnitMismatch = Boolean(baseStockUnit && item.unit && !areUnitsCompatible(item.unit, baseStockUnit, item.name));
+                        const allowedUnits = getCompatibleUnits(baseStockUnit);
+                        const unitOptions = allowedUnits.includes(item.unit) ? allowedUnits : [item.unit, ...allowedUnits];
+
                         const itemRate = getItemRate(stocks, item, availableStock);
                         const lineCost = getLineCost(stocks, item, availableStock);
 
@@ -1917,7 +1963,7 @@ export default function IndentScreen() {
                             key={item.id || idx}
                             className={`excel-row ${isActive ? 'active-row' : ''}`}
                             onClick={() => setActiveRowIdx(idx)}
-                            style={isQtyMissing ? { background: "#fffbeb", borderLeft: "3px solid #f59e0b" } : {}}
+                            style={isUnitMismatch ? { background: "#fff1f2", borderLeft: "3px solid #ef4444" } : (isQtyMissing ? { background: "#fffbeb", borderLeft: "3px solid #f59e0b" } : {})}
                           >
                             <td className="row-num">{item.row_no || (idx + 1)}</td>
                             <td>
@@ -1959,7 +2005,7 @@ export default function IndentScreen() {
                               {isStockCheckActive || item.current_stock !== undefined ? (
                                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                   <span style={{ fontSize: 12, fontWeight: 700, color: "#1E293B" }}>
-                                    {Number(avail || 0).toLocaleString("en-IN", { maximumFractionDigits: 1 })} {availObj?.unit || item.unit}
+                                    {Number(avail || 0).toLocaleString("en-IN", { maximumFractionDigits: 1 })} {availObj?.unit || baseStockUnit || item.unit}
                                   </span>
                                   <span
                                     style={{
@@ -1975,7 +2021,7 @@ export default function IndentScreen() {
                                       color: isOutStock ? "#DC2626" : (isLowStock ? "#D97706" : "#15803D"),
                                       border: `1px solid ${isOutStock ? "#FCA5A5" : (isLowStock ? "#FCD34D" : "#86EFAC")}`
                                     }}
-                                    title={`Live Central Store inventory: ${avail} ${item.unit}`}
+                                    title={`Live Central Store inventory: ${avail} ${baseStockUnit || item.unit}`}
                                   >
                                     {isOutStock ? "✕ Out of Stock" : (isLowStock ? "⚡ Low Stock" : "✓ In Stock")}
                                   </span>
@@ -1993,7 +2039,7 @@ export default function IndentScreen() {
                                     ₹{itemRate.toFixed(2)}
                                   </span>
                                   <span style={{ fontSize: 10, color: "#64748B" }}>
-                                    per {item.unit}
+                                    per {baseStockUnit || item.unit}
                                   </span>
                                 </div>
                               ) : (
@@ -2023,10 +2069,10 @@ export default function IndentScreen() {
                                     textAlign: "center",
                                     padding: "6px 4px",
                                     borderRadius: 6,
-                                    border: parseFloat(item.qty) > 0 ? "1.5px solid #10B981" : (isQtyMissing ? "1.5px solid #F59E0B" : "1px solid #CBD5E1"),
-                                    background: parseFloat(item.qty) > 0 ? "#F0FDF4" : (isQtyMissing ? "#FEF3C7" : "#FFFFFF"),
+                                    border: isUnitMismatch ? "1.5px solid #EF4444" : (parseFloat(item.qty) > 0 ? "1.5px solid #10B981" : (isQtyMissing ? "1.5px solid #F59E0B" : "1px solid #CBD5E1")),
+                                    background: isUnitMismatch ? "#FEF2F2" : (parseFloat(item.qty) > 0 ? "#F0FDF4" : (isQtyMissing ? "#FEF3C7" : "#FFFFFF")),
                                     fontWeight: parseFloat(item.qty) > 0 ? 800 : 500,
-                                    color: parseFloat(item.qty) > 0 ? "#15803D" : (isQtyMissing ? "#92400E" : "#1E293B"),
+                                    color: isUnitMismatch ? "#B91C1C" : (parseFloat(item.qty) > 0 ? "#15803D" : (isQtyMissing ? "#92400E" : "#1E293B")),
                                     fontSize: 13
                                   }}
                                 />
@@ -2058,19 +2104,54 @@ export default function IndentScreen() {
 
                             {/* Unit Selector */}
                             <td>
-                              <select
-                                value={item.unit}
-                                onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                                className="excel-input"
-                                style={{ padding: "6px 4px", fontSize: 12 }}
-                              >
-                                {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                              </select>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                <select
+                                  value={item.unit}
+                                  onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                                  className="excel-input"
+                                  style={{
+                                    padding: "6px 4px",
+                                    fontSize: 12,
+                                    border: isUnitMismatch ? "1.5px solid #EF4444" : undefined,
+                                    background: isUnitMismatch ? "#FEF2F2" : undefined,
+                                    color: isUnitMismatch ? "#B91C1C" : undefined,
+                                    fontWeight: isUnitMismatch ? 700 : undefined,
+                                  }}
+                                  title={isUnitMismatch ? `Incompatible unit! Central Store stock is tracked in ${baseStockUnit}` : undefined}
+                                >
+                                  {unitOptions.map(u => (
+                                    <option key={u} value={u}>
+                                      {u}{u === item.unit && isUnitMismatch ? " ⚠️ (Incompatible)" : ""}
+                                    </option>
+                                  ))}
+                                </select>
+                                {isUnitMismatch && (
+                                  <span
+                                    style={{
+                                      fontSize: 9,
+                                      fontWeight: 700,
+                                      color: "#DC2626",
+                                      background: "#FEE2E2",
+                                      padding: "1px 4px",
+                                      borderRadius: 3,
+                                      lineHeight: 1.2,
+                                      whiteSpace: "nowrap",
+                                    }}
+                                    title={`Stock is tracked in ${baseStockUnit}. Compatible units: ${allowedUnits.join(", ")}`}
+                                  >
+                                    ⚠️ Stock is {baseStockUnit}
+                                  </span>
+                                )}
+                              </div>
                             </td>
 
                             {/* Live Line Total Cost */}
                             <td style={{ padding: "6px 8px", textAlign: "right" }}>
-                              {lineCost > 0 ? (
+                              {isUnitMismatch ? (
+                                <span style={{ fontSize: 10, fontWeight: 700, color: "#DC2626", background: "#FEE2E2", padding: "2px 4px", borderRadius: 4 }} title={`Cannot calculate cost: ${item.unit} is incompatible with stock unit ${baseStockUnit}`}>
+                                  ⚠️ Incompatible
+                                </span>
+                              ) : lineCost > 0 ? (
                                 <span style={{ fontSize: 12, fontWeight: 800, color: "#15803D", background: "#DCFCE7", padding: "3px 6px", borderRadius: 4 }}>
                                   ₹{lineCost.toFixed(2)}
                                 </span>
@@ -2078,6 +2159,8 @@ export default function IndentScreen() {
                                 <span style={{ color: "#94A3B8", fontSize: 11 }}>—</span>
                               )}
                             </td>
+
+
 
                             {/* Notes */}
                             <td>
@@ -2125,27 +2208,45 @@ export default function IndentScreen() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   {msg && <span style={{ color: COLORS.success, fontSize: 12, fontWeight: 600 }}>{msg}</span>}
-                  <button
-                    type="button"
-                    className="submit-indent-btn"
-                    onClick={submit}
-                    disabled={form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length === 0}
-                    style={{
-                      width: "auto",
-                      padding: "8px 24px",
-                      margin: 0,
-                      background: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "linear-gradient(135deg, #059669, #047857)" : "#CBD5E1",
-                      color: "#ffffff",
-                      border: "none",
-                      borderRadius: 8,
-                      fontWeight: 700,
-                      fontSize: 13,
-                      boxShadow: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "0 2px 6px rgba(5,150,105,0.3)" : "none",
-                      cursor: form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? "pointer" : "not-allowed"
-                    }}
-                  >
-                    Submit Indent {form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length > 0 ? `(${form.items.filter((i) => i.name && parseFloat(i.qty) > 0).length} items · ₹${form.items.reduce((sum, item) => sum + getLineCost(stocks, item, availableStock), 0).toFixed(0)})` : ""}
-                  </button>
+                  {(() => {
+                    const orderedValidItems = form.items.filter((i) => i.name && parseFloat(i.qty) > 0);
+                    const hasUnitMismatch = orderedValidItems.some(i => {
+                      const cName = (i.name || "").toLowerCase().trim();
+                      const aObj = availableStock[cName];
+                      const sMatch = stocks.find(s => (i.item_code && s.item_code === i.item_code) || s.name?.toLowerCase().trim() === cName);
+                      const bUnit = aObj?.unit || sMatch?.unit || i.stock_unit || i.default_unit;
+                      return Boolean(bUnit && i.unit && !areUnitsCompatible(i.unit, bUnit, i.name));
+                    });
+
+                    return (
+                      <button
+                        type="button"
+                        className="submit-indent-btn"
+                        onClick={submit}
+                        disabled={orderedValidItems.length === 0 || hasUnitMismatch}
+                        title={hasUnitMismatch ? "Resolve incompatible unit(s) flagged with ⚠️ before submitting" : undefined}
+                        style={{
+                          width: "auto",
+                          padding: "8px 24px",
+                          margin: 0,
+                          background: hasUnitMismatch
+                            ? "#EF4444"
+                            : (orderedValidItems.length > 0 ? "linear-gradient(135deg, #059669, #047857)" : "#CBD5E1"),
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: 8,
+                          fontWeight: 700,
+                          fontSize: 13,
+                          boxShadow: !hasUnitMismatch && orderedValidItems.length > 0 ? "0 2px 6px rgba(5,150,105,0.3)" : "none",
+                          cursor: !hasUnitMismatch && orderedValidItems.length > 0 ? "pointer" : "not-allowed"
+                        }}
+                      >
+                        {hasUnitMismatch
+                          ? "⚠️ Fix Incompatible Units"
+                          : `Submit Indent ${orderedValidItems.length > 0 ? `(${orderedValidItems.length} items · ₹${form.items.reduce((sum, item) => sum + getLineCost(stocks, item, availableStock), 0).toFixed(0)})` : ""}`}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             </Card>
@@ -2184,7 +2285,9 @@ export default function IndentScreen() {
                }
              }}
           />
-        ) : isStoreManager && activeTab === "history" ? (
+        ) : activeTab === "desk" ? (
+          <ChefIndentDeskTab onIndentCreated={() => load({ page: 1 })} />
+        ) : activeTab === "history" ? (
           <div className="indent-history-section" style={{ width: "100%", marginTop: "8px" }}>
             <Card style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "20px 24px" }}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "space-between", alignItems: "center", marginBottom: isHistoryExpanded ? "16px" : "0" }}>

@@ -1,17 +1,78 @@
-const normalizeUnit = (unit) => {
+export const normalizeUnit = (unit) => {
   if (!unit) return "";
-  let u = unit.toLowerCase().trim();
+  let u = unit.toString().toLowerCase().trim();
   if (["kgs", "kilo", "kilogram", "kilograms"].includes(u)) return "kg";
   if (["gm", "gms", "gram", "grams"].includes(u)) return "g";
-  if (["ltr", "ltrs", "liter", "liters", "litre", "litres"].includes(u)) return "l";
+  if (["l", "ltr", "ltrs", "liter", "liters", "litre", "litres"].includes(u)) return "L";
   if (["mls", "milliliter", "milliliters"].includes(u)) return "ml";
-  if (["pc", "piece", "pieces", "nos", "no", "number"].includes(u)) return "pcs";
-  if (["pkt", "pkts", "packet", "packets"].includes(u)) return "pkt";
-  if (["btl", "btls", "bottle", "bottles"].includes(u)) return "btl";
-  if (["dz", "dozens"].includes(u)) return "dozen";
-  if (["boxes"].includes(u)) return "box";
-  if (["tin", "tins"].includes(u)) return "tin";
+  if (["pc", "piece", "pieces", "nos", "no", "number", "unit", "units"].includes(u)) return "pcs";
+  if (["pkt", "pkts", "packet", "packets", "pack", "packs"].includes(u)) return "pkt";
+  if (["btl", "btls", "bottle", "bottles"].includes(u)) return "bottle";
+  if (["dz", "dozens", "dozen"].includes(u)) return "dozen";
+  if (["boxes", "box"].includes(u)) return "box";
+  if (["tin", "tins", "can", "cans"].includes(u)) return "tin";
+  if (["jar", "jars"].includes(u)) return "jar";
+  if (["bulk"].includes(u)) return "bulk";
   return u;
+};
+
+export const getUnitDimension = (unit) => {
+  const u = normalizeUnit(unit);
+  if (["kg", "g"].includes(u)) return "weight";
+  if (["L", "ml"].includes(u)) return "volume";
+  if (["pcs", "dozen"].includes(u)) return "count";
+  if (["box", "pkt", "bottle", "tin", "jar", "bulk"].includes(u)) return "packaging";
+  return "other";
+};
+
+export const getCompatibleUnits = (baseUnit) => {
+  if (!baseUnit) {
+    return ["kg", "g", "L", "ml", "pcs", "dozen", "box", "pkt", "bottle", "tin", "jar", "bulk"];
+  }
+  const dim = getUnitDimension(baseUnit);
+  if (dim === "weight") {
+    return ["kg", "g", "pkt", "box", "bulk"];
+  }
+  if (dim === "volume") {
+    return ["L", "ml", "bottle", "tin", "jar", "box", "bulk"];
+  }
+  if (dim === "count") {
+    return ["pcs", "dozen", "box", "pkt", "bulk"];
+  }
+  if (dim === "packaging") {
+    return ["pcs", "pkt", "box", "bottle", "tin", "jar", "bulk"];
+  }
+  return ["kg", "g", "L", "ml", "pcs", "dozen", "box", "pkt", "bottle", "tin", "jar", "bulk"];
+};
+
+export const areUnitsCompatible = (fromUnit, toUnit, itemName = "") => {
+  if (!fromUnit || !toUnit) return true;
+  const f = normalizeUnit(fromUnit);
+  const t = normalizeUnit(toUnit);
+  if (f === t) return true;
+
+  const dimF = getUnitDimension(f);
+  const dimT = getUnitDimension(t);
+
+  // Weight vs Volume is fundamentally incompatible
+  if ((dimF === "weight" && dimT === "volume") || (dimF === "volume" && dimT === "weight")) {
+    return false;
+  }
+
+  // Pure count (pcs, dozen) cannot convert to weight or volume without explicit pack size in itemName
+  if ((dimF === "count" && (dimT === "weight" || dimT === "volume")) ||
+      (dimT === "count" && (dimF === "weight" || dimF === "volume"))) {
+    const mult = getConversionMultiplier(fromUnit, toUnit, itemName);
+    return mult !== null;
+  }
+
+  // If conversion multiplier resolves, they are compatible
+  const mult = getConversionMultiplier(fromUnit, toUnit, itemName);
+  if (mult !== null) return true;
+
+  const allowedForT = getCompatibleUnits(t).map(u => u.toLowerCase());
+  const allowedForF = getCompatibleUnits(f).map(u => u.toLowerCase());
+  return allowedForT.includes(f.toLowerCase()) || allowedForF.includes(t.toLowerCase());
 };
 
 export const getConversionMultiplier = (fromUnit, toUnit, itemName = "") => {
@@ -25,8 +86,8 @@ export const getConversionMultiplier = (fromUnit, toUnit, itemName = "") => {
   if (f === "kg" && t === "g") return 1000;
 
   // Volume
-  if (f === "ml" && t === "l") return 0.001;
-  if (f === "l" && t === "ml") return 1000;
+  if (f === "ml" && t === "L") return 0.001;
+  if (f === "L" && t === "ml") return 1000;
 
   // Count
   if (f === "dozen" && t === "pcs") return 12;
@@ -34,6 +95,10 @@ export const getConversionMultiplier = (fromUnit, toUnit, itemName = "") => {
   
   if (f === "box" && t === "pcs") return 24; // Standard assumption
   if (f === "pcs" && t === "box") return 1 / 24;
+
+  // Packaging 1:1 equivalencies where applicable
+  if (["bottle", "tin", "jar", "bulk", "pkt"].includes(f) && t === "pcs") return 1;
+  if (["bottle", "tin", "jar", "bulk", "pkt"].includes(t) && f === "pcs") return 1;
 
   // Pack size extraction from item name (e.g. "Butter 500 Gm")
   if (itemName) {
@@ -43,7 +108,7 @@ export const getConversionMultiplier = (fromUnit, toUnit, itemName = "") => {
       const pkgNormalizedUnit = normalizeUnit(pkgMatch[2]);
 
       // Convert pcs/pkt/box to weight/volume
-      if (["pcs", "pkt", "box"].includes(f) && ["kg", "g", "l", "ml"].includes(t)) {
+      if (["pcs", "pkt", "box"].includes(f) && ["kg", "g", "L", "ml"].includes(t)) {
         let pcsToPkg = pkgVal;
         if (f === "box") pcsToPkg = pkgVal * 24;
         const pkgToT = getConversionMultiplier(pkgNormalizedUnit, t);
@@ -53,7 +118,7 @@ export const getConversionMultiplier = (fromUnit, toUnit, itemName = "") => {
       }
 
       // Convert weight/volume to pcs/pkt/box
-      if (["kg", "g", "l", "ml"].includes(f) && ["pcs", "pkt", "box"].includes(t)) {
+      if (["kg", "g", "L", "ml"].includes(f) && ["pcs", "pkt", "box"].includes(t)) {
         const fToPkg = getConversionMultiplier(f, pkgNormalizedUnit);
         if (fToPkg !== null) {
           let pkgToT = 1 / pkgVal;
@@ -72,3 +137,9 @@ export const calculateNormalizedQty = (qty, fromUnit, toUnit, itemName = "") => 
   if (mult === null) return null;
   return (parseFloat(qty) || 0) * mult;
 };
+
+export const CANONICAL_UNITS = [
+  "kg", "g", "L", "ml", "pcs", "dozen", "box", "pkt", "bottle", "tin", "jar", "bulk"
+];
+
+

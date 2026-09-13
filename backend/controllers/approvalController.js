@@ -1,5 +1,38 @@
 const db = require("../db");
 const { sendNotification } = require("./notificationController");
+const { getConversionMultiplier } = require("../utils/units");
+
+async function calculateIndentAmount(indentId) {
+  const indItems = await db("indent_items").where("indent_id", indentId);
+  if (!indItems || !indItems.length) return 0;
+
+  const itemNames = indItems.map((i) => (i.name || "").toLowerCase());
+  const itemCodes = indItems.map((i) => (i.item_code || "").trim().toUpperCase()).filter(Boolean);
+
+  const stockRows = await db("stock")
+    .where((qb) => {
+      if (itemCodes.length) qb.whereIn(db.raw("UPPER(item_code)"), itemCodes);
+      if (itemNames.length) qb.orWhereIn(db.raw("LOWER(name)"), itemNames);
+    })
+    .select("name", "item_code", "price", "unit");
+
+  const stockMap = new Map();
+  for (const s of stockRows) {
+    if (s.item_code) stockMap.set(s.item_code.trim().toUpperCase(), s);
+    if (s.name) stockMap.set(s.name.trim().toLowerCase(), s);
+  }
+
+  return indItems.reduce((sum, it) => {
+    const codeKey = (it.item_code || "").trim().toUpperCase();
+    const nameKey = (it.name || "").trim().toLowerCase();
+    const stock = (codeKey && stockMap.get(codeKey)) || stockMap.get(nameKey);
+    if (!stock) return sum;
+    const price = parseFloat(stock.price) || 0;
+    const qty = parseFloat(it.qty) || 0;
+    const mult = getConversionMultiplier(it.unit, stock.unit, it.name) ?? 1;
+    return sum + (qty * mult * price);
+  }, 0);
+}
 
 // Helper to determine if a user can approve a specific request
 // Admin always wins — required so approvals never get stuck when the
@@ -23,6 +56,8 @@ async function canApprove(userId, request) {
   if (request.module === "purchase_orders") {
     const po = await db("purchase_orders").where("id", request.resource_id).first();
     if (po) amount = parseFloat(po.total_amount || 0);
+  } else if (request.module === "indents") {
+    amount = await calculateIndentAmount(request.resource_id);
   } else if (request.module === "reconciliations") {
     // For stock adjustment / reconciliation, sum up the total absolute discrepancy cost
     const items = await db("stock_adjustments").where("id", request.resource_id).first(); // assuming single adjustment or parent
@@ -41,6 +76,9 @@ async function canApprove(userId, request) {
     .first();
 
   if (!rule) return true; // If no rule is defined, anyone or auto-approved
+  const smRole = await db("roles").where({ key: "store_manager" }).first();
+  const isStoreManager = smRole && roleIds.includes(smRole.id);
+  if (request.module === "indents" && isStoreManager) return true;
   return roleIds.includes(rule.role_id);
 }
 
@@ -57,6 +95,9 @@ async function listPending(req, res, next) {
       .where("status", "pending")
       .orderBy("created_at", "desc");
 
+    const smRole = await db("roles").where({ key: "store_manager" }).first();
+    const isStoreManager = smRole && roleIds.includes(smRole.id);
+
     // Filter based on whether user's roles match the expected role for the current step
     const filtered = [];
     for (const reqObj of pending) {
@@ -65,6 +106,8 @@ async function listPending(req, res, next) {
       if (reqObj.module === "purchase_orders") {
         const po = await db("purchase_orders").where("id", reqObj.resource_id).first();
         if (po) amount = parseFloat(po.total_amount || 0);
+      } else if (reqObj.module === "indents") {
+        amount = await calculateIndentAmount(reqObj.resource_id);
       }
       
       const rule = await db("approval_rules")
@@ -76,8 +119,8 @@ async function listPending(req, res, next) {
         })
         .first();
 
-      // If no rule matches, admin, or user has the role
-      if (!rule || isAdmin || roleIds.includes(rule.role_id)) {
+      // If no rule matches, admin, store manager for indents, or user has the role
+      if (!rule || isAdmin || roleIds.includes(rule.role_id) || (reqObj.module === "indents" && isStoreManager)) {
         // Enriched request with resource details
         let resourceDetails = {};
         if (reqObj.module === "purchase_orders") {
@@ -89,7 +132,12 @@ async function listPending(req, res, next) {
           resourceDetails = po;
         } else if (reqObj.module === "indents") {
           const ind = await db("indents").where("id", reqObj.resource_id).first();
-          resourceDetails = ind;
+          if (ind) {
+            const items = await db("indent_items").where("indent_id", ind.id);
+            resourceDetails = { ...ind, items, estimated_amount: parseFloat(amount.toFixed(2)) };
+          } else {
+            resourceDetails = ind;
+          }
         }
 
         filtered.push({
@@ -191,6 +239,8 @@ async function approveRequest(req, res, next) {
     if (request.module === "purchase_orders") {
       const po = await db("purchase_orders").where("id", request.resource_id).first();
       if (po) amount = parseFloat(po.total_amount || 0);
+    } else if (request.module === "indents") {
+      amount = await calculateIndentAmount(request.resource_id);
     }
 
     const nextRule = await db("approval_rules")

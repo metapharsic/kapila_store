@@ -5,6 +5,7 @@ import Input from "../../components/Input";
 import Pagination from "../../components/Pagination";
 import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS, UNITS } from "../../styles/colors";
+import { getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
 import { Plus, ArrowLeft, FileText, Truck, CheckCircle, XCircle, Clock, ChevronRight, Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle } from "lucide-react";
@@ -220,7 +221,11 @@ export default function PurchaseOrdersScreen() {
       next[idx] = { ...next[idx], [key]: val };
       if (key === "name") {
         const match = stocks.find((s) => s.name.toLowerCase() === val.toLowerCase());
-        if (match) next[idx].item_code = match.item_code;
+        if (match) {
+          next[idx].item_code = match.item_code;
+          if (match.unit) next[idx].unit = match.unit;
+          if (match.price && !next[idx].unit_price) next[idx].unit_price = match.price;
+        }
 
         if (val.trim()) {
           const itemKey = val.toLowerCase();
@@ -253,6 +258,14 @@ export default function PurchaseOrdersScreen() {
     if (!form.supplier_id) return flash("Please select a supplier.", COLORS.coral);
     const validLines = lineItems.filter((it) => it.name && it.qty && it.unit_price);
     if (validLines.length === 0) return flash("Add at least one item.", COLORS.coral);
+
+    const hasIncompatibleUnit = validLines.some((it) => {
+      const match = stocks.find((s) => s.name && s.name.toLowerCase() === it.name.toLowerCase());
+      return match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name);
+    });
+    if (hasIncompatibleUnit) {
+      return flash("Please fix items with dimensionally incompatible units before submitting PO.", COLORS.coral);
+    }
     setSubmitting(true);
     try {
       const payload = {
@@ -783,10 +796,31 @@ export default function PurchaseOrdersScreen() {
                     />
                   </td>
                   <td style={{ padding: "6px 10px" }}>
-                    <select value={it.unit} onChange={(e) => updateLine(idx, "unit", e.target.value)}
-                      style={{ background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 6, padding: "6px 8px", fontSize: 12, width: 70 }}>
-                      {UNITS.map((u) => <option key={u}>{u}</option>)}
-                    </select>
+                    {(() => {
+                      const match = stocks.find((s) => s.name && s.name.toLowerCase() === (it.name || "").toLowerCase());
+                      const allowedUnits = match?.unit ? getCompatibleUnits(match.unit) : UNITS;
+                      const isIncompatible = match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name);
+
+                      return (
+                        <div>
+                          <select value={it.unit} onChange={(e) => updateLine(idx, "unit", e.target.value)}
+                            style={{
+                              background: isIncompatible ? "#FEE2E2" : "#fff",
+                              border: `1px solid ${isIncompatible ? COLORS.coral : COLORS.border}`,
+                              color: COLORS.text,
+                              borderRadius: 6,
+                              padding: "6px 8px",
+                              fontSize: 12,
+                              width: 70
+                            }}>
+                            {allowedUnits.map((u) => <option key={u} value={u}>{u}</option>)}
+                          </select>
+                          {isIncompatible && (
+                            <div style={{ fontSize: 9, color: COLORS.coral, marginTop: 2 }}>Stock is {match.unit}</div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: "6px 10px" }}>
                     <input type="number" min="0" step="any" value={it.unit_price}

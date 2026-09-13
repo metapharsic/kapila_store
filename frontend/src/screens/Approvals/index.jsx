@@ -110,7 +110,8 @@ export default function ApprovalsScreen() {
               {pendingRequests.map((req) => {
                 const isSelected = selectedRequest?.id === req.id;
                 const poNumber = req.details?.po_number || "";
-                const totalText = req.details?.total_amount ? `₹${parseFloat(req.details.total_amount).toLocaleString()}` : "";
+                const val = req.details?.total_amount != null ? req.details?.total_amount : req.details?.estimated_amount;
+                const totalText = val != null && !isNaN(parseFloat(val)) && parseFloat(val) > 0 ? `₹${parseFloat(val).toLocaleString()}` : "";
                 const supplierText = req.details?.supplier_name || req.details?.dept || "System";
                 const sla = getSlaInfo(req.created_at);
                 
@@ -180,12 +181,14 @@ export default function ApprovalsScreen() {
                     {selectedRequest.module.replace("_", " ")} Details
                   </h3>
                 </div>
-                {selectedRequest.details?.total_amount && (
+                {(selectedRequest.details?.total_amount || selectedRequest.details?.estimated_amount) && (
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.accent }}>
-                      ₹{parseFloat(selectedRequest.details.total_amount).toLocaleString()}
+                      ₹{parseFloat(selectedRequest.details.total_amount || selectedRequest.details.estimated_amount).toLocaleString()}
                     </div>
-                    <span style={{ fontSize: 10, color: COLORS.muted }}>Total Cost</span>
+                    <span style={{ fontSize: 10, color: COLORS.muted }}>
+                      {selectedRequest.module === "indents" ? "Estimated Value" : "Total Cost"}
+                    </span>
                   </div>
                 )}
               </div>

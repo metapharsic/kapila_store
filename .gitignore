@@ -42,6 +42,7 @@ backend/exports/*.xlsx
 backend/exports/*.pdf
 backend/exports/*.dump
 backend/exports/*.sql
+backend/scratch/
 
 # System / IDEs
 .DS_Store
