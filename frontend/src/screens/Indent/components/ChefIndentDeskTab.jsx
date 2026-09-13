@@ -45,6 +45,7 @@ import {
   Mic,
   MicOff,
   MessageSquare,
+  Download,
 } from "lucide-react";
 
 export const CANONICAL_DEPTS = [
@@ -93,6 +94,229 @@ const clearChefDraft = (dept) => {
   } catch {}
 };
 
+// Requisition Slip Printable Generator (Multi-Agent Layout)
+export const printRequisitionSlip = (indent) => {
+  if (!indent) return;
+  const escapeHtml = (unsafe) => {
+    return (unsafe || "").toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
+  const formatDate = (d) => {
+    try {
+      const dateObj = new Date(d || Date.now());
+      return dateObj.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return String(d || "Today");
+    }
+  };
+
+  const items = indent.items || [];
+  const isDisposable = (it) => {
+    const cat = (it.category || "").toLowerCase();
+    const name = (it.name || "").toLowerCase();
+    return cat.includes("dispos") || cat.includes("pack") || [
+      "container", "box", "cup", "plate", "foil", "cling", "cover", "bag",
+      "paper", "napkin", "tissue", "straw", "spoon", "fork", "glove", "3cp", "5cp", "8cp"
+    ].some((kw) => name.includes(kw));
+  };
+
+  const ingredients = items.filter((it) => !isDisposable(it));
+  const disposables = items.filter((it) => isDisposable(it));
+
+  const renderItemRows = (list, offset = 0) => {
+    if (list.length === 0) {
+      return `<tr><td colspan="6" style="padding:10px;text-align:center;color:#64748b;font-style:italic;">No items specified in this section for this shift.</td></tr>`;
+    }
+    return list
+      .map((it, idx) => {
+        const qty = parseFloat(it.qty ?? it.requestedQty) || 0;
+        const rate = parseFloat(it.price ?? it.cost ?? it.unit_price) || 0;
+        const total = qty * rate;
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? "background:#f8fafc;" : ""}">
+            <td style="padding: 6px 8px; text-align: center; font-weight: 500; font-size: 11px;">${offset + idx + 1}</td>
+            <td style="padding: 6px 8px; font-weight: 600; font-size: 11px; color: #0f172a;">
+              ${escapeHtml(it.name)}
+              ${it.notes ? `<div style="font-size: 9px; color: #d97706; font-style: italic;">Note: ${escapeHtml(it.notes)}</div>` : ""}
+            </td>
+            <td style="padding: 6px 8px; font-size: 10px; color: #64748b;">${escapeHtml(it.category || (isDisposable(it) ? "Packaging" : "Grocery"))}</td>
+            <td style="padding: 6px 8px; text-align: right; font-weight: 700; font-size: 11px; color: #0f172a;">${qty} <span style="font-weight: 400; font-size: 9px; color: #64748b;">${escapeHtml(it.unit || "kg")}</span></td>
+            <td style="padding: 6px 8px; text-align: right; font-size: 11px; color: #475569;">${rate > 0 ? `₹${rate.toFixed(2)}` : "—"}</td>
+            <td style="padding: 6px 8px; text-align: right; font-weight: 700; font-size: 11px; color: #15803d;">${total > 0 ? `₹${total.toFixed(2)}` : "—"}</td>
+          </tr>
+        `;
+      })
+      .join("");
+  };
+
+  const calcTotal = (list) =>
+    list.reduce((sum, it) => sum + (parseFloat(it.qty ?? it.requestedQty) || 0) * (parseFloat(it.price ?? it.cost ?? it.unit_price) || 0), 0);
+  const ingTotal = calcTotal(ingredients);
+  const dispTotal = calcTotal(disposables);
+  const grandTotal = ingTotal + dispTotal;
+
+  const trackingId = indent.trackingNumber || (indent.id ? `IND-${indent.id}` : `DRAFT-${Date.now().toString().slice(-4)}`);
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("Please allow popups to preview and print requisition slips.");
+    return;
+  }
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Material Requisition Slip - ${escapeHtml(indent.dept || "Store")} (#${trackingId})</title>
+        <style>
+          @page { size: A4; margin: 10mm 12mm; }
+          * { box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 16px; color: #0f172a; margin: 0; background: #fff; line-height: 1.35; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; }
+          .hotel-name { font-size: 19px; font-weight: 800; letter-spacing: 0.04em; color: #0f172a; margin: 0; }
+          .hotel-sub { font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+          .badge-box { text-align: right; }
+          .slip-title { font-size: 14px; font-weight: 800; color: #1e293b; letter-spacing: 0.03em; text-transform: uppercase; margin: 0; }
+          .tracking-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 800; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; margin-top: 3px; }
+          .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 11px; }
+          .meta-item strong { display: block; color: #64748b; font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+          .notes-box { background: #fffbeb; border: 1.5px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 7px 12px; margin-bottom: 12px; font-size: 11px; color: #92400e; font-weight: 600; }
+          .section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 5px 8px; background: #1e293b; color: #fff; border-radius: 4px 4px 0 0; margin-top: 10px; display: flex; justify-content: space-between; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 4px; border: 1px solid #cbd5e1; }
+          th { background: #f1f5f9; padding: 5px 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; color: #475569; border-bottom: 1.5px solid #cbd5e1; text-align: left; }
+          .grand-total-card { display: flex; justify-content: space-between; align-items: center; background: #0f172a; color: #fff; border-radius: 6px; padding: 8px 14px; margin: 12px 0; }
+          .grand-total-val { font-size: 15px; font-weight: 800; color: #34d399; }
+          .sign-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+          .sign-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; text-align: center; }
+          .sign-box-title { font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; background: #f8fafc; padding: 2px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; }
+          .sign-line { font-size: 8px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 3px; }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <h1 class="hotel-name">HOTEL KAPILA</h1>
+            <div class="hotel-sub">Central Stores & Kitchen Material Management System</div>
+          </div>
+          <div class="badge-box">
+            <div class="slip-title">Material Requisition Slip</div>
+            <div class="tracking-pill">#${escapeHtml(trackingId)}</div>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <strong>Department</strong>
+            ${escapeHtml(indent.dept || "TIFFINS")}
+          </div>
+          <div class="meta-item">
+            <strong>Requisition Date</strong>
+            ${formatDate(indent.date)}
+          </div>
+          <div class="meta-item">
+            <strong>Shift & Production</strong>
+            ${escapeHtml(indent.shift || "MORNING")} SHIFT
+          </div>
+          <div class="meta-item">
+            <strong>Priority Level</strong>
+            ${escapeHtml(indent.priority || "NORMAL")}
+          </div>
+        </div>
+
+        ${indent.remarks ? `
+          <div class="notes-box">
+            💬 <strong>Station Prep Notes:</strong> "${escapeHtml(indent.remarks.trim())}"
+          </div>
+        ` : ""}
+
+        <div class="section-title">
+          <span>Section A: Kitchen Ingredients & Raw Materials (${ingredients.length} items)</span>
+          <span>Est. ₹${ingTotal.toFixed(2)}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 30px; text-align: center;">#</th>
+              <th>Item Description</th>
+              <th style="width: 110px;">Category</th>
+              <th style="width: 90px; text-align: right;">Requested</th>
+              <th style="width: 75px; text-align: right;">Est Rate</th>
+              <th style="width: 85px; text-align: right;">Est Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderItemRows(ingredients, 0)}
+          </tbody>
+        </table>
+
+        <div class="section-title" style="background: #92400e;">
+          <span>Section B: Packaging, Disposables & Service Materials (${disposables.length} items)</span>
+          <span>Est. ₹${dispTotal.toFixed(2)}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 30px; text-align: center;">#</th>
+              <th>Disposable Item Description</th>
+              <th style="width: 110px;">Packaging Type</th>
+              <th style="width: 90px; text-align: right;">Requested</th>
+              <th style="width: 75px; text-align: right;">Est Rate</th>
+              <th style="width: 85px; text-align: right;">Est Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderItemRows(disposables, ingredients.length)}
+          </tbody>
+        </table>
+
+        <div class="grand-total-card">
+          <div>
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8;">Consolidated Requisition Valuation</div>
+            <div style="font-size: 11px; color: #e2e8f0; font-weight: 500;">${items.length} Total Lines (${ingredients.length} Food + ${disposables.length} Packaging)</div>
+          </div>
+          <div class="grand-total-val">₹${grandTotal.toFixed(2)}</div>
+        </div>
+
+        <div class="sign-grid">
+          <div class="sign-box">
+            <div class="sign-box-title">1. Requisitioned By</div>
+            <div class="sign-line">Chef Signature & Timestamp</div>
+          </div>
+          <div class="sign-box">
+            <div class="sign-box-title">2. Verified & Issued By</div>
+            <div class="sign-line">Central Storekeeper Signature</div>
+          </div>
+          <div class="sign-box">
+            <div class="sign-box-title">3. Approved By</div>
+            <div class="sign-line">Store Manager / In-Charge</div>
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          };
+        </script>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+};
+
 export default function ChefIndentDeskTab({ onIndentCreated }) {
   const { user, roles } = useAuth();
   const { stocks = [] } = useAppContext();
@@ -110,6 +334,14 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
   const [chefNotes, setChefNotes] = useState("");
   const [isRecordingNote, setIsRecordingNote] = useState(false);
   const [draftRestoredNotice, setDraftRestoredNotice] = useState(null);
+
+  // Disposables & Consolidated Indent State
+  const [disposablesList, setDisposablesList] = useState([]);
+  const [disposablesLoading, setDisposablesLoading] = useState(false);
+  const [disposablesSearch, setDisposablesSearch] = useState("");
+  const [showDisposablesStation, setShowDisposablesStation] = useState(false);
+  const [lastPreparedIndent, setLastPreparedIndent] = useState(null);
+  const [downloadingExcel, setDownloadingExcel] = useState(false);
 
   const PRESET_PREP_NOTES = [
     "⚡ Morning Prep (6 AM)",
@@ -369,9 +601,89 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
     }
   };
 
+  // Load disposables catalog
+  const loadDisposables = async () => {
+    try {
+      setDisposablesLoading(true);
+      const res = await api.indents.getDisposables();
+      if (res.success && res.data) {
+        setDisposablesList(res.data);
+      }
+    } catch (err) {
+      console.error("Failed to load disposables catalog:", err);
+    } finally {
+      setDisposablesLoading(false);
+    }
+  };
+
+  const handleAddDisposable = (disp, addQty = 1) => {
+    const qty = parseFloat(addQty) || 1;
+    setLineItems((prev) => {
+      const existingIdx = prev.findIndex(
+        (it) => it.name.toLowerCase() === disp.name.toLowerCase()
+      );
+      if (existingIdx >= 0) {
+        const updated = [...prev];
+        const curQty = parseFloat(updated[existingIdx].requestedQty) || 0;
+        const newQty = curQty + qty;
+        updated[existingIdx] = {
+          ...updated[existingIdx],
+          requestedQty: newQty,
+          selected: newQty > 0,
+        };
+        return updated;
+      }
+      const newItem = {
+        id: `disp-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        name: disp.name,
+        sku: disp.item_code || "KPL-PKG",
+        unit: disp.unit || "pcs",
+        pack_size: `1 ${disp.unit || "pcs"}`,
+        cost: parseFloat(disp.price || 0),
+        in_stock: parseFloat(disp.current_stock || 0),
+        requestedQty: qty,
+        selected: true,
+        notes: "Packaging & Disposable Material",
+        category: disp.category || "Disposal",
+        is_disposable: true,
+      };
+      return [newItem, ...prev];
+    });
+    setMsg({
+      type: "success",
+      text: `Added packaging item "${disp.name}" (${qty} ${disp.unit || "pcs"}) to active requisition! ✓`,
+    });
+  };
+
+  const handleDownloadIndentExcel = async (indent) => {
+    if (!indent) return;
+    const targetId = indent.id || indent.indentId;
+    if (!targetId) {
+      setMsg({ type: "error", text: "Cannot download requisition: missing ID." });
+      return;
+    }
+    try {
+      setDownloadingExcel(true);
+      const deptTag = (indent.dept || indent.department || selectedDept || "DEPT").replace(/[^a-zA-Z0-9]/g, "_");
+      await api.indents.exportIndentExcel(
+        targetId,
+        `Kapila_Indent_Requisition_${deptTag}_#${targetId}.xlsx`
+      );
+      setMsg({
+        type: "success",
+        text: `Downloaded requisition Excel workbook for #${targetId} (${indent.dept || indent.department}) ✓`,
+      });
+    } catch (err) {
+      setMsg({ type: "error", text: `Failed to download Excel: ${err.message}` });
+    } finally {
+      setDownloadingExcel(false);
+    }
+  };
+
   useEffect(() => {
     loadSubcategories();
     loadTelemetry();
+    loadDisposables();
   }, []);
 
   useEffect(() => {
@@ -644,6 +956,18 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
       const res = await api.indents.chefSubmit(payload);
       if (res.success) {
         clearChefDraft(selectedDept);
+        const submittedSlip = {
+          id: res.data.id || res.data.indentId,
+          trackingNumber: res.data.trackingNumber,
+          dept: selectedDept,
+          shift,
+          priority,
+          remarks: payload.remarks,
+          items: selectedItems,
+          totalEstimatedValue: res.data.totalEstimatedValue,
+          date: new Date().toISOString().slice(0, 10),
+        };
+        setLastPreparedIndent(submittedSlip);
         setLineItems((prev) =>
           prev.map((it) => ({
             ...it,
@@ -917,32 +1241,102 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
         </button>
       </div>
 
-      {/* Flash Banner Notice */}
+      {/* Flash Banner Notice & Instant Requisition Slip Downloads */}
       {msg && (
         <div
           style={{
             padding: "12px 16px",
             borderRadius: 8,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: msg.type === "success" ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+            flexDirection: "column",
+            gap: 8,
+            background: msg.type === "success" ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.15)",
             border: `1px solid ${msg.type === "success" ? "#10b981" : "#ef4444"}`,
             color: msg.type === "success" ? "#065f46" : "#991b1b",
-            fontWeight: 600,
             fontSize: "0.88rem",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {msg.type === "success" ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-            <span>{msg.text}</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
+              {msg.type === "success" ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+              <span>{msg.text}</span>
+            </div>
+            <button
+              onClick={() => {
+                setMsg(null);
+                setLastPreparedIndent(null);
+              }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "inherit" }}
+            >
+              <X size={16} />
+            </button>
           </div>
-          <button
-            onClick={() => setMsg(null)}
-            style={{ background: "none", border: "none", cursor: "pointer" }}
-          >
-            <X size={16} />
-          </button>
+
+          {/* Direct Download & Print Actions after Preparing Indent */}
+          {msg.type === "success" && lastPreparedIndent && (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 4,
+                paddingTop: 8,
+                borderTop: "1px dashed rgba(16, 185, 129, 0.3)",
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              <button
+                type="button"
+                disabled={downloadingExcel}
+                onClick={() => handleDownloadIndentExcel(lastPreparedIndent)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "7px 16px",
+                  borderRadius: 6,
+                  background: "#047857",
+                  color: "#ffffff",
+                  border: "none",
+                  fontSize: "0.82rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <Download size={14} />
+                <span>{downloadingExcel ? "Generating Excel..." : "Download Requisition Slip (.xlsx)"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => printRequisitionSlip(lastPreparedIndent)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "7px 16px",
+                  borderRadius: 6,
+                  background: "#0f172a",
+                  color: "#ffffff",
+                  border: "1px solid #334155",
+                  fontSize: "0.82rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <Printer size={14} />
+                <span>Print / Save PDF Requisition Slip</span>
+              </button>
+
+              <span style={{ fontSize: "0.75rem", color: "#065f46", fontWeight: 500 }}>
+                ✓ Includes Kitchen Raw Materials + Packaging Disposables in one unified document
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -1321,6 +1715,29 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                 >
                   <Plus size={15} />
                   <span>{showAddItemForm ? "Close Add Item" : "+ Add Item to Indent"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDisposablesStation(!showDisposablesStation)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "7px 14px",
+                    borderRadius: 6,
+                    border: `1.5px solid ${showDisposablesStation ? "#6366f1" : "rgba(99, 102, 241, 0.4)"}`,
+                    background: showDisposablesStation ? "#6366f1" : "rgba(99, 102, 241, 0.12)",
+                    color: showDisposablesStation ? "#ffffff" : "#4338ca",
+                    fontSize: "0.82rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    boxShadow: showDisposablesStation ? "0 2px 6px rgba(99, 102, 241, 0.3)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  <Package size={15} />
+                  <span>{showDisposablesStation ? "Close Disposables" : "+ Packaging & Disposables"}</span>
                 </button>
               </div>
             </div>
@@ -1761,6 +2178,179 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
               </div>
             )}
 
+            {/* Packaging & Disposables Station Panel */}
+            {showDisposablesStation && (
+              <div
+                style={{
+                  background: "rgba(99, 102, 241, 0.04)",
+                  border: "1.5px solid rgba(99, 102, 241, 0.4)",
+                  borderRadius: 10,
+                  padding: "16px 18px",
+                  marginBottom: 16,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 12,
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: "1.2rem" }}>📦</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: "0.95rem", color: COLORS.text }}>
+                        Packaging & Disposables Station — Central Stores Stock
+                      </div>
+                      <div style={{ fontSize: "0.74rem", color: COLORS.muted }}>
+                        Unified into <strong>Section B (Packaging & Disposables)</strong> of this exact {selectedDept} requisition slip.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDisposablesStation(false)}
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                      fontSize: "0.75rem",
+                      cursor: "pointer",
+                      color: COLORS.muted,
+                    }}
+                  >
+                    ✕ Close Station
+                  </button>
+                </div>
+
+                {/* Search Disposables */}
+                <div style={{ marginBottom: 12, position: "relative" }}>
+                  <input
+                    type="text"
+                    value={disposablesSearch}
+                    onChange={(e) => setDisposablesSearch(e.target.value)}
+                    placeholder="Search packaging materials (e.g. 500ml container, foil, cling wrap, carry bag, meal tray)..."
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px 8px 32px",
+                      borderRadius: 6,
+                      border: `1px solid ${COLORS.border}`,
+                      background: COLORS.surface,
+                      fontSize: "0.85rem",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <Search size={15} style={{ position: "absolute", left: 10, top: 10, color: COLORS.muted }} />
+                </div>
+
+                {/* Disposables Items Grid */}
+                {disposablesLoading ? (
+                  <div style={{ textAlign: "center", padding: "20px 0", color: COLORS.muted, fontSize: "0.85rem" }}>
+                    Loading Central Stores disposables catalog...
+                  </div>
+                ) : disposablesList.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "20px 0", color: COLORS.muted, fontSize: "0.85rem" }}>
+                    No packaging materials found.
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                      gap: 10,
+                      maxHeight: 320,
+                      overflowY: "auto",
+                      paddingRight: 4,
+                    }}
+                  >
+                    {disposablesList
+                      .filter((disp) => {
+                        if (!disposablesSearch.trim()) return true;
+                        const q = disposablesSearch.toLowerCase();
+                        return (
+                          (disp.name && disp.name.toLowerCase().includes(q)) ||
+                          (disp.item_code && disp.item_code.toLowerCase().includes(q)) ||
+                          (disp.category && disp.category.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((disp) => (
+                        <div
+                          key={disp.id || disp.name}
+                          style={{
+                            background: COLORS.surface,
+                            border: `1px solid ${COLORS.border}`,
+                            borderRadius: 8,
+                            padding: "10px 12px",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: "0.84rem", color: COLORS.text }}>
+                                {disp.name}
+                              </div>
+                              <div style={{ fontSize: "0.7rem", color: COLORS.muted }}>
+                                {disp.item_code || "KPL-PKG"} • {disp.category || "Disposal"}
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                padding: "2px 6px",
+                                borderRadius: 4,
+                                fontSize: "0.7rem",
+                                fontWeight: 700,
+                                background: (disp.current_stock || 0) > 20 ? "#d1fae5" : "#fee2e2",
+                                color: (disp.current_stock || 0) > 20 ? "#065f46" : "#991b1b",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Stock: {disp.current_stock || 0} {disp.unit || "pcs"}
+                            </span>
+                          </div>
+
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: COLORS.text }}>
+                              ₹{disp.price || 0} / {disp.unit || "pcs"}
+                            </span>
+                            <div style={{ display: "flex", gap: 4 }}>
+                              {[1, 5, 25, 50, 100].map((stepQty) => (
+                                <button
+                                  key={stepQty}
+                                  type="button"
+                                  onClick={() => handleAddDisposable(disp, stepQty)}
+                                  style={{
+                                    padding: "3px 7px",
+                                    borderRadius: 4,
+                                    border: "1px solid rgba(99, 102, 241, 0.4)",
+                                    background: "rgba(99, 102, 241, 0.08)",
+                                    color: "#4338ca",
+                                    fontSize: "0.72rem",
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                    transition: "all 0.1s ease",
+                                  }}
+                                  title={`Add ${stepQty} ${disp.unit || "pcs"} to requisition`}
+                                >
+                                  +{stepQty}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Line Items Table */}
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
@@ -1806,9 +2396,23 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                             />
                           </td>
                           <td style={{ padding: "10px 12px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                               <span style={{ fontWeight: 600, color: COLORS.text }}>{it.name}</span>
-                              {it.isAdHoc && (
+                              {it.is_disposable || it.category === "Disposal" || it.category === "Disposables" ? (
+                                <span
+                                  style={{
+                                    padding: "2px 6px",
+                                    borderRadius: 4,
+                                    fontSize: "0.68rem",
+                                    fontWeight: 700,
+                                    background: "rgba(99, 102, 241, 0.18)",
+                                    color: "#4338ca",
+                                    border: "1px solid rgba(99, 102, 241, 0.3)",
+                                  }}
+                                >
+                                  📦 PACKAGING
+                                </span>
+                              ) : it.isAdHoc ? (
                                 <span
                                   style={{
                                     padding: "2px 6px",
@@ -1821,7 +2425,7 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                                 >
                                   ADDED
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                             <div style={{ fontSize: "0.7rem", color: COLORS.muted }}>SKU: {it.sku || "N/A"}</div>
                           </td>
@@ -2270,15 +2874,59 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                           </span>
                         </td>
                         <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          <Btn
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleSelectIndentForDetail(ind)}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-                          >
-                            <Eye size={13} />
-                            <span>Review & Fulfill</span>
-                          </Btn>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadIndentExcel(ind)}
+                              title="Download Requisition Excel (.xlsx)"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                padding: "4px 8px",
+                                borderRadius: 5,
+                                border: "1px solid #10b981",
+                                background: "rgba(16, 185, 129, 0.1)",
+                                color: "#059669",
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Download size={12} />
+                              <span>Excel</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => printRequisitionSlip(ind)}
+                              title="Print / Save PDF Requisition Voucher"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                padding: "4px 8px",
+                                borderRadius: 5,
+                                border: `1px solid ${COLORS.border}`,
+                                background: COLORS.surface,
+                                color: COLORS.text,
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Printer size={12} />
+                              <span>Slip</span>
+                            </button>
+                            <Btn
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleSelectIndentForDetail(ind)}
+                              style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                            >
+                              <Eye size={13} />
+                              <span>Review & Fulfill</span>
+                            </Btn>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -2300,9 +2948,51 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                     Target Date: {activeIndentDetail.date} · Current Status: {activeIndentDetail.status?.toUpperCase()}
                   </span>
                 </div>
-                <Btn variant="outline" size="sm" onClick={() => setActiveIndentDetail(null)}>
-                  <X size={14} />
-                </Btn>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadIndentExcel(activeIndentDetail)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "5px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #10b981",
+                      background: "rgba(16, 185, 129, 0.1)",
+                      color: "#059669",
+                      fontSize: "0.78rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Download size={13} />
+                    <span>Download Excel</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => printRequisitionSlip(activeIndentDetail)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "5px 10px",
+                      borderRadius: 6,
+                      border: `1px solid ${COLORS.border}`,
+                      background: COLORS.surface,
+                      color: COLORS.text,
+                      fontSize: "0.78rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Printer size={13} />
+                    <span>Print Slip</span>
+                  </button>
+                  <Btn variant="outline" size="sm" onClick={() => setActiveIndentDetail(null)}>
+                    <X size={14} />
+                  </Btn>
+                </div>
               </div>
 
               {/* Chef's Station Prep Notes Display */}

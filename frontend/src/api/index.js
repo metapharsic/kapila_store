@@ -55,6 +55,13 @@ export const indents = {
       "Automated_Indent_Pattern_and_Forecasting_Engine.xlsx"
     ),
   previewAutomatedPattern: () => api.get("/indents/automated-pattern-preview"),
+  getDisposables: (params) => api.get("/indents/disposables", params),
+  exportIndentExcel: (id, filename) =>
+    api.download(
+      `/indents/${id}/export-excel`,
+      {},
+      filename || `Kapila_Indent_Requisition_#${id}.xlsx`
+    ),
 };
 
 export const issuances = {

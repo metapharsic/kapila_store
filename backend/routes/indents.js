@@ -6,6 +6,7 @@ const { requirePermission, requireAnyPermission } = require("../middleware/autho
 
 router.get("/",      requireAnyPermission(["indents.view", "issuances.view", "issuances.create"]), paginate(["date", "created_at", "dept", "status"]), ctrl.list);
 router.get("/telemetry", requireAnyPermission(["indents.view", "dashboard.view"]), ctrl.getTelemetry);
+router.get("/disposables", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getDisposables);
 router.get("/subcategories", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getSubcategories);
 router.get("/subcategories/:idOrCode", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getSubcategoryDetails);
 router.get("/templates", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getTemplates);
@@ -13,6 +14,7 @@ router.get("/templates/:name", requireAnyPermission(["indents.view", "indents.cr
 router.get("/automated-pattern-excel", requireAnyPermission(["indents.view", "stock.export", "dashboard.export"]), ctrl.exportAutomatedIndentExcel);
 router.get("/automated-pattern-preview", requireAnyPermission(["indents.view", "dashboard.view"]), ctrl.getAutomatedIndentPreview);
 router.get("/recommendations", requirePermission("indents.view"), ctrl.getRecommendations);
+router.get("/:id/export-excel", requireAnyPermission(["indents.view", "stock.export", "dashboard.export"]), ctrl.exportSingleIndentExcel);
 router.post("/subcategories", requirePermission("indents.create"), ctrl.createSubcategory);
 router.post("/subcategories/:id/items", requirePermission("indents.create"), ctrl.createSubcategoryItem);
 router.post("/chef-submit", requirePermission("indents.create"), ctrl.chefSubmit);

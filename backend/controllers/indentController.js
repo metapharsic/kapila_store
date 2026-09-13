@@ -783,6 +783,74 @@ async function processFulfillment(req, res, next) {
   }
 }
 
+// GET /api/indents/disposables
+async function getDisposables(req, res, next) {
+  try {
+    const search = req.query.search ? String(req.query.search).trim() : "";
+    let qb = db("stock")
+      .where((builder) => {
+        builder
+          .whereILike("category", "%dispos%")
+          .orWhereILike("category", "%pack%")
+          .orWhereILike("name", "%container%")
+          .orWhereILike("name", "%box%")
+          .orWhereILike("name", "%foil%")
+          .orWhereILike("name", "%cling%")
+          .orWhereILike("name", "%cup%")
+          .orWhereILike("name", "%bag%")
+          .orWhereILike("name", "%napkin%")
+          .orWhereILike("name", "%paper%");
+      })
+      .select(
+        "name",
+        "unit",
+        "category",
+        db.raw("MAX(item_code) as item_code"),
+        db.raw("MAX(price) as price"),
+        db.raw("SUM(remaining) as current_stock")
+      )
+      .groupBy("name", "unit", "category")
+      .orderBy("name", "asc");
+
+    if (search) {
+      qb = qb.andWhereILike("name", `%${search}%`);
+    }
+
+    const items = await qb.limit(100);
+    res.json({ success: true, data: items });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/indents/:id/export-excel
+async function exportSingleIndentExcel(req, res, next) {
+  try {
+    const { generateIndentRequisitionWorkbook } = require("../services/indentSlipExportService");
+    const workbook = await generateIndentRequisitionWorkbook(req.params.id, {
+      userName: req.user?.name || "Store Administrator",
+    });
+
+    const indent = await db("indents").where("id", req.params.id).first();
+    const deptTag = indent ? (indent.dept || "DEPT").replace(/[^a-zA-Z0-9]/g, "_") : "GENERAL";
+    const filename = `Kapila_Indent_Requisition_${deptTag}_#${req.params.id}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   list, 
   create, 
@@ -804,6 +872,8 @@ module.exports = {
   createSubcategoryItem,
   chefSubmit,
   processFulfillment,
+  getDisposables,
+  exportSingleIndentExcel,
 };
 
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Section from "../../components/Section";
 import SmartIndentTab from "./components/SmartIndentTab";
-import ChefIndentDeskTab from "./components/ChefIndentDeskTab";
+import ChefIndentDeskTab, { printRequisitionSlip } from "./components/ChefIndentDeskTab";
 import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
@@ -16,7 +16,7 @@ import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { useLocalSpeech } from "../../hooks/useLocalSpeech";
 import { getConversionMultiplier, getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
-import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList, FileSpreadsheet, Send, Sparkles, RotateCcw, TrendingUp, AlertTriangle, CheckCircle2, Minus } from "lucide-react";
+import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList, FileSpreadsheet, Send, Sparkles, RotateCcw, TrendingUp, AlertTriangle, CheckCircle2, Minus, Download } from "lucide-react";
 import EnhancedItemAdditionModal from "./EnhancedItemAdditionModal";
 
 // Guaranteed-unique row id. Date.now()+Math.random() collides because the large
@@ -2344,21 +2344,15 @@ export default function IndentScreen() {
                       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                         <thead>
                           <tr style={{ background: "#F9FAFB", position: "sticky", top: 0, zIndex: 1 }}>
-                            {(() => {
-                              const headers = ["#", "Department", "Date", "Type", "Item Code", "Item Name", "Qty", "Unit", "Status"];
-                              if (hasPermission && hasPermission("indents.delete")) {
-                                headers.push("Actions");
-                              }
-                              return headers.map((h) => (
-                                <th key={h} style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", textAlign: "left", padding: "8px 10px", borderBottom: "2px solid #E5E7EB", borderRight: "1px solid #E5E7EB", letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{h}</th>
-                              ));
-                            })()}
+                            {["#", "Department", "Date", "Type", "Item Code", "Item Name", "Qty", "Unit", "Status", "Slip & Actions"].map((h) => (
+                              <th key={h} style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", textAlign: "left", padding: "8px 10px", borderBottom: "2px solid #E5E7EB", borderRight: "1px solid #E5E7EB", letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{h}</th>
+                            ))}
                           </tr>
                         </thead>
                         <tbody>
                           {items.length === 0 ? (
                             <tr>
-                              <td colSpan={hasPermission && hasPermission("indents.delete") ? 10 : 9} style={{ textAlign: "center", padding: "40px 20px" }}>
+                              <td colSpan={10} style={{ textAlign: "center", padding: "40px 20px" }}>
                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                                   <Inbox size={32} color="#D1D5DB" />
                                   <span style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "8px" }}>No indent requests found</span>
@@ -2375,21 +2369,81 @@ export default function IndentScreen() {
                               const isExpanded = expandedIndentIds.has(ind.id);
 
                               const hasDel = hasPermission && hasPermission("indents.delete");
-                              const actionsContent = hasDel ? (
-                                ind.status !== "issued" && ind.status !== "partially_issued" ? (
+                              const handleDownloadHistoryExcel = async (e, indent) => {
+                                e.stopPropagation();
+                                try {
+                                  const deptTag = (indent.dept || "DEPT").replace(/[^a-zA-Z0-9]/g, "_");
+                                  await api.indents.exportIndentExcel(
+                                    indent.id,
+                                    `Kapila_Indent_Requisition_${deptTag}_#${indent.id}.xlsx`
+                                  );
+                                } catch (err) {
+                                  alert(`Failed to download Excel: ${err.message}`);
+                                }
+                              };
+
+                              const actionsContent = (
+                                <div style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteIndent(ind.id); }}
+                                    type="button"
+                                    onClick={(e) => handleDownloadHistoryExcel(e, ind)}
+                                    title="Download formatted Requisition Excel (.xlsx)"
                                     style={{
-                                      background: "#fee2e2", color: "#ef4444", border: "1px solid #fca5a5",
-                                      padding: "4px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: 600, cursor: "pointer"
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                      padding: "3px 6px",
+                                      borderRadius: 4,
+                                      border: "1px solid #10b981",
+                                      background: "rgba(16, 185, 129, 0.1)",
+                                      color: "#059669",
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
                                     }}
                                   >
-                                    Delete
+                                    <Download size={11} />
+                                    <span>Excel</span>
                                   </button>
-                                ) : (
-                                  <span style={{ fontSize: "11px", color: "#9ca3af" }} title="Issuance done — cannot delete">issued</span>
-                                )
-                              ) : null;
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      printRequisitionSlip(ind);
+                                    }}
+                                    title="Print / Save PDF Requisition Voucher"
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                      padding: "3px 6px",
+                                      borderRadius: 4,
+                                      border: "1px solid #cbd5e1",
+                                      background: "#ffffff",
+                                      color: "#334155",
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    <Printer size={11} />
+                                    <span>Slip</span>
+                                  </button>
+                                  {hasDel && (
+                                    ind.status !== "issued" && ind.status !== "partially_issued" ? (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteIndent(ind.id); }}
+                                        style={{
+                                          background: "#fee2e2", color: "#ef4444", border: "1px solid #fca5a5",
+                                          padding: "3px 6px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, cursor: "pointer"
+                                        }}
+                                      >
+                                        Delete
+                                      </button>
+                                    ) : null
+                                  )}
+                                </div>
+                              );
 
                               const rows = [];
                               
@@ -2420,14 +2474,12 @@ export default function IndentScreen() {
                                     {rowCount} Items (Click to {isExpanded ? "collapse" : "expand"}) <span style={{fontSize: 9}}>{isExpanded ? "▲" : "▼"}</span>
                                   </td>
                                   
-                                  <td style={{ padding: "8px 10px", verticalAlign: "middle", textAlign: "center", borderRight: hasDel ? "1px solid #E5E7EB" : "none" }}>
+                                  <td style={{ padding: "8px 10px", verticalAlign: "middle", textAlign: "center", borderRight: "1px solid #E5E7EB" }}>
                                     <span style={{ background: statusInfo.bg, color: statusInfo.color, padding: "3px 10px", borderRadius: "20px", fontSize: "10px", fontWeight: 600, display: "inline-block", whiteSpace: "nowrap" }}>{statusInfo.text}</span>
                                   </td>
-                                  {hasDel && (
-                                    <td style={{ padding: "8px 10px", verticalAlign: "middle", textAlign: "center" }}>
-                                      {actionsContent}
-                                    </td>
-                                  )}
+                                  <td style={{ padding: "8px 10px", verticalAlign: "middle", textAlign: "center" }}>
+                                    {actionsContent}
+                                  </td>
                                 </tr>
                               );
 
@@ -2437,7 +2489,7 @@ export default function IndentScreen() {
                                     <tr key={`empty-${ind.id}`} style={{ background: "#f8fafc", borderBottom: "2px solid #E5E7EB" }}>
                                       <td colSpan={4} style={{ borderRight: "1px solid #E5E7EB", borderLeft: `3px solid ${isAdhoc ? "#f59e0b" : "#22c55e"}` }}></td>
                                       <td colSpan={4} style={{ padding: "12px", textAlign: "center", fontSize: 11, color: "#9ca3af", borderRight: "1px solid #E5E7EB" }}>No items found</td>
-                                      <td colSpan={hasDel ? 2 : 1}></td>
+                                      <td colSpan={2}></td>
                                     </tr>
                                   );
                                 } else {
@@ -2449,8 +2501,8 @@ export default function IndentScreen() {
                                         <td style={{ padding: "6px 10px", borderRight: "1px solid #E5E7EB", color: "#1e293b", fontWeight: 500, minWidth: 160 }}>{it.name}</td>
                                         <td style={{ padding: "6px 10px", borderRight: "1px solid #E5E7EB", color: "#374151", textAlign: "right", fontWeight: 600, whiteSpace: "nowrap" }}>{it.qty}</td>
                                         <td style={{ padding: "6px 10px", borderRight: "1px solid #E5E7EB", color: "#6B7280", fontSize: 11, whiteSpace: "nowrap" }}>{it.unit || "kg"}</td>
-                                        <td style={{ borderRight: hasDel ? "1px solid #E5E7EB" : "none" }}></td>
-                                        {hasDel && <td></td>}
+                                        <td style={{ borderRight: "1px solid #E5E7EB" }}></td>
+                                        <td></td>
                                       </tr>
                                     );
                                   });

@@ -43,6 +43,8 @@ kapila/
 3. **Indent** — Department nightly material requests
    - *Recipe Planner & Auto-Indent*: Scaled recipe-based portion calculator and historical weekday average trend recommendation engine.
    - *Multi-Agent Indent Processor & Harmonizer*: Multi-department batch ingestion, item alias normalization, unit conversion reconciliation.
+   - *Consolidated Disposables & Single Indent Protocol*: Ingests and bundles Central Stores packaging & disposable materials (containers, foil, cling wrap, carry bags, plates, cutlery) directly alongside kitchen food ingredients into **one single unified indent document** across all 9 canonical kitchen departments (`TIFFINS`, `STAFF`, `SI-MEALS`, `NORTH INDIAN`, `CHAT & SOFTY`, `CHINESE & DOSA`, `MOCKTAILS & CONTINENTAL`, `RESTAURANT`, `ROOM SERVICE`).
+   - *Requisition Slip & Export Compiler Agent*: Generates branded Hotel Kapila `.xlsx` workbooks (Section A: Kitchen Ingredients & Raw Materials, Section B: Packaging & Disposables, station prep notes callouts, totals, and physical 3-tier signature blocks) and instant browser print/PDF vouchers (`printRequisitionSlip`) immediately upon preparation, in the Store Approvals Queue, and in Master History.
 4. **Issuance** — Storekeeper issues goods, AI scan of paper forms, auto batch deduction
 5. **Production** — Plates/portions logged per department
 6. **Leftovers** — Unsold food carried forward

@@ -367,6 +367,7 @@ class IndentAgentService {
     return {
       success: true,
       data: {
+        id: result.indent.id,
         indentId: result.indent.id,
         trackingNumber: result.trackingNumber,
         department: canonicalDept,
