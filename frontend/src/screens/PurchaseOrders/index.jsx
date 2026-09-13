@@ -13,7 +13,7 @@ import {
   Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle,
   Download, Search, RefreshCw, Send, CheckCircle2, ChevronDown, ChevronUp,
   Building2, Calendar, FileSpreadsheet, Sparkles, TrendingDown, Layers,
-  ExternalLink, Eye, Trash2, ArrowRight
+  ExternalLink, Eye, Trash2, ArrowRight, Pencil, X
 } from "lucide-react";
 import RateComparisonModal from "./RateComparisonModal";
 import PrintPOModal from "./PrintPOModal";
@@ -96,6 +96,22 @@ export default function PurchaseOrdersScreen() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [compareItemCode, setCompareItemCode] = useState("");
   const [printModalOpen, setPrintModalOpen] = useState(false);
+
+  // Edit PO state
+  const [editingPoId, setEditingPoId] = useState(null);
+  const [editingPo, setEditingPo] = useState(null);
+
+  // Append Item state
+  const [appendingPo, setAppendingPo] = useState(null);
+  const [appendItemData, setAppendItemData] = useState({ item_code: "", name: "", qty: "1", unit: "kg", unit_price: "" });
+  const [appending, setAppending] = useState(false);
+
+  // Delete confirmation state
+  const [deleteConfirmPo, setDeleteConfirmPo] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Auto-provisioning state
+  const [isProvisioning, setIsProvisioning] = useState(false);
 
   // Multi-agent swarm audit state
   const [isAuditing, setIsAuditing] = useState(false);
@@ -396,8 +412,15 @@ export default function PurchaseOrdersScreen() {
           unit_price: parseFloat(it.unit_price),
         })),
       };
-      const res = await api.purchaseOrders.create(payload);
-      flash(grandTotal > 10000 ? "PO routed to Approvals Queue (> ₹10,000 threshold) ✓" : "Purchase Order created ✓");
+      if (editingPoId) {
+        await api.purchaseOrders.update(editingPoId, payload);
+        flash("Purchase Order updated successfully ✓");
+        setEditingPoId(null);
+        setEditingPo(null);
+      } else {
+        await api.purchaseOrders.create(payload);
+        flash(grandTotal > 10000 ? "PO routed to Approvals Queue (> ₹10,000 threshold) ✓" : "Purchase Order created ✓");
+      }
       setForm({ supplier_id: "", date: today(), delivery_date: "", payment_terms: "Net 30", notes: "" });
       setLineItems([{ ...emptyItem }]);
       setAuditResults(null);
@@ -429,6 +452,140 @@ export default function PurchaseOrdersScreen() {
     }
   };
 
+  // ── Edit PO Flow ───────────────────────────────────────
+  const startEdit = async (po) => {
+    try {
+      let fullPo = po;
+      if (!po.items || po.items.length === 0) {
+        const res = await api.purchaseOrders.getOne(po.id);
+        if (res && res.data) fullPo = res.data;
+      }
+      setEditingPoId(fullPo.id);
+      setEditingPo(fullPo);
+
+      let notes = fullPo.notes || "";
+      let delivery_date = "";
+      let payment_terms = "Net 30";
+      const delMatch = notes.match(/Expected Delivery:\s*([^\s|]+)/);
+      if (delMatch) delivery_date = delMatch[1];
+      const termsMatch = notes.match(/Terms:\s*([^|]+)/);
+      if (termsMatch) payment_terms = termsMatch[1].trim();
+
+      setForm({
+        supplier_id: fullPo.supplier_id ? fullPo.supplier_id.toString() : "",
+        date: fullPo.date ? fullPo.date.slice(0, 10) : today(),
+        delivery_date,
+        payment_terms,
+        notes
+      });
+
+      if (fullPo.items && fullPo.items.length > 0) {
+        setLineItems(fullPo.items.map(it => ({
+          item_code: it.item_code || "",
+          name: it.name || "",
+          qty: it.qty?.toString() || "1",
+          unit: it.unit || "kg",
+          unit_price: it.unit_price?.toString() || "0"
+        })));
+      } else {
+        setLineItems([{ ...emptyItem }]);
+      }
+
+      setView("create");
+      setCreateTab("manual");
+      flash(`Editing PO ${fullPo.po_number} ✓`, COLORS.brand);
+    } catch (e) {
+      flash("Failed to load PO for editing: " + e.message, COLORS.coral);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingPoId(null);
+    setEditingPo(null);
+    setForm({ supplier_id: "", date: today(), delivery_date: "", payment_terms: "Net 30", notes: "" });
+    setLineItems([{ ...emptyItem }]);
+    setView("list");
+    flash("Edit cancelled.");
+  };
+
+  // ── Append Line Item Flow ──────────────────────────────
+  const openAppend = (po) => {
+    if (po.status === "Received") {
+      return flash("Cannot append items to a received Purchase Order.", COLORS.warning);
+    }
+    setAppendingPo(po);
+    setAppendItemData({ item_code: "", name: "", qty: "1", unit: "kg", unit_price: "" });
+  };
+
+  const handleAppendSubmit = async () => {
+    if (!appendingPo) return;
+    if (!appendItemData.name.trim()) return flash("Please enter or select item name.", COLORS.coral);
+    if (!appendItemData.qty || parseFloat(appendItemData.qty) <= 0) return flash("Please enter positive quantity.", COLORS.coral);
+    if (appendItemData.unit_price === "" || parseFloat(appendItemData.unit_price) < 0) return flash("Please enter valid unit price.", COLORS.coral);
+
+    setAppending(true);
+    try {
+      await api.purchaseOrders.appendItem(appendingPo.id, {
+        item_code: appendItemData.item_code || appendItemData.name.toUpperCase().replace(/\s+/g, "-").slice(0, 20),
+        name: appendItemData.name.trim(),
+        qty: parseFloat(appendItemData.qty),
+        unit: appendItemData.unit || "kg",
+        unit_price: parseFloat(appendItemData.unit_price)
+      });
+      flash(`Appended ${appendItemData.name} to ${appendingPo.po_number} ✓`);
+      setAppendingPo(null);
+      if (detail && detail.id === appendingPo.id) {
+        openDetail(appendingPo.id);
+      }
+      load();
+    } catch (e) {
+      flash("Append failed: " + e.message, COLORS.coral);
+    }
+    setAppending(false);
+  };
+
+  // ── Delete PO Flow ─────────────────────────────────────
+  const openDeleteConfirm = (po) => {
+    if (po.status === "Received") {
+      return flash("Received Purchase Orders cannot be deleted because stock was accepted into warehouse via GRN.", COLORS.warning);
+    }
+    setDeleteConfirmPo(po);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirmPo) return;
+    setDeleting(true);
+    try {
+      await api.purchaseOrders.remove(deleteConfirmPo.id);
+      flash(`Purchase Order ${deleteConfirmPo.po_number} deleted.`);
+      setDeleteConfirmPo(null);
+      if (detail && detail.id === deleteConfirmPo.id) {
+        setView("list");
+      }
+      load();
+    } catch (e) {
+      flash("Delete failed: " + e.message, COLORS.coral);
+    }
+    setDeleting(false);
+  };
+
+  // ── Provision Dataset ──────────────────────────────────
+  const handleProvision = async () => {
+    setIsProvisioning(true);
+    flash("Swarm provisioning enterprise purchase orders & vendor rate quotes...", COLORS.brand);
+    try {
+      const res = await api.purchaseOrders.provision();
+      flash(res.message || "Enterprise dataset successfully provisioned ✓");
+      api.suppliers.list({ limit: 200, sort: "name", order: "asc" })
+        .then((r) => setSupplierList(r.data || []))
+        .catch(() => {});
+      load({ page: 1 });
+    } catch (e) {
+      flash("Provisioning failed: " + e.message, COLORS.coral);
+    }
+    setIsProvisioning(false);
+  };
+
   // ── Detail View Actions ────────────────────────────────
   const openDetail = async (id) => {
     try {
@@ -453,15 +610,8 @@ export default function PurchaseOrdersScreen() {
   };
 
   const deletePO = async (id) => {
-    if (!confirm("Are you sure you want to delete this Purchase Order? This cannot be undone.")) return;
-    try {
-      await api.purchaseOrders.remove(id);
-      flash("Purchase Order deleted.");
-      setView("list");
-      load({ page: 1 });
-    } catch (e) {
-      flash(e.message, COLORS.coral);
-    }
+    const target = detail || items.find(p => p.id === id);
+    if (target) openDeleteConfirm(target);
   };
 
   // ── CSV Export ──────────────────────────────────────────
@@ -593,6 +743,14 @@ export default function PurchaseOrdersScreen() {
 
           {/* Lifecycle Action Buttons */}
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <Btn small variant="ghost" onClick={() => startEdit(detail)} icon={<Pencil size={13} />}>
+              Edit PO
+            </Btn>
+            {detail.status !== "Received" && (
+              <Btn small variant="ghost" onClick={() => openAppend(detail)} icon={<Plus size={13} />} style={{ color: COLORS.accent, borderColor: COLORS.accent }}>
+                + Append Item
+              </Btn>
+            )}
             {detail.status === "Draft" && (
               <Btn small onClick={() => changeStatus(detail.id, "Pending")}>
                 Submit for Approval
@@ -805,6 +963,17 @@ export default function PurchaseOrdersScreen() {
             style={{ fontSize: 12.5, fontWeight: 600, border: `1px solid ${COLORS.border}` }}
           >
             Compare Rates
+          </Btn>
+
+          <Btn
+            variant="ghost"
+            onClick={handleProvision}
+            disabled={isProvisioning}
+            icon={isProvisioning ? <Loader size={15} /> : <Sparkles size={15} color={COLORS.accent} />}
+            style={{ fontSize: 12.5, fontWeight: 600, border: `1px solid ${COLORS.border}`, color: COLORS.accent }}
+            title="Auto-provision realistic suppliers, POs, and rate quotes"
+          >
+            {isProvisioning ? "Provisioning…" : "⚡ Provision Demo Data"}
           </Btn>
         </div>
       </div>
@@ -1439,9 +1608,20 @@ export default function PurchaseOrdersScreen() {
             ) : error ? (
               <ErrorMsg error={error} />
             ) : items.length === 0 ? (
-              <div style={{ padding: 60, textAlign: "center", color: COLORS.muted }}>
-                <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 6px" }}>No purchase orders found</p>
-                <p style={{ fontSize: 13, margin: 0 }}>Try clearing search filters or create a new purchase order above.</p>
+              <div style={{ padding: "60px 20px", textAlign: "center", color: COLORS.muted }}>
+                <Layers size={42} color={COLORS.muted} style={{ opacity: 0.4, marginBottom: 12 }} />
+                <p style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 6px" }}>No purchase orders found</p>
+                <p style={{ fontSize: 13, margin: "0 0 20px", color: COLORS.muted }}>
+                  Your procurement database has no active orders matching this filter, or provisioning is pending.
+                </p>
+                <div style={{ display: "inline-flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+                  <Btn onClick={handleProvision} disabled={isProvisioning}>
+                    <Sparkles size={14} /> {isProvisioning ? "Provisioning Dataset…" : "⚡ Auto-Provision Enterprise Dataset"}
+                  </Btn>
+                  <Btn variant="secondary" onClick={() => { setView("create"); setCreateTab("manual"); }}>
+                    <Plus size={14} /> + Create New Purchase Order
+                  </Btn>
+                </div>
               </div>
             ) : (
               <>
@@ -1481,7 +1661,7 @@ export default function PurchaseOrdersScreen() {
                             <td style={{ padding: "11px 16px" }} onClick={() => openDetail(po.id)}>
                               <div style={{ fontWeight: 600, color: COLORS.text }}>{po.supplier_name}</div>
                               {po.notes && (
-                                <div style={{ fontSize: 11, color: COLORS.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                <div style={{ fontSize: 11, color: COLORS.muted, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                   {po.notes}
                                 </div>
                               )}
@@ -1502,7 +1682,12 @@ export default function PurchaseOrdersScreen() {
                             </td>
 
                             <td style={{ padding: "11px 16px", color: COLORS.muted }} onClick={() => openDetail(po.id)}>
-                              {po.item_count ? `${po.item_count} items` : "—"}
+                              <span style={{
+                                display: "inline-block", background: "rgba(255,255,255,0.05)",
+                                padding: "2px 8px", borderRadius: 10, fontSize: 11.5, fontWeight: 600
+                              }}>
+                                {po.item_count ? `${po.item_count} items` : "—"}
+                              </span>
                             </td>
 
                             <td style={{ padding: "11px 16px", fontWeight: 700, color: COLORS.accent }} onClick={() => openDetail(po.id)}>
@@ -1516,11 +1701,36 @@ export default function PurchaseOrdersScreen() {
                                   onClick={() => openDetail(po.id)}
                                   title="View Details"
                                   style={{
-                                    padding: "4px 8px", background: "none", border: `1px solid ${COLORS.border}`,
-                                    color: COLORS.text, borderRadius: 6, cursor: "pointer", fontSize: 11.5
+                                    padding: "5px 9px", background: "rgba(255,255,255,0.04)", border: `1px solid ${COLORS.border}`,
+                                    color: COLORS.text, borderRadius: 6, cursor: "pointer", fontSize: 11.5, fontWeight: 600,
+                                    display: "inline-flex", alignItems: "center", gap: 4
                                   }}
                                 >
-                                  View
+                                  <Eye size={12} /> View
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(po)}
+                                  title="Edit Order"
+                                  style={{
+                                    padding: "5px 9px", background: "rgba(255,255,255,0.04)", border: `1px solid ${COLORS.border}`,
+                                    color: COLORS.text, borderRadius: 6, cursor: "pointer", fontSize: 11.5, fontWeight: 600,
+                                    display: "inline-flex", alignItems: "center", gap: 4
+                                  }}
+                                >
+                                  <Pencil size={12} /> Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => openAppend(po)}
+                                  title="Append Line Item"
+                                  style={{
+                                    padding: "5px 9px", background: "rgba(232, 168, 56, 0.1)", border: `1px solid ${COLORS.accent}55`,
+                                    color: COLORS.accent, borderRadius: 6, cursor: "pointer", fontSize: 11.5, fontWeight: 600,
+                                    display: "inline-flex", alignItems: "center", gap: 4
+                                  }}
+                                >
+                                  <Plus size={12} /> Append
                                 </button>
                                 {["Approved", "Sent"].includes(po.status) && (
                                   <button
@@ -1533,11 +1743,24 @@ export default function PurchaseOrdersScreen() {
                                     }}
                                     title="Receive in GRN"
                                     style={{
-                                      padding: "4px 8px", background: COLORS.accent, border: "none",
+                                      padding: "5px 9px", background: COLORS.accent, border: "none",
                                       color: "#18181b", borderRadius: 6, cursor: "pointer", fontSize: 11.5, fontWeight: 700
                                     }}
                                   >
                                     GRN
+                                  </button>
+                                )}
+                                {po.status !== "Received" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openDeleteConfirm(po)}
+                                    title="Delete Order"
+                                    style={{
+                                      padding: "5px 8px", background: "rgba(239, 68, 68, 0.08)", border: `1px solid rgba(239, 68, 68, 0.25)`,
+                                      color: COLORS.coral, borderRadius: 6, cursor: "pointer", fontSize: 11.5
+                                    }}
+                                  >
+                                    <Trash2 size={12} />
                                   </button>
                                 )}
                               </div>
@@ -1557,6 +1780,210 @@ export default function PurchaseOrdersScreen() {
           </Card>
         </div>
       )}
+
+      {/* Append Line Item Modal */}
+      {appendingPo && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0, 0, 0, 0.82)", backdropFilter: "blur(5px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+          }}
+          onClick={(e) => e.target === e.currentTarget && setAppendingPo(null)}
+        >
+          <div style={{
+            background: "#18181b", border: `1px solid ${COLORS.border}`, borderRadius: 12,
+            width: "100%", maxWidth: 520, padding: 24, boxShadow: "0 20px 40px rgba(0,0,0,0.7)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: COLORS.text, margin: 0 }}>
+                  Append Item to {appendingPo.po_number}
+                </h3>
+                <p style={{ fontSize: 12, color: COLORS.muted, margin: "2px 0 0" }}>
+                  Vendor: <strong style={{ color: COLORS.text }}>{appendingPo.supplier_name}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => setAppendingPo(null)}
+                style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", fontSize: 18 }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
+                  Item Description / Stock Lookup
+                </label>
+                <input
+                  list="append-stock-options"
+                  value={appendItemData.name}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const match = stocks.find(s => s.name?.toLowerCase() === val.toLowerCase());
+                    setAppendItemData(prev => ({
+                      ...prev,
+                      name: val,
+                      item_code: match?.item_code || prev.item_code,
+                      unit: match?.unit || prev.unit,
+                      unit_price: match?.price ? match.price.toString() : prev.unit_price
+                    }));
+                  }}
+                  placeholder="Select from stock or type custom item…"
+                  style={{
+                    width: "100%", padding: "9px 12px", background: COLORS.bg,
+                    border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                    color: COLORS.text, fontSize: 13
+                  }}
+                />
+                <datalist id="append-stock-options">
+                  {stocks.map(s => (
+                    <option key={s.id} value={s.name}>
+                      {s.name} (Code: {s.item_code} | Available: {s.remaining || 0} {s.unit})
+                    </option>
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
+                    Item Code
+                  </label>
+                  <input
+                    value={appendItemData.item_code}
+                    onChange={(e) => setAppendItemData(p => ({ ...p, item_code: e.target.value }))}
+                    placeholder="e.g. KPL-427"
+                    style={{
+                      width: "100%", padding: "9px 12px", background: COLORS.bg,
+                      border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                      color: COLORS.text, fontSize: 13, fontFamily: "monospace"
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
+                    Unit
+                  </label>
+                  <select
+                    value={appendItemData.unit}
+                    onChange={(e) => setAppendItemData(p => ({ ...p, unit: e.target.value }))}
+                    style={{
+                      width: "100%", padding: "9px 12px", background: COLORS.bg,
+                      border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                      color: COLORS.text, fontSize: 13
+                    }}
+                  >
+                    {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0.001"
+                    value={appendItemData.qty}
+                    onChange={(e) => setAppendItemData(p => ({ ...p, qty: e.target.value }))}
+                    placeholder="1"
+                    style={{
+                      width: "100%", padding: "9px 12px", background: COLORS.bg,
+                      border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                      color: COLORS.text, fontSize: 13
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
+                    Unit Rate (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={appendItemData.unit_price}
+                    onChange={(e) => setAppendItemData(p => ({ ...p, unit_price: e.target.value }))}
+                    placeholder="0.00"
+                    style={{
+                      width: "100%", padding: "9px 12px", background: COLORS.bg,
+                      border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                      color: COLORS.text, fontSize: 13
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{
+                background: "rgba(255,255,255,0.03)", border: `1px solid ${COLORS.border}`,
+                borderRadius: 8, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center"
+              }}>
+                <span style={{ fontSize: 12, color: COLORS.muted }}>Estimated Line Total:</span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: COLORS.accent }}>
+                  ₹{((parseFloat(appendItemData.qty) || 0) * (parseFloat(appendItemData.unit_price) || 0)).toFixed(2)}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
+                <Btn variant="secondary" onClick={() => setAppendingPo(null)}>
+                  Cancel
+                </Btn>
+                <Btn onClick={handleAppendSubmit} disabled={appending}>
+                  {appending ? "Appending…" : "Append Item to PO"}
+                </Btn>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmPo && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0, 0, 0, 0.82)", backdropFilter: "blur(5px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+          }}
+          onClick={(e) => e.target === e.currentTarget && setDeleteConfirmPo(null)}
+        >
+          <div style={{
+            background: "#18181b", border: `1px solid ${COLORS.coral}`, borderRadius: 12,
+            width: "100%", maxWidth: 440, padding: 24, boxShadow: "0 20px 40px rgba(0,0,0,0.7)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <AlertTriangle size={24} color={COLORS.coral} />
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: COLORS.text, margin: 0 }}>
+                Delete Purchase Order?
+              </h3>
+            </div>
+            <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.5, margin: "0 0 16px" }}>
+              Are you sure you want to permanently delete order <strong style={{ color: COLORS.text }}>{deleteConfirmPo.po_number}</strong> ({deleteConfirmPo.supplier_name}) valued at <strong style={{ color: COLORS.accent }}>₹{fmt(deleteConfirmPo.total_amount)}</strong>? This action cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <Btn variant="secondary" onClick={() => setDeleteConfirmPo(null)}>
+                Cancel
+              </Btn>
+              <Btn variant="danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? "Deleting…" : "Confirm Delete"}
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Print PO Modal */}
+      <PrintPOModal
+        open={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        po={detail}
+      />
 
       {/* Vendor Rate Comparison Modal */}
       <RateComparisonModal

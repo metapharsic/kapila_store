@@ -115,6 +115,8 @@ export const purchaseOrders = {
   create:     (body)   => api.post("/purchase-orders", body),
   update:     (id, body) => api.patch(`/purchase-orders/${id}`, body),
   remove:     (id)     => api.delete(`/purchase-orders/${id}`),
+  appendItem: (id, body) => api.post(`/purchase-orders/${id}/items`, body),
+  provision:  ()       => api.post("/purchase-orders/provision"),
   autoDraft:  (supplier_id, preview = false) => api.post("/purchase-orders/auto-draft", { supplier_id, preview }),
 };
 

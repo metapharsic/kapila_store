@@ -7,14 +7,17 @@ async function generatePONumber(dateStr) {
   const dateObj = new Date(dateStr);
   const formattedDate = dateObj.toISOString().slice(0, 10).replace(/-/g, "");
   
-  // Count how many POs are on this date
   const [{ count }] = await db("purchase_orders")
-    .where("date", dateStr)
+    .whereRaw("po_number LIKE ?", [`PO-${formattedDate}-%`])
     .count("id as count");
   
-  const seq = parseInt(count || 0) + 1;
-  const seqStr = String(seq).padStart(4, "0");
-  return `PO-${formattedDate}-${seqStr}`;
+  let seq = parseInt(count || 0) + 1;
+  let candidate = `PO-${formattedDate}-${String(seq).padStart(4, "0")}`;
+  while (await db("purchase_orders").where("po_number", candidate).first()) {
+    seq++;
+    candidate = `PO-${formattedDate}-${String(seq).padStart(4, "0")}`;
+  }
+  return candidate;
 }
 
 // GET /api/purchase-orders
@@ -25,26 +28,36 @@ async function list(req, res, next) {
 
     const filter = (qb) => {
       if (supplier_id) qb.where("purchase_orders.supplier_id", supplier_id);
-      if (status) qb.where("purchase_orders.status", status);
+      if (status && status !== "ALL") {
+        if (status.toLowerCase() === "pending") {
+          qb.where((b) => b.whereRaw("LOWER(purchase_orders.status) = ?", ["pending"]).orWhereRaw("LOWER(purchase_orders.status) = ?", ["pending approval"]));
+        } else {
+          qb.whereRaw("LOWER(purchase_orders.status) = ?", [status.toLowerCase()]);
+        }
+      }
       if (date_from) qb.where("purchase_orders.date", ">=", date_from);
       if (date_to) qb.where("purchase_orders.date", "<=", date_to);
       if (q) {
-        qb.where("purchase_orders.po_number", "ilike", `%${q}%`)
-          .orWhere("suppliers.name", "ilike", `%${q}%`);
+        qb.where((b) => {
+          b.where("purchase_orders.po_number", "ilike", `%${q}%`)
+            .orWhere("suppliers.name", "ilike", `%${q}%`);
+        });
       }
     };
 
     const [{ count }] = await db("purchase_orders")
-      .join("suppliers", "purchase_orders.supplier_id", "suppliers.id")
+      .leftJoin("suppliers", "purchase_orders.supplier_id", "suppliers.id")
       .modify(filter)
       .count("purchase_orders.id as count");
 
     const rows = await db("purchase_orders")
-      .join("suppliers", "purchase_orders.supplier_id", "suppliers.id")
+      .leftJoin("suppliers", "purchase_orders.supplier_id", "suppliers.id")
       .modify(filter)
       .select(
         "purchase_orders.*", 
         "suppliers.name as supplier_name",
+        "suppliers.phone as supplier_phone",
+        "suppliers.gstin as supplier_gstin",
         db("purchase_order_items")
           .count("id")
           .whereRaw("po_id = purchase_orders.id")
@@ -427,4 +440,264 @@ async function createAutoDraft(req, res, next) {
   }
 }
 
-module.exports = { list, getOne, create, update, remove, createAutoDraft, generatePONumber };
+// POST /api/purchase-orders/:id/items
+async function appendItem(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { item_code, name, qty, unit, unit_price } = req.body;
+
+    if (!name || !qty || Number(qty) <= 0 || unit_price === undefined || Number(unit_price) < 0) {
+      return res.status(400).json({ success: false, error: "Valid item name, positive quantity, and non-negative unit price are required." });
+    }
+
+    const existing = await db("purchase_orders").where("id", id).first();
+    if (!existing) {
+      return res.status(404).json({ success: false, error: "Purchase Order not found." });
+    }
+
+    if (existing.status === "Received") {
+      return res.status(400).json({ success: false, error: "Cannot append items to a received Purchase Order." });
+    }
+
+    const q = Number(qty);
+    const p = Number(unit_price);
+    const lineTotal = q * p;
+
+    const result = await db.transaction(async (trx) => {
+      const [newItem] = await trx("purchase_order_items").insert({
+        po_id: id,
+        item_code: (item_code || "").trim().toUpperCase() || null,
+        name: name.trim(),
+        qty: q,
+        unit: unit || "kg",
+        unit_price: p,
+        total_price: lineTotal
+      }).returning("*");
+
+      const newTotal = Number(existing.total_amount || 0) + lineTotal;
+
+      const [updatedPo] = await trx("purchase_orders")
+        .where("id", id)
+        .update({
+          total_amount: newTotal,
+          updated_at: trx.fn.now()
+        })
+        .returning("*");
+
+      const allItems = await trx("purchase_order_items")
+        .where("po_id", id)
+        .orderBy("id", "asc");
+
+      return { ...updatedPo, items: allItems, addedItem: newItem };
+    });
+
+    publish("purchase-order-events", { type: "purchase_order.append_item", id: existing.id, item_code, qty: q });
+    await auditLog(req, {
+      action: "purchase_orders.append_item",
+      resource: "purchase_orders",
+      resourceId: existing.id,
+      after: result
+    });
+
+    res.json({ success: true, data: result, message: `Appended ${name} to PO successfully.` });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/purchase-orders/provision
+async function provision(req, res, next) {
+  try {
+    const result = await db.transaction(async (trx) => {
+      // 1. Seed or find suppliers
+      const standardSuppliers = [
+        { name: "Sri Lakshmi Agro & Rice Mills", contact_name: "Ramesh Reddy", phone: "+91 98490 12345", email: "orders@srilakshmiagro.com", gstin: "36AAACL1234F1Z1", address: "Plot 12, IDA Nacharam, Hyderabad", rating: 4.8 },
+        { name: "Metro Wholesale Cash & Carry", contact_name: "Vikram Malhotra", phone: "+91 98480 23456", email: "b2b@metrowholesale.in", gstin: "36AABCM5678G1Z2", address: "Moosapet Cross Road, Kukatpally, Hyderabad", rating: 4.9 },
+        { name: "Royal Spices & Condiments", contact_name: "Mohammad Arif", phone: "+91 98491 34567", email: "sales@royalspices.com", gstin: "36AACCR9012H1Z3", address: "Begum Bazar, Old City, Hyderabad", rating: 4.6 },
+        { name: "Vijaya Dairy & Milk Producers", contact_name: "Suresh Kumar", phone: "+91 98492 45678", email: "dist@vijayadairy.com", gstin: "36AADCV3456J1Z4", address: "Lalapet, Secunderabad", rating: 4.7 },
+        { name: "Balaji Fresh Produce & Vegetables", contact_name: "K. Balaji", phone: "+91 98493 56789", email: "balajiproduce@gmail.com", gstin: "36AAACB7890K1Z5", address: "Bowenpally Market Yard, Secunderabad", rating: 4.5 },
+        { name: "Godrej Agrovet & Poultry", contact_name: "Anand Joshi", phone: "+91 98494 67890", email: "orders@godrejagrovet.com", gstin: "36AACCG1122L1Z6", address: "Medchal Highway, Hyderabad", rating: 4.8 }
+      ];
+
+      const supplierMap = {};
+      for (const s of standardSuppliers) {
+        let sup = await trx("suppliers").where("name", s.name).first();
+        if (!sup) {
+          const [created] = await trx("suppliers").insert(s).returning("*");
+          sup = created;
+        }
+        supplierMap[s.name] = sup.id;
+      }
+
+      // 2. Seed supplier rate quotes
+      const uid = req.user?.id || 1;
+      const quotesToSeed = [
+        { item_code: "KPL-113", item_name: "Badam", unit: "kg", supplier_name: "Royal Spices & Condiments", supplier_id: supplierMap["Royal Spices & Condiments"], quoted_rate: 880, notes: "California Whole Grade-A (Wholesale)", quoted_by: uid },
+        { item_code: "KPL-113", item_name: "Badam", unit: "kg", supplier_name: "Metro Wholesale Cash & Carry", supplier_id: supplierMap["Metro Wholesale Cash & Carry"], quoted_rate: 895, notes: "Bulk 10kg pack", quoted_by: uid },
+        { item_code: "KPL-113", item_name: "Badam", unit: "kg", supplier_name: "Sri Lakshmi Agro & Rice Mills", supplier_id: supplierMap["Sri Lakshmi Agro & Rice Mills"], quoted_rate: 910, notes: "Local distributor rate", quoted_by: uid },
+
+        { item_code: "KPL-427", item_name: "Tugar Dal", unit: "kg", supplier_name: "Sri Lakshmi Agro & Rice Mills", supplier_id: supplierMap["Sri Lakshmi Agro & Rice Mills"], quoted_rate: 110, notes: "Unpolished Desi Toor Dal", quoted_by: uid },
+        { item_code: "KPL-427", item_name: "Tugar Dal", unit: "kg", supplier_name: "Metro Wholesale Cash & Carry", supplier_id: supplierMap["Metro Wholesale Cash & Carry"], quoted_rate: 114, notes: "50kg Gunny Bag pack", quoted_by: uid },
+        { item_code: "KPL-427", item_name: "Tugar Dal", unit: "kg", supplier_name: "Royal Spices & Condiments", supplier_id: supplierMap["Royal Spices & Condiments"], quoted_rate: 118, notes: "Standard retail bag", quoted_by: uid },
+
+        { item_code: "KPL-428", item_name: "Turmeric Powder", unit: "kg", supplier_name: "Royal Spices & Condiments", supplier_id: supplierMap["Royal Spices & Condiments"], quoted_rate: 185, notes: "Pure Salem Curcumin 3.5%", quoted_by: uid },
+        { item_code: "KPL-428", item_name: "Turmeric Powder", unit: "kg", supplier_name: "Metro Wholesale Cash & Carry", supplier_id: supplierMap["Metro Wholesale Cash & Carry"], quoted_rate: 195, notes: "1kg institutional foil pack", quoted_by: uid },
+
+        { item_code: "KPL-161", item_name: "Cherries", unit: "kg", supplier_name: "Balaji Fresh Produce & Vegetables", supplier_id: supplierMap["Balaji Fresh Produce & Vegetables"], quoted_rate: 260, notes: "Fresh dessert cherries (A grade)", quoted_by: uid },
+        { item_code: "KPL-161", item_name: "Cherries", unit: "kg", supplier_name: "Metro Wholesale Cash & Carry", supplier_id: supplierMap["Metro Wholesale Cash & Carry"], quoted_rate: 275, notes: "Cold chain imported", quoted_by: uid },
+
+        { item_code: "KPL-183", item_name: "Coke", unit: "bottle", supplier_name: "Metro Wholesale Cash & Carry", supplier_id: supplierMap["Metro Wholesale Cash & Carry"], quoted_rate: 18.5, notes: "Case of 24x300ml glass", quoted_by: uid },
+        { item_code: "KPL-183", item_name: "Coke", unit: "bottle", supplier_name: "Sri Lakshmi Agro & Rice Mills", supplier_id: supplierMap["Sri Lakshmi Agro & Rice Mills"], quoted_rate: 19.5, notes: "Beverage crate delivery", quoted_by: uid },
+
+        { item_code: "KPL-426", item_name: "Towels", unit: "pcs", supplier_name: "Metro Wholesale Cash & Carry", supplier_id: supplierMap["Metro Wholesale Cash & Carry"], quoted_rate: 135, notes: "100% Cotton Hotel Kitchen Napkins", quoted_by: uid }
+      ];
+
+      for (const q of quotesToSeed) {
+        const hasQuote = await trx("supplier_rate_quotes")
+          .where({ item_code: q.item_code, supplier_name: q.supplier_name })
+          .first();
+        if (!hasQuote) {
+          await trx("supplier_rate_quotes").insert({
+            ...q,
+            created_at: trx.fn.now(),
+            updated_at: trx.fn.now()
+          });
+        }
+      }
+
+      // 3. Seed realistic Purchase Orders across lifecycle statuses
+      const today = new Date().toISOString().slice(0, 10);
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const daysAgo2 = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10);
+      const daysAgo3 = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
+      const daysAgo5 = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
+      const daysAgo7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      const in3days = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+
+      const demoPOs = [
+        {
+          po_number: "PO-" + today.replace(/-/g, "") + "-0001",
+          supplier_id: supplierMap["Sri Lakshmi Agro & Rice Mills"],
+          date: today,
+          status: "Draft",
+          notes: `Expected Delivery: ${tomorrow} | Terms: Net 30 | Notes: Routine monthly staple replenishment for main kitchen`,
+          items: [
+            { item_code: "KPL-427", name: "Tugar Dal", qty: 50, unit: "kg", unit_price: 110 },
+            { item_code: "KPL-428", name: "Turmeric Powder", qty: 20, unit: "kg", unit_price: 190 }
+          ]
+        },
+        {
+          po_number: "PO-" + yesterday.replace(/-/g, "") + "-0002",
+          supplier_id: supplierMap["Royal Spices & Condiments"],
+          date: yesterday,
+          status: "Pending",
+          notes: `Expected Delivery: ${in3days} | Terms: Net 15 | Notes: Premium dry fruits batch for banquet kitchen. Requires Store Manager approval.`,
+          items: [
+            { item_code: "KPL-113", name: "Badam", qty: 25, unit: "kg", unit_price: 880 },
+            { item_code: "KPL-428", name: "Turmeric Powder", qty: 15, unit: "kg", unit_price: 185 }
+          ]
+        },
+        {
+          po_number: "PO-" + daysAgo2.replace(/-/g, "") + "-0003",
+          supplier_id: supplierMap["Metro Wholesale Cash & Carry"],
+          date: daysAgo2,
+          status: "Approved",
+          notes: `Expected Delivery: ${today} | Terms: COD | Notes: Restaurant bar & beverage stock. Approved by GM, awaiting inward dispatch.`,
+          items: [
+            { item_code: "KPL-183", name: "Coke", qty: 200, unit: "bottle", unit_price: 18.5 },
+            { item_code: "KPL-426", name: "Towels", qty: 40, unit: "pcs", unit_price: 135 }
+          ]
+        },
+        {
+          po_number: "PO-" + daysAgo3.replace(/-/g, "") + "-0004",
+          supplier_id: supplierMap["Balaji Fresh Produce & Vegetables"],
+          date: daysAgo3,
+          status: "Sent",
+          notes: `Expected Delivery: ${today} | Terms: Immediate | Notes: Fresh produce delivery sent via WhatsApp. Truck in transit.`,
+          items: [
+            { item_code: "KPL-161", name: "Cherries", qty: 30, unit: "kg", unit_price: 260 },
+            { item_code: "KPL-427", name: "Tugar Dal", qty: 20, unit: "kg", unit_price: 114 }
+          ]
+        },
+        {
+          po_number: "PO-" + daysAgo5.replace(/-/g, "") + "-0005",
+          supplier_id: supplierMap["Sri Lakshmi Agro & Rice Mills"],
+          date: daysAgo5,
+          status: "Received",
+          notes: `Expected Delivery: ${daysAgo3} | Terms: Net 30 | Notes: Inward receipt verified via GRN #GRN-0908-01. Stock batches updated.`,
+          items: [
+            { item_code: "KPL-427", name: "Tugar Dal", qty: 100, unit: "kg", unit_price: 110 }
+          ]
+        },
+        {
+          po_number: "PO-" + daysAgo7.replace(/-/g, "") + "-0006",
+          supplier_id: supplierMap["Royal Spices & Condiments"],
+          date: daysAgo7,
+          status: "Cancelled",
+          notes: `Expected Delivery: ${daysAgo5} | Terms: COD | Notes: Cancelled due to duplicate indent request from Tiffins section.`,
+          items: [
+            { item_code: "KPL-113", name: "Badam", qty: 5, unit: "kg", unit_price: 890 }
+          ]
+        }
+      ];
+
+      let createdCount = 0;
+      for (const poData of demoPOs) {
+        let existingPo = await trx("purchase_orders").where("po_number", poData.po_number).first();
+        if (!existingPo) {
+          const total_amount = poData.items.reduce((sum, it) => sum + (it.qty * it.unit_price), 0);
+          const [newPo] = await trx("purchase_orders").insert({
+            po_number: poData.po_number,
+            supplier_id: poData.supplier_id,
+            date: poData.date,
+            status: poData.status,
+            notes: poData.notes,
+            total_amount,
+            created_at: trx.fn.now(),
+            updated_at: trx.fn.now()
+          }).returning("*");
+
+          const itemsToInsert = poData.items.map(it => ({
+            po_id: newPo.id,
+            item_code: it.item_code,
+            name: it.name,
+            qty: it.qty,
+            unit: it.unit,
+            unit_price: it.unit_price,
+            total_price: it.qty * it.unit_price
+          }));
+          await trx("purchase_order_items").insert(itemsToInsert);
+          createdCount++;
+        }
+      }
+
+      return {
+        suppliersCount: Object.keys(supplierMap).length,
+        quotesCount: quotesToSeed.length,
+        posCreated: createdCount
+      };
+    });
+
+    res.json({
+      success: true,
+      message: `Provisioned ${result.posCreated} purchase orders, ${result.suppliersCount} suppliers, and ${result.quotesCount} supplier rate quotes.`,
+      data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  list,
+  getOne,
+  create,
+  update,
+  remove,
+  createAutoDraft,
+  appendItem,
+  provision,
+  generatePONumber
+};
+
