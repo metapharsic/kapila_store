@@ -219,11 +219,14 @@ class IndentAgentService {
       const targetUnit = stockItem ? stockItem.unit : (it.price_unit || it.base_unit || it.baseUnit || null);
       let multiplier = 1;
 
+      let unitMismatchNote = null;
       if (targetUnit && it.unit) {
         if (!areUnitsCompatible(it.unit, targetUnit, it.name)) {
-          throw new Error(`Item '${it.name}' unit '${it.unit}' is incompatible with stock/pricing unit '${targetUnit}'.`);
+          multiplier = 1;
+          unitMismatchNote = `[Requested: ${it.unit}, Stock: ${targetUnit}]`;
+        } else {
+          multiplier = getConversionMultiplier(it.unit, targetUnit, it.name) ?? 1;
         }
-        multiplier = getConversionMultiplier(it.unit, targetUnit, it.name) ?? 1;
       }
 
       const unitRate = stockItem ? parseFloat(stockItem.price) || 0 : parseFloat(it.price || it.defaultCost) || 0;
@@ -235,7 +238,7 @@ class IndentAgentService {
         qty: requestedQty,
         unit: (it.unit || (stockItem ? stockItem.unit : "kg")).toLowerCase(),
         item_code: stockItem?.item_code || it.item_code || it.sku || `ITEM-${i + 1}`,
-        notes: it.notes || it.chefNotes || null,
+        notes: [it.notes || it.chefNotes, unitMismatchNote].filter(Boolean).join(" ") || null,
         estimated_rate: unitRate,
         lineCost,
       });
@@ -260,6 +263,9 @@ class IndentAgentService {
           date: date || new Date().toISOString().split("T")[0],
           status: "pending",
           indent_type: priority === "URGENT" || priority === "EMERGENCY" ? "urgent" : "routine",
+          shift: shift || "MORNING",
+          priority: priority || "NORMAL",
+          remarks: remarks ? String(remarks).trim() : null,
           created_by: user?.id || null,
         })
         .returning("*");
@@ -273,6 +279,7 @@ class IndentAgentService {
         qty: li.qty,
         unit: li.unit,
         item_code: (li.item_code || "").slice(0, 20),
+        notes: li.notes || null,
         issued_qty: 0,
       }));
 
@@ -344,7 +351,7 @@ class IndentAgentService {
       await sendNotification({
         recipient_role_id: storeManagerRole.id,
         title: `Chef Requisition: ${canonicalDept} (#${result.indent.id})`,
-        message: `${submittedBy || user?.name || "Executive Chef"} raised a ${priority.toLowerCase()} requisition with ${validatedLineItems.length} items (est. ₹${totalEstimatedValue.toLocaleString("en-IN")}) awaiting Store Approval & Issuance.`,
+        message: `${submittedBy || user?.name || "Executive Chef"} raised a ${priority.toLowerCase()} requisition with ${validatedLineItems.length} items (est. ₹${totalEstimatedValue.toLocaleString("en-IN")}) awaiting Store Approval & Issuance.${remarks ? ` Station Notes: "${remarks.trim()}"` : ""}`,
         type: "approval_pending",
         severity: priority === "URGENT" || priority === "EMERGENCY" ? "critical" : "info",
         metadata: {
@@ -365,6 +372,7 @@ class IndentAgentService {
         department: canonicalDept,
         shift,
         priority,
+        remarks: remarks ? remarks.trim() : null,
         submittedBy: submittedBy || user?.name || "Executive Chef",
         totalItemsCount: validatedLineItems.length,
         totalEstimatedValue: parseFloat(totalEstimatedValue.toFixed(2)),

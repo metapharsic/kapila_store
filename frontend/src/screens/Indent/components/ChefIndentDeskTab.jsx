@@ -42,6 +42,9 @@ import {
   Minus,
   RotateCcw,
   Trash2,
+  Mic,
+  MicOff,
+  MessageSquare,
 } from "lucide-react";
 
 export const CANONICAL_DEPTS = [
@@ -71,6 +74,74 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
   const [shift, setShift] = useState("MORNING");
   const [priority, setPriority] = useState("NORMAL");
   const [chefNotes, setChefNotes] = useState("");
+  const [isRecordingNote, setIsRecordingNote] = useState(false);
+
+  const PRESET_PREP_NOTES = [
+    "⚡ Morning Prep (6 AM)",
+    "🔥 Urgent Shift Refill",
+    "🎉 Banquet / Party Rush",
+    "📦 Deliver to Kitchen Counter",
+    "🥛 Fragile Dairy / Perishables",
+    "🔪 Raw Cut Veggies First",
+  ];
+
+  const handleApplyPresetNote = (preset) => {
+    setChefNotes((prev) => {
+      const cleanPreset = preset.replace(/^[^\w\s]+\s*/, "");
+      if (!prev) return cleanPreset;
+      if (prev.includes(cleanPreset)) return prev;
+      return `${prev} · ${cleanPreset}`;
+    });
+  };
+
+  const toggleNoteDictation = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please type station notes.");
+      return;
+    }
+
+    if (isRecordingNote) {
+      if (window._noteRecognitionInstance) {
+        window._noteRecognitionInstance.stop();
+      }
+      setIsRecordingNote(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-IN";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsRecordingNote(true);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setChefNotes((prev) => (prev ? `${prev} · ${transcript}` : transcript));
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.error("Speech error:", e);
+        setIsRecordingNote(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecordingNote(false);
+      };
+
+      window._noteRecognitionInstance = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error(err);
+      setIsRecordingNote(false);
+    }
+  };
 
   // Subcategory department filtering
   const [filterByDeptOnly, setFilterByDeptOnly] = useState(true);
@@ -472,9 +543,10 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
 
       const res = await api.indents.chefSubmit(payload);
       if (res.success) {
+        const noteSummary = payload.remarks ? ` with station prep notes attached: "${payload.remarks}"` : "";
         setMsg({
           type: "success",
-          text: `Requisition filed successfully! Tracking #${res.data.trackingNumber} (${res.data.totalItemsCount} items, est. ₹${res.data.totalEstimatedValue.toLocaleString("en-IN")})`,
+          text: `Requisition filed successfully! Tracking #${res.data.trackingNumber} (${res.data.totalItemsCount} items, est. ₹${res.data.totalEstimatedValue.toLocaleString("en-IN")})${noteSummary}`,
         });
         setChefNotes("");
         loadTelemetry();
@@ -1720,49 +1792,184 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
             {/* Chef Submission Footer */}
             <div
               style={{
-                marginTop: 16,
-                paddingTop: 16,
+                marginTop: 18,
+                paddingTop: 18,
                 borderTop: `1px solid ${COLORS.border}`,
                 display: "flex",
-                flexWrap: "wrap",
-                gap: 12,
-                justifyContent: "space-between",
-                alignItems: "center",
+                flexDirection: "column",
+                gap: 14,
               }}
             >
-              <div style={{ flex: 1, minWidth: 260 }}>
-                <input
-                  type="text"
-                  value={chefNotes}
-                  onChange={(e) => setChefNotes(e.target.value)}
-                  placeholder="Optional station prep notes for Central Stores..."
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    border: `1px solid ${COLORS.border}`,
-                    fontSize: "0.85rem",
-                  }}
-                />
+              {/* Station Prep Notes Input */}
+              <div style={{ width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8rem", fontWeight: 700, color: COLORS.text, margin: 0 }}>
+                    <MessageSquare size={14} color={COLORS.brand} />
+                    <span>Station Prep Notes for Central Stores (Optional)</span>
+                  </label>
+                  {chefNotes ? (
+                    <span style={{ fontSize: "0.72rem", color: COLORS.brand, fontWeight: 600 }}>
+                      ● Attached to Requisition Slip
+                    </span>
+                  ) : null}
+                </div>
+
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <input
+                    type="text"
+                    value={chefNotes}
+                    onChange={(e) => setChefNotes(e.target.value)}
+                    placeholder="Optional station prep notes for Central Stores (e.g. 6 AM morning rush, deliver directly to counter, pack in plastic crates)..."
+                    style={{
+                      width: "100%",
+                      padding: "10px 42px 10px 12px",
+                      borderRadius: 8,
+                      border: `1.5px solid ${chefNotes ? COLORS.brand : COLORS.border}`,
+                      background: COLORS.bg,
+                      color: COLORS.text,
+                      fontSize: "0.85rem",
+                      boxSizing: "border-box",
+                      transition: "border-color 0.2s ease",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleNoteDictation}
+                    title={isRecordingNote ? "Stop Voice Dictation" : "Voice Dictate Prep Note"}
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      background: isRecordingNote ? "#ef4444" : "transparent",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: isRecordingNote ? "#ffffff" : COLORS.muted,
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {isRecordingNote ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
+                </div>
+
+                {/* Quick Tags / Chips */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: "0.72rem", color: COLORS.muted, marginRight: 2 }}>
+                    Quick Tags:
+                  </span>
+                  {PRESET_PREP_NOTES.map((preset) => {
+                    const cleanPreset = preset.replace(/^[^\w\s]+\s*/, "");
+                    const isSelected = chefNotes.includes(cleanPreset);
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => handleApplyPresetNote(preset)}
+                        style={{
+                          fontSize: "0.72rem",
+                          padding: "3px 9px",
+                          borderRadius: 12,
+                          border: `1px solid ${isSelected ? COLORS.brand : COLORS.border}`,
+                          background: isSelected ? "rgba(232, 168, 56, 0.15)" : "rgba(255, 255, 255, 0.03)",
+                          color: isSelected ? COLORS.brand : COLORS.muted,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {preset}
+                      </button>
+                    );
+                  })}
+                  {chefNotes ? (
+                    <button
+                      type="button"
+                      onClick={() => setChefNotes("")}
+                      style={{
+                        fontSize: "0.72rem",
+                        padding: "3px 8px",
+                        borderRadius: 12,
+                        border: "1px dashed #ef4444",
+                        background: "rgba(239, 68, 68, 0.1)",
+                        color: "#ef4444",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✕ Clear Note
+                    </button>
+                  ) : null}
+                </div>
               </div>
 
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <Btn
-                  onClick={handleChefSubmit}
-                  disabled={submitting || selectedItems.length === 0}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "10px 24px",
-                    fontWeight: 700,
-                    background: COLORS.brand,
-                    color: "#18181b",
-                  }}
-                >
-                  <Send size={16} />
-                  <span>{submitting ? "Validating Requisition..." : "Submit Requisition"}</span>
-                </Btn>
+              {/* Action and Valuation Strip */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 16,
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingTop: 10,
+                  borderTop: `1px dashed ${COLORS.border}`,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    background: selectedItems.length > 0 ? "rgba(16, 185, 129, 0.1)" : "rgba(255, 255, 255, 0.04)",
+                    border: `1px solid ${selectedItems.length > 0 ? "rgba(16, 185, 129, 0.3)" : COLORS.border}`,
+                    fontSize: "0.82rem",
+                  }}>
+                    <span style={{ color: COLORS.muted }}>Selected Lines: </span>
+                    <strong style={{ color: selectedItems.length > 0 ? "#10b981" : COLORS.muted }}>
+                      {selectedItems.length}
+                    </strong>
+                  </div>
+
+                  <div style={{
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    background: "rgba(232, 168, 56, 0.1)",
+                    border: `1px solid rgba(232, 168, 56, 0.3)`,
+                    fontSize: "0.82rem",
+                  }}>
+                    <span style={{ color: COLORS.muted }}>Est. Valuation: </span>
+                    <strong style={{ color: COLORS.brand }}>
+                      ₹{totalOrderValue.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                  <Btn
+                    onClick={handleChefSubmit}
+                    disabled={submitting || selectedItems.length === 0}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "11px 28px",
+                      fontWeight: 800,
+                      background: selectedItems.length === 0 ? "rgba(255, 255, 255, 0.08)" : COLORS.brand,
+                      color: selectedItems.length === 0 ? COLORS.muted : "#18181b",
+                      cursor: selectedItems.length === 0 ? "not-allowed" : "pointer",
+                      boxShadow: selectedItems.length > 0 ? "0 4px 14px rgba(232, 168, 56, 0.35)" : "none",
+                      fontSize: "0.92rem",
+                    }}
+                  >
+                    <Send size={16} />
+                    <span>{submitting ? "Validating Requisition..." : "Submit Requisition"}</span>
+                  </Btn>
+                  {selectedItems.length === 0 && (
+                    <span style={{ fontSize: "0.74rem", color: "#f59e0b", fontWeight: 600 }}>
+                      ⚠️ Select at least 1 item with quantity &gt; 0 to submit
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
@@ -1863,6 +2070,29 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                         </td>
                         <td style={{ padding: "10px 12px" }}>
                           <span style={{ fontWeight: 600 }}>{ind.dept}</span>
+                          {ind.remarks ? (
+                            <div
+                              style={{
+                                fontSize: "0.72rem",
+                                color: "#b45309",
+                                marginTop: 3,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                background: "rgba(232, 168, 56, 0.12)",
+                                padding: "2px 6px",
+                                borderRadius: 4,
+                                border: "1px solid rgba(232, 168, 56, 0.3)",
+                                maxWidth: 200,
+                              }}
+                              title={`Chef Station Prep Note: ${ind.remarks}`}
+                            >
+                              <MessageSquare size={11} style={{ flexShrink: 0 }} />
+                              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {ind.remarks}
+                              </span>
+                            </div>
+                          ) : null}
                         </td>
                         <td style={{ padding: "10px 12px", color: COLORS.muted }}>
                           {ind.date ? new Date(ind.date).toLocaleDateString("en-IN") : "N/A"}
@@ -1945,6 +2175,32 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                   <X size={14} />
                 </Btn>
               </div>
+
+              {/* Chef's Station Prep Notes Display */}
+              {activeIndentDetail.remarks ? (
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 10,
+                    background: "rgba(232, 168, 56, 0.12)",
+                    border: "1.5px solid rgba(232, 168, 56, 0.4)",
+                    marginBottom: 16,
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                  }}
+                >
+                  <MessageSquare size={18} color="#e8a838" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#e8a838", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>
+                      Chef Station Prep Notes for Central Stores
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.text, lineHeight: 1.45 }}>
+                      "{activeIndentDetail.remarks}"
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               {/* Line items adjustments */}
               <div style={{ overflowX: "auto", marginBottom: 16 }}>

@@ -49,7 +49,7 @@ async function list(req, res, next) {
 // POST /api/indents
 async function create(req, res, next) {
   try {
-    const { dept, date, indent_type = "routine", items } = req.body;
+    const { dept, date, indent_type = "routine", items, remarks, shift = "MORNING", priority = "NORMAL" } = req.body;
     
     const deptExists = await db("departments").whereRaw("LOWER(name) = LOWER(?)", [dept.trim()]).first();
     if (!deptExists) {
@@ -92,6 +92,9 @@ async function create(req, res, next) {
         date,
         status: "pending",
         indent_type,
+        shift: shift || "MORNING",
+        priority: priority || "NORMAL",
+        remarks: remarks ? String(remarks).trim() : null,
         created_by: req.user?.id || null,
       }).returning("*");
       const rows = items.map((it) => ({
@@ -100,6 +103,7 @@ async function create(req, res, next) {
         qty: it.qty,
         unit: it.unit,
         item_code: it.item_code || "KPL-NEW",
+        notes: it.notes || null,
       }));
       const savedItems = await trx("indent_items").insert(rows).returning("*");
 
@@ -295,7 +299,7 @@ async function getRecommendations(req, res, next) {
       .groupBy("ii.name", "ii.unit", "ii.item_code")
       .select("ii.name", "ii.unit", "ii.item_code")
       .avg("ii.qty as avg_qty")
-      .count("distinct i.id as occurrence_count")
+      .countDistinct("i.id as occurrence_count")
       .max("i.date as last_ordered_date")
       .select(
         db.raw("AVG(CASE WHEN i.date >= (DATE(?) - INTERVAL '1 day' * ?) THEN ii.qty END) AS recent_avg", [targetDate, halfIntervalDays]),
