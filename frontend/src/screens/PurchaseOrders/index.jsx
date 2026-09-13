@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Pagination from "../../components/Pagination";
@@ -8,28 +8,32 @@ import { getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
 import * as api from "../../api";
-import { Plus, ArrowLeft, FileText, CheckCircle, XCircle, Clock, ChevronRight, Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle } from "lucide-react";
+import {
+  Plus, ArrowLeft, FileText, CheckCircle, XCircle, Clock, ChevronRight,
+  Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle,
+  Download, Search, RefreshCw, Send, CheckCircle2, ChevronDown, ChevronUp,
+  Building2, Calendar, FileSpreadsheet, Sparkles, TrendingDown, Layers,
+  ExternalLink, Eye, Trash2, ArrowRight
+} from "lucide-react";
 import RateComparisonModal from "./RateComparisonModal";
 import PrintPOModal from "./PrintPOModal";
 import P2PAgentStatusBar from "../../components/agents/P2PAgentStatusBar";
 import { PO_STATUS_CONFIG, PO_STATUSES } from "../../utils/poStatus";
-
-const LIMIT = 20;
 import { today } from "../../utils/dates";
 import { useLocalSpeech } from "../../hooks/useLocalSpeech";
 
-// Icons layered on top of the shared color config (utils/poStatus.js) — colors
-// stay in one place so every screen's badge agrees; only the icon choice
-// (a purely visual, screen-local flourish) lives here.
+const LIMIT = 20;
+
 const STATUS_ICONS = {
-  Draft: <Clock size={11} />,
-  Pending: <Clock size={11} />,
-  Approved: <CheckCircle size={11} />,
-  Sent: <FileText size={11} />,
-  Received: <CheckCircle size={11} />,
-  Cancelled: <XCircle size={11} />,
-  Rejected: <XCircle size={11} />,
+  Draft: <Clock size={12} />,
+  Pending: <Clock size={12} />,
+  Approved: <CheckCircle size={12} />,
+  Sent: <FileText size={12} />,
+  Received: <CheckCircle size={12} />,
+  Cancelled: <XCircle size={12} />,
+  Rejected: <XCircle size={12} />,
 };
+
 const STATUS_CONFIG = Object.fromEntries(
   PO_STATUSES.map((s) => [s, { ...PO_STATUS_CONFIG[s], icon: STATUS_ICONS[s] }])
 );
@@ -54,32 +58,67 @@ const fmt = (n) => parseFloat(n || 0).toLocaleString("en-IN", { minimumFractionD
 export default function PurchaseOrdersScreen() {
   const { stocks, setCurrentScreen, poPreFill, setPoPreFill, setGrnPreFill } = useAppContext();
   const [view, setView]         = useState("list"); // "list" | "create" | "detail"
+  const [createTab, setCreateTab] = useState("manual"); // "manual" | "voice" | "ocr" | "autodraft"
   const [detail, setDetail]     = useState(null);
   const [supplierList, setSupplierList] = useState([]);
   const [msg, setMsg]           = useState("");
-  const [filters, setFilters]   = useState({ status: "", supplier_id: "", q: "" });
+  
+  // Filters state
+  const [filters, setFilters]   = useState({
+    status: "",
+    supplier_id: "",
+    q: "",
+    dateRange: "all",
+    sort: "date",
+    order: "desc"
+  });
 
   // Form state
-  const [form, setForm]         = useState({ supplier_id: "", date: today(), notes: "" });
+  const [form, setForm]         = useState({
+    supplier_id: "",
+    date: today(),
+    delivery_date: "",
+    payment_terms: "Net 30",
+    notes: ""
+  });
   const [lineItems, setLineItems] = useState([{ ...emptyItem }]);
   const [submitting, setSubmitting] = useState(false);
   const [ratesCache, setRatesCache] = useState({});
 
+  // OCR & Voice state
   const fileInputRef = useRef();
   const cameraInputRef = useRef();
   const [scanningBill, setScanningBill] = useState(false);
-  const [showVoicePanel, setShowVoicePanel] = useState(false);
-  const [compareOpen, setCompareOpen] = useState(false);
-  const [printModalOpen, setPrintModalOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const { listening, interimText, startRecording, stopRecording } = useLocalSpeech();
 
+  // Modals & Comparison
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareItemCode, setCompareItemCode] = useState("");
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+
+  // Multi-agent swarm audit state
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [auditResults, setAuditResults] = useState(null);
+
   const { items, total, page, loading, error, fetch } = usePaginatedApi(api.purchaseOrders.list);
 
-  const load = (overrides = {}) =>
-    fetch({ limit: LIMIT, sort: "date", order: "desc", ...filters, ...overrides });
+  const load = (overrides = {}) => {
+    const params = {
+      limit: LIMIT,
+      sort: filters.sort,
+      order: filters.order,
+      status: filters.status || undefined,
+      supplier_id: filters.supplier_id || undefined,
+      q: filters.q ? filters.q.trim() : undefined,
+      ...overrides
+    };
+    fetch(params);
+  };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   useEffect(() => {
     api.suppliers.list({ limit: 200, sort: "name", order: "asc" })
@@ -91,6 +130,7 @@ export default function PurchaseOrdersScreen() {
   useEffect(() => {
     if (poPreFill) {
       setView("create");
+      setCreateTab("manual");
       if (poPreFill.supplier_id) {
         setForm((f) => ({
           ...f,
@@ -117,14 +157,74 @@ export default function PurchaseOrdersScreen() {
 
   const flash = (text, color = COLORS.success) => {
     setMsg({ text, color });
-    setTimeout(() => setMsg(""), 3000);
+    setTimeout(() => setMsg(""), 3500);
   };
 
+  // ── Multi-Agent Swarm Audit Trigger ─────────────────────
+  const runSwarmAudit = async () => {
+    setIsAuditing(true);
+    const warnings = [];
+    const recommendations = [];
+
+    // 1. Agent Veritas Policy Check: Unit Compatibility
+    for (const it of lineItems) {
+      if (!it.name) continue;
+      const match = stocks.find((s) => s.name && s.name.toLowerCase() === it.name.toLowerCase());
+      if (match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name)) {
+        warnings.push(`Unit incompatibility: Item '${it.name}' ordered in '${it.unit}', but master stock is defined in '${match.unit}'.`);
+      }
+    }
+
+    // 2. Agent Veritas: Check ₹10,000 threshold
+    if (grandTotal > 10000) {
+      warnings.push(`High Value Notice: Grand total of ₹${fmt(grandTotal)} exceeds the ₹10,000 threshold; will be locked for Managerial Approval.`);
+    }
+
+    // 3. Agent Sourcing Broker: Rate Optimization
+    let totalPotentialSavings = 0;
+    for (const it of lineItems) {
+      if (!it.name) continue;
+      const rates = ratesCache[it.name.toLowerCase()];
+      if (rates && rates.length > 0) {
+        const cheapest = rates[0];
+        const currentRate = parseFloat(it.unit_price || 0);
+        if (cheapest.price < currentRate) {
+          const delta = (currentRate - cheapest.price) * (parseFloat(it.qty) || 1);
+          totalPotentialSavings += delta;
+          recommendations.push(
+            `Agent Sourcing recommends '${cheapest.supplier}' for ${it.name} at ₹${cheapest.price}/${it.unit} (saves ₹${fmt(delta)}).`
+          );
+        }
+      }
+    }
+
+    // 4. Duplicate Items Check
+    const names = lineItems.map(it => it.name.trim().toLowerCase()).filter(Boolean);
+    const duplicates = names.filter((n, idx) => names.indexOf(n) !== idx);
+    if (duplicates.length > 0) {
+      warnings.push(`Duplicate lines detected for: ${[...new Set(duplicates)].join(", ")}. Combine into single line to avoid duplicate orders.`);
+    }
+
+    setTimeout(() => {
+      setAuditResults({
+        hasWarnings: warnings.length > 0,
+        warnings,
+        recommendations,
+        sourcingStatus: recommendations.length > 0 ? "SAVINGS FOUND" : "OPTIMAL",
+        veritasStatus: warnings.length > 0 ? "ATTENTION REQ" : "VERIFIED",
+        inwardStatus: "STANDBY"
+      });
+      setIsAuditing(false);
+      flash(warnings.length > 0 ? "Swarm Audit completed with policy warnings." : "Swarm Audit: All lines verified ✓", warnings.length > 0 ? COLORS.warning : COLORS.success);
+    }, 600);
+  };
+
+  // ── OCR Bill Scanner ────────────────────────────────────
   const handleScanBill = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setScanningBill(true);
-    flash("Scanning bill with AI...", COLORS.brand);
+    flash("Scanning document with OCR AI...", COLORS.brand);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = reader.result.split(",")[1];
@@ -132,19 +232,15 @@ export default function PurchaseOrdersScreen() {
         const res = await api.scan.purchase(base64, file.type || "image/jpeg");
         if (res.success && res.data) {
           const parsed = res.data;
-          // Match supplier
           if (parsed.supplier) {
             const matched = supplierList.find(s => s.name?.toLowerCase().includes(parsed.supplier.toLowerCase()) || parsed.supplier.toLowerCase().includes(s.name?.toLowerCase()));
             if (matched) {
               setForm(f => ({ ...f, supplier_id: matched.id.toString() }));
-              flash(`Bill scanned! Selected supplier: ${matched.name} ✓`);
+              flash(`Bill scanned! Matched vendor: ${matched.name} ✓`);
             } else {
-              flash(`Bill scanned! Supplier "${parsed.supplier}" not found in registered suppliers.`, COLORS.warning);
+              flash(`Bill scanned! Vendor "${parsed.supplier}" not in directory.`, COLORS.warning);
             }
-          } else {
-            flash("Bill scanned successfully ✓");
           }
-
           if (parsed.items && parsed.items.length) {
             const imported = parsed.items.map(it => {
               const match = stocks.find(s => s.name?.toLowerCase() === it.name?.toLowerCase());
@@ -157,9 +253,10 @@ export default function PurchaseOrdersScreen() {
               };
             });
             setLineItems(imported);
+            setCreateTab("manual");
           }
         } else {
-          flash("Failed to parse bill contents.", COLORS.coral);
+          flash("Failed to extract bill items.", COLORS.coral);
         }
       } catch (err) {
         flash("Scan error: " + err.message, COLORS.coral);
@@ -171,6 +268,7 @@ export default function PurchaseOrdersScreen() {
     reader.readAsDataURL(file);
   };
 
+  // ── Speech / Voice Parser ──────────────────────────────
   const startListening = () => {
     if (listening) {
       stopRecording((status) => flash(status));
@@ -178,7 +276,7 @@ export default function PurchaseOrdersScreen() {
       startRecording(
         (text) => {
           setImportText((prev) => (prev.trim() ? prev.trim() + "\n" + text : text));
-          flash("Transcription complete ✓");
+          flash("Voice transcription captured ✓");
         },
         (status) => flash(status)
       );
@@ -187,47 +285,38 @@ export default function PurchaseOrdersScreen() {
 
   const parseImportText = async () => {
     if (!importText.trim()) return;
-    flash("Parsing text list with AI...", COLORS.brand);
+    flash("Parsing voice list with AI...", COLORS.brand);
     try {
       const res = await api.scan.text(importText);
       if (res.success && res.data) {
-         const parsed = res.data;
-         // Match supplier
-         if (parsed.supplier) {
-           const matched = supplierList.find(s => s.name?.toLowerCase().includes(parsed.supplier.toLowerCase()) || parsed.supplier.toLowerCase().includes(s.name?.toLowerCase()));
-           if (matched) {
-             setForm(f => ({ ...f, supplier_id: matched.id.toString() }));
-           } else {
-             flash(`Supplier "${parsed.supplier}" not found.`, COLORS.warning);
-           }
-         }
-         if (parsed.items && parsed.items.length) {
-           const imported = parsed.items.map(it => {
-             const match = stocks.find(s => s.name?.toLowerCase() === it.name?.toLowerCase());
-             return {
-               item_code: it.item_code || match?.item_code || "",
-               name: it.name || "",
-               qty: it.qty?.toString() || "1",
-               unit: it.unit || match?.unit || "kg",
-               unit_price: it.price?.toString() || match?.price?.toString() || ""
-             };
-           });
-           setLineItems(imported);
-           flash("Items imported successfully ✓");
-           setShowVoicePanel(false);
-           setImportText("");
-         } else {
-           flash("No items could be extracted.", COLORS.coral);
-         }
-      } else {
-        flash("Failed to parse text.", COLORS.coral);
+        const parsed = res.data;
+        if (parsed.supplier) {
+          const matched = supplierList.find(s => s.name?.toLowerCase().includes(parsed.supplier.toLowerCase()) || parsed.supplier.toLowerCase().includes(s.name?.toLowerCase()));
+          if (matched) setForm(f => ({ ...f, supplier_id: matched.id.toString() }));
+        }
+        if (parsed.items && parsed.items.length) {
+          const imported = parsed.items.map(it => {
+            const match = stocks.find(s => s.name?.toLowerCase() === it.name?.toLowerCase());
+            return {
+              item_code: it.item_code || match?.item_code || "",
+              name: it.name || "",
+              qty: it.qty?.toString() || "1",
+              unit: it.unit || match?.unit || "kg",
+              unit_price: it.price?.toString() || match?.price?.toString() || ""
+            };
+          });
+          setLineItems(imported);
+          flash("Voice items converted to PO lines ✓");
+          setCreateTab("manual");
+          setImportText("");
+        }
       }
     } catch (err) {
       flash("Parse error: " + err.message, COLORS.coral);
     }
   };
 
-  // ── Line item helpers ──────────────────────────────────
+  // ── Line Items Helpers ──────────────────────────────────
   const updateLine = (idx, key, val) => {
     setLineItems((prev) => {
       const next = [...prev];
@@ -249,42 +338,56 @@ export default function PurchaseOrdersScreen() {
                   setRatesCache(prev => ({ ...prev, [itemKey]: res.data }));
                 }
               })
-              .catch(err => console.error("Error fetching supplier rates:", err));
+              .catch(() => {});
           }
         }
       }
       return next;
     });
   };
-  const addLine    = () => setLineItems((p) => [...p, { ...emptyItem }]);
-  const removeLine = (idx) => setLineItems((p) => p.filter((_, i) => i !== idx));
+
+  const addLine = () => setLineItems((p) => [...p, { ...emptyItem }]);
+  const removeLine = (idx) => setLineItems((p) => (p.length > 1 ? p.filter((_, i) => i !== idx) : [{ ...emptyItem }]));
+  const duplicateLine = (idx) => {
+    const item = lineItems[idx];
+    setLineItems((p) => [...p, { ...item }]);
+    flash("Line duplicated ✓");
+  };
 
   const lineTotal = (it) => {
     const q = parseFloat(it.qty) || 0;
     const p = parseFloat(it.unit_price) || 0;
     return (q * p).toFixed(2);
   };
+
   const grandTotal = lineItems.reduce((sum, it) => sum + (parseFloat(it.qty) || 0) * (parseFloat(it.unit_price) || 0), 0);
 
-  // ── Submit ─────────────────────────────────────────────
+  // ── Submit PO ──────────────────────────────────────────
   const submit = async () => {
-    if (!form.supplier_id) return flash("Please select a supplier.", COLORS.coral);
+    if (!form.supplier_id) return flash("Please select a vendor / supplier.", COLORS.coral);
     const validLines = lineItems.filter((it) => it.name && it.qty && it.unit_price);
-    if (validLines.length === 0) return flash("Add at least one item.", COLORS.coral);
+    if (validLines.length === 0) return flash("Add at least one valid line item.", COLORS.coral);
 
     const hasIncompatibleUnit = validLines.some((it) => {
       const match = stocks.find((s) => s.name && s.name.toLowerCase() === it.name.toLowerCase());
       return match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name);
     });
     if (hasIncompatibleUnit) {
-      return flash("Please fix items with dimensionally incompatible units before submitting PO.", COLORS.coral);
+      return flash("Dimensional conflict: Fix incompatible units before submitting PO.", COLORS.coral);
     }
+
     setSubmitting(true);
     try {
+      const combinedNotes = [
+        form.notes ? form.notes.trim() : null,
+        form.delivery_date ? `Expected Delivery: ${form.delivery_date}` : null,
+        form.payment_terms ? `Terms: ${form.payment_terms}` : null
+      ].filter(Boolean).join(" | ");
+
       const payload = {
         supplier_id: parseInt(form.supplier_id),
         date: form.date,
-        notes: form.notes || null,
+        notes: combinedNotes || null,
         items: validLines.map((it) => ({
           item_code: it.item_code || it.name.toUpperCase().replace(/\s+/g, "-").slice(0, 20),
           name: it.name,
@@ -293,39 +396,48 @@ export default function PurchaseOrdersScreen() {
           unit_price: parseFloat(it.unit_price),
         })),
       };
-      await api.purchaseOrders.create(payload);
-      flash("Purchase Order created ✓");
-      setForm({ supplier_id: "", date: today(), notes: "" });
+      const res = await api.purchaseOrders.create(payload);
+      flash(grandTotal > 10000 ? "PO routed to Approvals Queue (> ₹10,000 threshold) ✓" : "Purchase Order created ✓");
+      setForm({ supplier_id: "", date: today(), delivery_date: "", payment_terms: "Net 30", notes: "" });
       setLineItems([{ ...emptyItem }]);
+      setAuditResults(null);
       setView("list");
       load({ page: 1 });
-    } catch (e) { flash(e.message, COLORS.coral); }
+    } catch (e) {
+      flash(e.message, COLORS.coral);
+    }
     setSubmitting(false);
   };
 
   const autoDraft = async () => {
-    if (!form.supplier_id) return flash("Select a supplier for auto-draft.", COLORS.coral);
+    if (!form.supplier_id) return flash("Select a supplier for auto-drafting.", COLORS.coral);
     try {
       const res = await api.purchaseOrders.autoDraft(parseInt(form.supplier_id), true);
       if (res.data && res.data.items && res.data.items.length > 0) {
         setLineItems(res.data.items.map(it => ({
           ...it,
-          id: Date.now() + Math.random()
+          qty: it.qty?.toString() || "1",
+          unit_price: it.unit_price?.toString() || ""
         })));
-        flash(`Populated ${res.data.items.length} low stock items. Please review and submit.`);
+        flash(`Auto-drafted ${res.data.items.length} low stock items from reorder sentinel.`);
+        setCreateTab("manual");
       } else {
-        flash("No low stock items found to reorder.");
+        flash("No items requiring reorder for this vendor.");
       }
-    } catch (e) { flash(e.message, COLORS.coral); }
+    } catch (e) {
+      flash(e.message, COLORS.coral);
+    }
   };
 
-  // ── Detail view ────────────────────────────────────────
+  // ── Detail View Actions ────────────────────────────────
   const openDetail = async (id) => {
     try {
       const res = await api.purchaseOrders.getOne(id);
       setDetail(res.data);
       setView("detail");
-    } catch (e) { flash(e.message, COLORS.coral); }
+    } catch (e) {
+      flash(e.message, COLORS.coral);
+    }
   };
 
   const changeStatus = async (id, status) => {
@@ -334,19 +446,52 @@ export default function PurchaseOrdersScreen() {
       const res = await api.purchaseOrders.getOne(id);
       setDetail(res.data);
       load({ page: 1 });
-    } catch (e) { flash(e.message, COLORS.coral); }
+      flash(`PO status updated to ${status} ✓`);
+    } catch (e) {
+      flash(e.message, COLORS.coral);
+    }
   };
 
   const deletePO = async (id) => {
-    if (!confirm("Delete this PO? This cannot be undone.")) return;
+    if (!confirm("Are you sure you want to delete this Purchase Order? This cannot be undone.")) return;
     try {
       await api.purchaseOrders.remove(id);
-      flash("PO deleted.");
+      flash("Purchase Order deleted.");
       setView("list");
       load({ page: 1 });
-    } catch (e) { flash(e.message, COLORS.coral); }
+    } catch (e) {
+      flash(e.message, COLORS.coral);
+    }
   };
 
+  // ── CSV Export ──────────────────────────────────────────
+  const exportToCSV = () => {
+    if (!items || items.length === 0) {
+      flash("No purchase orders to export.", COLORS.warning);
+      return;
+    }
+    const headers = ["PO Number", "Supplier", "Date", "Status", "Items Count", "Total Amount (INR)", "Created At"];
+    const rows = items.map((p) => [
+      `"${p.po_number}"`,
+      `"${p.supplier_name}"`,
+      `"${p.date}"`,
+      `"${p.status}"`,
+      p.item_count || 0,
+      parseFloat(p.total_amount || 0).toFixed(2),
+      `"${p.created_at || ""}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Kapila_Purchase_Orders_${today()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    flash("Exported Purchase Orders to CSV ✓");
+  };
+
+  // ── WhatsApp & Clipboard Formatting ────────────────────
   const lowStockItems = stocks.filter((item) => {
     const pct = item.qty > 0 ? (item.remaining / item.qty) * 100 : 0;
     return item.min_alert_qty !== null ? item.remaining <= item.min_alert_qty : pct < 25;
@@ -354,25 +499,24 @@ export default function PurchaseOrdersScreen() {
 
   const generateWhatsAppPO = () => {
     if (lowStockItems.length === 0) return;
-    const header = "*KAPILA INVENTORY - PURCHASE ORDER*\n\nGenerated: " + today() + "\n\n";
+    const header = "*KAPILA INVENTORY — REORDER PURCHASE INQUIRY*\nGenerated: " + today() + "\n\n";
     const itemsText = lowStockItems.map((item, idx) => {
       const needed = item.min_alert_qty ? (item.min_alert_qty * 2) : 10;
-      return `${idx + 1}. *${item.name}* - Needs approx. ${needed} ${item.unit} (Current: ${parseFloat(item.remaining).toFixed(1)} ${item.unit})`;
+      return `${idx + 1}. *${item.name}* — Needs approx. ${needed} ${item.unit} (Current: ${parseFloat(item.remaining).toFixed(1)} ${item.unit})`;
     }).join("\n");
-    const footer = "\n\nPlease check pricing and confirm delivery date.";
+    const footer = "\n\nPlease confirm pricing & earliest dispatch date.\nHotel Kapila Procurement";
     window.open(`https://wa.me/?text=${encodeURIComponent(header + itemsText + footer)}`, "_blank");
   };
 
   const copyPOToClipboard = () => {
     if (lowStockItems.length === 0) return;
-    const header = "*KAPILA INVENTORY - PURCHASE ORDER*\n\nGenerated: " + today() + "\n\n";
+    const header = "*KAPILA INVENTORY — PURCHASE ORDER INQUIRY*\nGenerated: " + today() + "\n\n";
     const itemsText = lowStockItems.map((item, idx) => {
       const needed = item.min_alert_qty ? (item.min_alert_qty * 2) : 10;
-      return `${idx + 1}. *${item.name}* - Needs approx. ${needed} ${item.unit} (Current: ${parseFloat(item.remaining).toFixed(1)} ${item.unit})`;
+      return `${idx + 1}. *${item.name}* — Needs ${needed} ${item.unit}`;
     }).join("\n");
-    const footer = "\n\nPlease check pricing and confirm delivery date.";
-    navigator.clipboard.writeText(header + itemsText + footer);
-    flash("PO copied to clipboard ✓");
+    navigator.clipboard.writeText(header + itemsText);
+    flash("Reorder items copied to clipboard ✓");
   };
 
   const shareDetailViaWhatsApp = (po) => {
@@ -394,40 +538,70 @@ export default function PurchaseOrdersScreen() {
     flash("Purchase Order copied to clipboard ✓");
   };
 
-  // ── DETAIL VIEW ────────────────────────────────────────
+  // ── KPI Summary Calculations ────────────────────────────
+  const pendingCount = useMemo(() => (items || []).filter(p => p.status === "Pending").length, [items]);
+  const approvedCount = useMemo(() => (items || []).filter(p => ["Approved", "Sent"].includes(p.status)).length, [items]);
+  const totalSpend = useMemo(() => (items || []).reduce((acc, p) => acc + (parseFloat(p.total_amount) || 0), 0), [items]);
+
+  // ════════════════════════════════════════════════════════
+  // 1. DETAIL VIEW
+  // ════════════════════════════════════════════════════════
   if (view === "detail" && detail) {
+    const steps = [
+      { key: "Draft", label: "Drafted" },
+      { key: "Pending", label: "Pending Approval" },
+      { key: "Approved", label: "Approved" },
+      { key: "Sent", label: "Sent to Vendor" },
+      { key: "Received", label: "Goods Received (GRN)" }
+    ];
+
+    const currentStepIdx = steps.findIndex(s => s.key === detail.status);
+
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        {/* Swarm Telemetry */}
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 16 }}>
         <P2PAgentStatusBar activeModule="po" />
 
-        {/* Detail Header */}
+        {/* Top Detail Navigation Header */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          marginBottom: 16, flexWrap: "wrap", flexShrink: 0
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 12
         }}>
-          <button
-            onClick={() => setView("list")}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "none", border: `1px solid ${COLORS.border}`,
-              color: COLORS.muted, padding: "6px 12px", borderRadius: 8,
-              fontSize: 13, cursor: "pointer"
-            }}
-          >
-            <ArrowLeft size={14} /> Back
-          </button>
-          <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: COLORS.text }}>{detail.po_number}</h1>
-            <p style={{ fontSize: 12, color: COLORS.muted }}>{detail.supplier_name} · {new Date(detail.date).toLocaleDateString()}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={() => setView("list")}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "rgba(255,255,255,0.04)", border: `1px solid ${COLORS.border}`,
+                color: COLORS.text, padding: "8px 14px", borderRadius: 8,
+                fontSize: 13, cursor: "pointer", fontWeight: 600
+              }}
+            >
+              <ArrowLeft size={15} /> All Orders
+            </button>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, margin: 0, letterSpacing: "-0.02em" }}>
+                  {detail.po_number}
+                </h1>
+                <StatusBadge status={detail.status} />
+              </div>
+              <p style={{ fontSize: 12, color: COLORS.muted, margin: "2px 0 0" }}>
+                Vendor: <strong style={{ color: COLORS.text }}>{detail.supplier_name}</strong> · PO Date: {new Date(detail.date).toLocaleDateString("en-IN")}
+              </p>
+            </div>
           </div>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <StatusBadge status={detail.status} />
+
+          {/* Lifecycle Action Buttons */}
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             {detail.status === "Draft" && (
-              <Btn small onClick={() => changeStatus(detail.id, "Pending")}>Submit for Approval</Btn>
+              <Btn small onClick={() => changeStatus(detail.id, "Pending")}>
+                Submit for Approval
+              </Btn>
             )}
             {detail.status === "Approved" && (
-              <Btn small onClick={() => changeStatus(detail.id, "Sent")}>Mark Sent</Btn>
+              <Btn small onClick={() => changeStatus(detail.id, "Sent")}>
+                Mark Sent to Vendor
+              </Btn>
             )}
             {["Approved", "Sent"].includes(detail.status) && (
               <Btn
@@ -438,7 +612,7 @@ export default function PurchaseOrdersScreen() {
                 }}
                 style={{ background: COLORS.accent, color: "#18181b", fontWeight: 700 }}
               >
-                Receive via GRN
+                Receive via GRN →
               </Btn>
             )}
             <Btn small variant="ghost" onClick={() => shareDetailViaWhatsApp(detail)} icon={<Share2 size={13} />}>
@@ -451,60 +625,115 @@ export default function PurchaseOrdersScreen() {
               Print / PDF
             </Btn>
             {["Draft", "Sent"].includes(detail.status) && (
-              <Btn small variant="danger" onClick={() => deletePO(detail.id)}>Delete PO</Btn>
+              <Btn small variant="danger" onClick={() => deletePO(detail.id)} icon={<Trash2 size={13} />}>
+                Delete
+              </Btn>
             )}
           </div>
         </div>
 
-        {msg && <p style={{ color: msg.color, fontSize: 12, marginBottom: 10 }}>{msg.text}</p>}
+        {msg && <p style={{ color: msg.color, fontSize: 12, margin: 0 }}>{msg.text}</p>}
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16, flexShrink: 0 }}>
-          {[
-            ["Supplier", detail.supplier_name],
-            ["PO Date", new Date(detail.date).toLocaleDateString()],
-            ["GSTIN", detail.supplier_gstin || "—"],
-            ["Phone", detail.supplier_phone || "—"],
-            ["Total Amount", `₹${fmt(detail.total_amount)}`],
-            ["Notes", detail.notes || "—"],
-          ].map(([k, v]) => (
-            <div key={k} style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "10px 14px" }}>
-              <p style={{ fontSize: 10, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{k}</p>
-              <p style={{ color: COLORS.text, fontSize: 14, fontWeight: 500 }}>{v}</p>
-            </div>
-          ))}
+        {/* Visual Lifecycle Stepper */}
+        <Card style={{ padding: "16px 20px" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 12 }}>
+            Procurement Lifecycle Stepper
+          </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
+            {steps.map((st, i) => {
+              const isPast = currentStepIdx > i;
+              const isCurrent = currentStepIdx === i;
+              return (
+                <div key={st.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", zIndex: 2, flex: 1 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: isCurrent ? COLORS.accent : isPast ? COLORS.success : "rgba(255,255,255,0.06)",
+                    color: isCurrent ? "#18181b" : isPast ? "#fff" : COLORS.muted,
+                    fontSize: 12, fontWeight: 700, border: `2px solid ${isCurrent ? COLORS.accent : isPast ? COLORS.success : COLORS.border}`,
+                    marginBottom: 6
+                  }}>
+                    {isPast ? "✓" : i + 1}
+                  </div>
+                  <span style={{
+                    fontSize: 11.5,
+                    fontWeight: isCurrent ? 700 : 500,
+                    color: isCurrent ? COLORS.accent : isPast ? COLORS.text : COLORS.muted,
+                    textAlign: "center"
+                  }}>
+                    {st.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Metadata Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+            <span style={{ fontSize: 10.5, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Vendor / Supplier</span>
+            <p style={{ margin: "4px 0 2px", fontSize: 15, fontWeight: 700, color: COLORS.text }}>{detail.supplier_name}</p>
+            <span style={{ fontSize: 11.5, color: COLORS.muted }}>Phone: {detail.supplier_phone || "Not on file"}</span>
+          </div>
+
+          <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+            <span style={{ fontSize: 10.5, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>GSTIN & Compliance</span>
+            <p style={{ margin: "4px 0 2px", fontSize: 15, fontWeight: 700, color: COLORS.text }}>{detail.supplier_gstin || "Unregistered"}</p>
+            <span style={{ fontSize: 11.5, color: COLORS.muted }}>Vendor Rating: {detail.supplier_rating ? `${detail.supplier_rating} ★` : "Standard"}</span>
+          </div>
+
+          <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+            <span style={{ fontSize: 10.5, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total PO Valuation</span>
+            <p style={{ margin: "4px 0 2px", fontSize: 18, fontWeight: 800, color: COLORS.accent }}>₹{fmt(detail.total_amount)}</p>
+            <span style={{ fontSize: 11.5, color: COLORS.muted }}>{detail.items?.length || 0} order items</span>
+          </div>
+
+          <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+            <span style={{ fontSize: 10.5, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Delivery Terms & Notes</span>
+            <p style={{ margin: "4px 0 2px", fontSize: 13, fontWeight: 600, color: COLORS.text }}>{detail.notes || "Standard procurement guidelines"}</p>
+          </div>
         </div>
 
-        <Card style={{ padding: 0, overflow: "hidden", flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "10px 16px", borderBottom: `1px solid ${COLORS.border}`, background: "#f8fafc", flexShrink: 0 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.07em" }}>
-              Order Items
+        {/* Items Table */}
+        <Card style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "12px 18px", borderBottom: `1px solid ${COLORS.border}`, background: "rgba(255,255,255,0.02)" }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Ordered Items Breakdown
             </span>
           </div>
-          <div style={{ overflowY: "auto", flex: 1, minHeight: 0 }}>
-            <table>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
-                <tr>
-                  {["Item Code", "Name", "Qty", "Unit", "Unit Price", "Total"].map((h) => (
-                    <th key={h}>{h}</th>
-                  ))}
+                <tr style={{ background: COLORS.bg, textAlign: "left", color: COLORS.muted, borderBottom: `1px solid ${COLORS.border}` }}>
+                  <th style={{ padding: "10px 14px" }}>Item Code</th>
+                  <th style={{ padding: "10px 14px" }}>Item Description</th>
+                  <th style={{ padding: "10px 14px" }}>Quantity</th>
+                  <th style={{ padding: "10px 14px" }}>Unit</th>
+                  <th style={{ padding: "10px 14px" }}>Unit Price</th>
+                  <th style={{ padding: "10px 14px", textAlign: "right" }}>Total Price</th>
                 </tr>
               </thead>
               <tbody>
-                {(detail.items || []).map((it) => (
-                  <tr key={it.id}>
-                    <td style={{ fontFamily: "monospace", color: COLORS.brand, fontSize: 12 }}>{it.item_code}</td>
-                    <td style={{ fontWeight: 500 }}>{it.name}</td>
-                    <td>{it.qty}</td>
-                    <td style={{ color: COLORS.muted }}>{it.unit}</td>
-                    <td>₹{parseFloat(it.unit_price).toFixed(2)}</td>
-                    <td style={{ fontWeight: 600, color: COLORS.accent }}>₹{parseFloat(it.total_price).toFixed(2)}</td>
+                {(detail.items || []).map((it, idx) => (
+                  <tr key={it.id || idx} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                    <td style={{ padding: "10px 14px", fontFamily: "monospace", color: COLORS.brand, fontWeight: 600 }}>{it.item_code}</td>
+                    <td style={{ padding: "10px 14px", fontWeight: 500, color: COLORS.text }}>{it.name}</td>
+                    <td style={{ padding: "10px 14px", fontWeight: 600, color: COLORS.text }}>{it.qty}</td>
+                    <td style={{ padding: "10px 14px", color: COLORS.muted }}>{it.unit}</td>
+                    <td style={{ padding: "10px 14px" }}>₹{parseFloat(it.unit_price).toFixed(2)}</td>
+                    <td style={{ padding: "10px 14px", textAlign: "right", fontWeight: 700, color: COLORS.accent }}>
+                      ₹{parseFloat(it.total_price).toFixed(2)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr style={{ borderTop: `2px solid ${COLORS.border}` }}>
-                  <td colSpan={5} style={{ textAlign: "right", fontWeight: 600, color: COLORS.muted, padding: "12px 16px" }}>Grand Total</td>
-                  <td style={{ fontWeight: 700, color: COLORS.accent, fontSize: 16, padding: "12px 16px" }}>
+                <tr style={{ background: "rgba(255,255,255,0.02)", borderTop: `2px solid ${COLORS.border}` }}>
+                  <td colSpan={5} style={{ padding: "14px 18px", textAlign: "right", fontWeight: 700, color: COLORS.text }}>
+                    Grand Total
+                  </td>
+                  <td style={{ padding: "14px 18px", textAlign: "right", fontWeight: 800, fontSize: 17, color: COLORS.accent }}>
                     ₹{fmt(detail.total_amount)}
                   </td>
                 </tr>
@@ -513,499 +742,848 @@ export default function PurchaseOrdersScreen() {
           </div>
         </Card>
 
-        {/* Print PO Modal */}
         <PrintPOModal open={printModalOpen} onClose={() => setPrintModalOpen(false)} po={detail} />
       </div>
     );
   }
 
-  // ── DEFAULT VIEW (Combined Create & List) ──────────────────────────
+  // ════════════════════════════════════════════════════════
+  // 2. DEFAULT VIEW: COMMAND BAR + (NEW PO STUDIO / LIST GRID)
+  // ════════════════════════════════════════════════════════
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 20, overflowY: "auto", paddingRight: 4 }}>
-      {/* Page Header */}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 16 }}>
+      {/* Top Header Command Bar */}
       <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexShrink: 0
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        flexWrap: "wrap", gap: 12
       }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, letterSpacing: "-0.02em" }}>Purchase Orders</h1>
-          <p style={{ fontSize: 13, color: COLORS.muted, marginTop: 2 }}>Track POs from draft to delivery</p>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, letterSpacing: "-0.02em", margin: 0 }}>
+            Purchase Orders
+          </h1>
+          <p style={{ fontSize: 13, color: COLORS.muted, margin: "2px 0 0" }}>
+            Procurement lifecycle management, vendor rate comparison & inward stock sync
+          </p>
+        </div>
+
+        {/* View Switcher Pill */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{
+            display: "flex", background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+            borderRadius: 8, padding: 3
+          }}>
+            <button
+              onClick={() => setView("list")}
+              style={{
+                padding: "6px 14px", fontSize: 12.5, fontWeight: view === "list" ? 700 : 500,
+                borderRadius: 6, border: "none", cursor: "pointer",
+                background: view === "list" ? COLORS.brand : "transparent",
+                color: view === "list" ? "#fff" : COLORS.muted,
+                transition: "all 0.15s"
+              }}
+            >
+              Recent Orders ({total})
+            </button>
+            <button
+              onClick={() => setView("create")}
+              style={{
+                padding: "6px 14px", fontSize: 12.5, fontWeight: view === "create" ? 700 : 500,
+                borderRadius: 6, border: "none", cursor: "pointer",
+                background: view === "create" ? COLORS.brand : "transparent",
+                color: view === "create" ? "#fff" : COLORS.muted,
+                transition: "all 0.15s"
+              }}
+            >
+              + New PO Studio
+            </button>
+          </div>
+
+          <Btn
+            variant="ghost"
+            onClick={() => { setCompareItemCode(""); setCompareOpen(true); }}
+            icon={<Scale size={15} />}
+            style={{ fontSize: 12.5, fontWeight: 600, border: `1px solid ${COLORS.border}` }}
+          >
+            Compare Rates
+          </Btn>
         </div>
       </div>
 
-      {/* Swarm Telemetry */}
-      <P2PAgentStatusBar activeModule="po" />
+      {/* Interactive Swarm Telemetry */}
+      <P2PAgentStatusBar
+        activeModule="po"
+        onRunAudit={runSwarmAudit}
+        isAuditing={isAuditing}
+        auditResults={auditResults}
+      />
 
-      <style>{`
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .spin { animation: spin 1s linear infinite; }
-      `}</style>
-
-      {/* New PO Form (covers full width) */}
-      <Card style={{ padding: "20px 24px", flexShrink: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: COLORS.text }}>
-            New Purchase Order
-          </h3>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Btn variant="ghost" onClick={() => setCompareOpen(true)} icon={<Scale size={16} />} style={{ fontSize: 13, fontWeight: "bold", padding: "8px 12px" }}>
-              Compare Vendor Rates
-            </Btn>
-            <Btn variant="ghost" onClick={() => setShowVoicePanel(!showVoicePanel)} icon={<Mic size={16} />} style={{ fontSize: 13, fontWeight: "bold", padding: "8px 12px" }}>
-              {showVoicePanel ? "Standard" : "Voice Input"}
-            </Btn>
-            <Btn variant="ghost" onClick={() => fileInputRef.current.click()} icon={scanningBill ? <Loader size={16} className="spin" /> : <FileImage size={16} />} style={{ fontSize: 13, fontWeight: "bold", padding: "8px 12px" }} disabled={scanningBill}>
-              {scanningBill ? "Scanning…" : "Scan Doc"}
-            </Btn>
-            <Btn variant="ghost" onClick={() => cameraInputRef.current.click()} icon={scanningBill ? <Loader size={16} className="spin" /> : <Camera size={16} />} style={{ fontSize: 13, fontWeight: "bold", padding: "8px 12px" }} disabled={scanningBill}>
-              {scanningBill ? "Scanning…" : "Scan using Camera"}
-            </Btn>
-            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleScanBill} />
-            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleScanBill} />
-          </div>
+      {/* KPI Counters Strip */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+          <span style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", fontWeight: 600 }}>Total Purchase Orders</span>
+          <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 800, color: COLORS.text }}>{total}</p>
         </div>
 
-        {/* Voice dictation panel */}
-        {showVoicePanel && (
+        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+          <span style={{ fontSize: 11, color: COLORS.warning, textTransform: "uppercase", fontWeight: 600 }}>Pending Manager Approval</span>
+          <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 800, color: COLORS.warning }}>{pendingCount}</p>
+        </div>
+
+        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+          <span style={{ fontSize: 11, color: COLORS.teal, textTransform: "uppercase", fontWeight: 600 }}>Approved / Awaiting GRN</span>
+          <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 800, color: COLORS.teal }}>{approvedCount}</p>
+        </div>
+
+        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "12px 16px" }}>
+          <span style={{ fontSize: 11, color: COLORS.accent, textTransform: "uppercase", fontWeight: 600 }}>Total Orders Valuation</span>
+          <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 800, color: COLORS.accent }}>₹{fmt(totalSpend)}</p>
+        </div>
+      </div>
+
+      {msg && (
+        <div style={{
+          background: msg.color ? `${msg.color}15` : "rgba(16, 185, 129, 0.15)",
+          border: `1px solid ${msg.color || COLORS.success}44`,
+          color: msg.color || COLORS.success,
+          padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500
+        }}>
+          {msg.text || msg}
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────── */}
+      {/* 2A. NEW PURCHASE ORDER STUDIO                          */}
+      {/* ────────────────────────────────────────────────────── */}
+      {view === "create" && (
+        <Card style={{ padding: "20px 24px" }}>
+          {/* Studio Tab Switcher */}
           <div style={{
-            background: "#f8fafc",
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: 8,
-            padding: "16px 20px",
-            marginBottom: 20
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 14, marginBottom: 18,
+            flexWrap: "wrap", gap: 10
           }}>
-            <p style={{ fontSize: 13, color: COLORS.accent, fontWeight: 600, margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: 6 }}>
-              <Mic size={14} /> Quick Dictate / Text Import
-            </p>
-            <p style={{ fontSize: 11, color: COLORS.muted, margin: "0 0 12px 0" }}>
-              Type, paste item lists, or use voice dictation in Telugu, Hindi, English, and other local languages.
-            </p>
-
-            {(() => {
-              const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-              if (!isSecure) {
-                return (
-                  <div style={{
-                    background: COLORS.coral + "15",
-                    border: `1px solid ${COLORS.coral}33`,
-                    borderRadius: 6,
-                    padding: "8px 10px",
-                    fontSize: 11,
-                    color: COLORS.coral,
-                    marginBottom: 12,
-                    lineHeight: 1.3
-                  }}>
-                    ⚠️ <strong>Security Restriction:</strong> Web Speech recognition requires a secure context. Because this app is accessed over HTTP on a custom IP, your browser has blocked the microphone. Please open <strong>http://localhost:5173</strong> (or setup HTTPS) to enable dictation.
-                  </div>
-                );
-              }
-              return null;
-            })()}
-
-            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-
-              <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[
+                { id: "manual", label: "Line Item Builder", icon: <Layers size={14} /> },
+                { id: "voice", label: "Voice / Speech", icon: <Mic size={14} /> },
+                { id: "ocr", label: "Bill / Doc Scanner", icon: <FileImage size={14} /> },
+                { id: "autodraft", label: "Low-Stock Auto-Draft", icon: <Sparkles size={14} /> }
+              ].map(t => (
                 <button
-                  onClick={startListening}
+                  key={t.id}
+                  onClick={() => setCreateTab(t.id)}
                   style={{
-                    padding: "7px 14px",
-                    fontSize: 12,
-                    background: listening ? COLORS.coral : COLORS.bg,
-                    border: `1px solid ${listening ? COLORS.coral : COLORS.border}`,
-                    color: listening ? "#fff" : COLORS.text,
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontWeight: 600,
-                    transition: "all 0.2s",
-                    height: "33px"
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "7px 12px", borderRadius: 7, border: "none", cursor: "pointer",
+                    fontSize: 12.5, fontWeight: createTab === t.id ? 700 : 500,
+                    background: createTab === t.id ? "rgba(232, 168, 56, 0.15)" : "transparent",
+                    color: createTab === t.id ? COLORS.accent : COLORS.muted,
+                    transition: "all 0.15s"
                   }}
                 >
-                  {listening ? "🛑 Stop" : "🎤 Speak"}
+                  {t.icon} {t.label}
                 </button>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 11, color: COLORS.muted, display: "block", marginBottom: 4 }}>Pasted Text or Transcribed Voice</label>
-              <textarea
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-                placeholder="e.g. Rice 50 kg rate 45&#10;Tomatoes 20 kg price 30&#10;Oil 15 liter"
-                rows={4}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  fontSize: 12,
-                  background: "#fff",
-                  border: `1px solid ${COLORS.border}`,
-                  color: COLORS.text,
-                  borderRadius: 6,
-                  fontFamily: "inherit",
-                  resize: "vertical"
-                }}
-              />
-              {interimText && (
-                <div style={{ 
-                  fontSize: 12, 
-                  color: COLORS.accent, 
-                  marginTop: 6, 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 6,
-                  padding: "6px 10px",
-                  background: COLORS.accent + "11",
-                  border: `1px dashed ${COLORS.accent}44`,
-                  borderRadius: 4
-                }}>
-                  <span style={{ fontSize: 10 }}>🎙️</span>
-                  <span style={{ fontStyle: "italic" }}>Hearing: "{interimText}"...</span>
-                </div>
-              )}
+              ))}
             </div>
 
             <div style={{ display: "flex", gap: 8 }}>
-              <Btn small onClick={parseImportText} disabled={!importText.trim()} style={{ flex: 1 }}>Parse & Import</Btn>
-              <Btn small variant="ghost" onClick={() => { setShowVoicePanel(false); setImportText(""); }} style={{ border: `1px solid ${COLORS.border}`, flex: 1 }}>Cancel</Btn>
+              <button
+                type="button"
+                onClick={runSwarmAudit}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "6px 12px", borderRadius: 6, fontSize: 12,
+                  background: "rgba(232, 168, 56, 0.1)", border: `1px solid ${COLORS.accent}44`,
+                  color: COLORS.accent, cursor: "pointer", fontWeight: 600
+                }}
+              >
+                <Sparkles size={13} /> Verify Draft With Swarm
+              </button>
             </div>
           </div>
-        )}
-        
-        {/* Header fields */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
-          <div>
-            <label style={{ fontSize: 11, color: COLORS.muted, letterSpacing: "0.07em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>
-              Supplier *
-            </label>
-            <select
-              value={form.supplier_id}
-              onChange={(e) => setForm((f) => ({ ...f, supplier_id: e.target.value }))}
-              style={{ width: "100%", padding: "9px 12px", background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13 }}
-            >
-              <option value="">— Select Supplier —</option>
-              {supplierList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
+
+          {/* TAB: VOICE DICTATION */}
+          {createTab === "voice" && (
+            <div style={{
+              background: "rgba(255,255,255,0.02)", border: `1px solid ${COLORS.border}`,
+              borderRadius: 10, padding: 18, marginBottom: 20
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.accent, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Mic size={16} /> Multi-Language Speech Capture (Telugu, Hindi, English)
+                </span>
+                <button
+                  onClick={startListening}
+                  style={{
+                    padding: "7px 16px", borderRadius: 6, fontSize: 12, fontWeight: 700,
+                    background: listening ? COLORS.danger : COLORS.brand,
+                    color: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                  }}
+                >
+                  {listening ? "🛑 Stop Recording" : "🎤 Start Dictation"}
+                </button>
+              </div>
+              <textarea
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                placeholder="Speak or paste order list (e.g. Sona Masoori Rice 50 kg rate 45, Sunflower Oil 20 liter rate 110)..."
+                rows={3}
+                style={{
+                  width: "100%", padding: "10px 12px", background: COLORS.bg,
+                  border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                  color: COLORS.text, fontSize: 13, resize: "vertical"
+                }}
+              />
+              {interimText && (
+                <div style={{ fontSize: 12, color: COLORS.accent, marginTop: 6, fontStyle: "italic" }}>
+                  Listening: "{interimText}"...
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <Btn small onClick={parseImportText} disabled={!importText.trim()}>Convert to PO Lines</Btn>
+                <Btn small variant="ghost" onClick={() => setImportText("")} style={{ border: `1px solid ${COLORS.border}` }}>Clear</Btn>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: OCR BILL SCANNER */}
+          {createTab === "ocr" && (
+            <div style={{
+              background: "rgba(255,255,255,0.02)", border: `1px solid ${COLORS.border}`,
+              borderRadius: 10, padding: 18, marginBottom: 20
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <FileImage size={18} color={COLORS.accent} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.text }}>
+                  AI Purchase Invoice & Quotation Scanner
+                </span>
+              </div>
+              <p style={{ fontSize: 12, color: COLORS.muted, margin: "0 0 14px 0" }}>
+                Upload supplier proforma invoice or snap with mobile camera to automatically extract supplier and line items.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <Btn
+                  onClick={() => fileInputRef.current.click()}
+                  disabled={scanningBill}
+                  icon={scanningBill ? <Loader size={14} className="spin" /> : <FileImage size={14} />}
+                >
+                  {scanningBill ? "Scanning Bill..." : "Upload Invoice Image"}
+                </Btn>
+                <Btn
+                  variant="ghost"
+                  onClick={() => cameraInputRef.current.click()}
+                  disabled={scanningBill}
+                  icon={<Camera size={14} />}
+                  style={{ border: `1px solid ${COLORS.border}` }}
+                >
+                  Capture with Camera
+                </Btn>
+                <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleScanBill} />
+                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleScanBill} />
+              </div>
+            </div>
+          )}
+
+          {/* TAB: AUTO-DRAFT LOW STOCK */}
+          {createTab === "autodraft" && (
+            <div style={{
+              background: "rgba(232, 168, 56, 0.06)", border: `1px solid ${COLORS.accent}44`,
+              borderRadius: 10, padding: 18, marginBottom: 20
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <Sparkles size={18} color={COLORS.accent} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.accent }}>
+                  One-Click Predictive Low-Stock Auto-Draft
+                </span>
+              </div>
+              <p style={{ fontSize: 12, color: COLORS.muted, margin: "0 0 12px 0" }}>
+                Select a supplier below and click Auto-Draft. The procurement swarm queries on-hand stock and reorder levels to calculate optimal order quantities.
+              </p>
+              <Btn onClick={autoDraft} disabled={!form.supplier_id}>
+                Auto-Draft Reorder Lines For Selected Vendor
+              </Btn>
+            </div>
+          )}
+
+          {/* Primary Form Header Fields */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 20 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>
+                Vendor / Supplier *
+              </label>
+              <select
+                value={form.supplier_id}
+                onChange={(e) => setForm((f) => ({ ...f, supplier_id: e.target.value }))}
+                style={{
+                  width: "100%", padding: "9px 12px", background: COLORS.bg,
+                  border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13
+                }}
+              >
+                <option value="">— Select Supplier —</option>
+                {supplierList.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} {s.phone ? `(${s.phone})` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>
+                PO Issue Date *
+              </label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                style={{
+                  width: "100%", padding: "9px 12px", background: COLORS.bg,
+                  border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>
+                Expected Delivery Date
+              </label>
+              <input
+                type="date"
+                value={form.delivery_date}
+                onChange={(e) => setForm((f) => ({ ...f, delivery_date: e.target.value }))}
+                style={{
+                  width: "100%", padding: "9px 12px", background: COLORS.bg,
+                  border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>
+                Payment Terms
+              </label>
+              <select
+                value={form.payment_terms}
+                onChange={(e) => setForm((f) => ({ ...f, payment_terms: e.target.value }))}
+                style={{
+                  width: "100%", padding: "9px 12px", background: COLORS.bg,
+                  border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13
+                }}
+              >
+                <option value="Net 30">Net 30 Days</option>
+                <option value="Net 15">Net 15 Days</option>
+                <option value="Immediate">Immediate / Upon Delivery</option>
+                <option value="COD">Cash on Delivery (COD)</option>
+                <option value="Advance">Advance Payment</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label style={{ fontSize: 11, color: COLORS.muted, letterSpacing: "0.07em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>
-              PO Date *
-            </label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              style={{ width: "100%", padding: "9px 12px", background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13 }}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 11, color: COLORS.muted, letterSpacing: "0.07em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>
-              Notes
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>
+              Instructions / Notes
             </label>
             <input
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-              placeholder="Optional instructions..."
-              style={{ width: "100%", padding: "9px 12px", background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13 }}
+              placeholder="e.g. Delivery before 10 AM, Gate 2 receiving, quality check required..."
+              style={{
+                width: "100%", padding: "9px 12px", background: COLORS.bg,
+                border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13
+              }}
             />
           </div>
-        </div>
 
-        {/* Line Items */}
-        <p style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10, fontWeight: 600 }}>
-          Order Items
-        </p>
-        <div style={{ background: COLORS.bg, borderRadius: 10, border: `1px solid ${COLORS.border}`, overflow: "hidden", marginBottom: 12 }}>
-          <table style={{ fontSize: 13 }}>
-            <thead>
-              <tr>
-                {["Item Name", "Item Code", "Qty", "Unit", "Unit Price (₹)", "Total", ""].map((h) => (
-                  <th key={h} style={{ background: "#f1f5f9", padding: "9px 12px" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {lineItems.map((it, idx) => (
-                <tr key={idx}>
-                  <td style={{ padding: "6px 10px", verticalAlign: "top" }}>
-                    <div style={{ position: "relative" }}>
-                      <input
-                        list="stock-names"
-                        value={it.name}
-                        onChange={(e) => updateLine(idx, "name", e.target.value)}
-                        placeholder="Item name"
-                        style={{ background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 6, padding: "6px 10px", fontSize: 12, width: "100%", minWidth: 150 }}
-                      />
-                      {ratesCache[it.name?.toLowerCase()]?.length > 0 && (
-                        <div style={{ fontSize: 10, color: COLORS.muted, marginTop: 4 }}>
-                          Cheapest: <strong>{ratesCache[it.name.toLowerCase()][0].supplier}</strong> (₹{ratesCache[it.name.toLowerCase()][0].price})
-                          <button onClick={() => {
-                             updateLine(idx, "unit_price", ratesCache[it.name.toLowerCase()][0].price);
-                             if (!form.supplier_id && ratesCache[it.name.toLowerCase()][0].supplier_id) {
-                               setForm(f => ({ ...f, supplier_id: ratesCache[it.name.toLowerCase()][0].supplier_id.toString() }));
-                             }
-                          }} style={{ marginLeft: 6, cursor: "pointer", color: COLORS.brand, border: "none", background: "none", textDecoration: "underline", padding: 0 }}>Use Rate</button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td style={{ padding: "6px 10px" }}>
-                    <input
-                      value={it.item_code}
-                      onChange={(e) => updateLine(idx, "item_code", e.target.value)}
-                      placeholder="KPL-###"
-                      style={{ background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.brand, borderRadius: 6, padding: "6px 10px", fontSize: 12, width: 90, fontFamily: "monospace" }}
-                    />
-                  </td>
-                  <td style={{ padding: "6px 10px" }}>
-                    <input type="number" min="0.01" step="any" value={it.qty}
-                      onChange={(e) => updateLine(idx, "qty", e.target.value)}
-                      style={{ background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 6, padding: "6px 10px", fontSize: 12, width: 70 }}
-                    />
-                  </td>
-                  <td style={{ padding: "6px 10px" }}>
-                    {(() => {
-                      const match = stocks.find((s) => s.name && s.name.toLowerCase() === (it.name || "").toLowerCase());
-                      const allowedUnits = match?.unit ? getCompatibleUnits(match.unit) : UNITS;
-                      const isIncompatible = match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name);
-
-                      return (
-                        <div>
-                          <select value={it.unit} onChange={(e) => updateLine(idx, "unit", e.target.value)}
-                            style={{
-                              background: isIncompatible ? "#FEE2E2" : "#fff",
-                              border: `1px solid ${isIncompatible ? COLORS.coral : COLORS.border}`,
-                              color: COLORS.text,
-                              borderRadius: 6,
-                              padding: "6px 8px",
-                              fontSize: 12,
-                              width: 70
-                            }}>
-                            {allowedUnits.map((u) => <option key={u} value={u}>{u}</option>)}
-                          </select>
-                          {isIncompatible && (
-                            <div style={{ fontSize: 9, color: COLORS.coral, marginTop: 2 }}>Stock is {match.unit}</div>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </td>
-                  <td style={{ padding: "6px 10px" }}>
-                    <input type="number" min="0" step="any" value={it.unit_price}
-                      onChange={(e) => updateLine(idx, "unit_price", e.target.value)}
-                      style={{ background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 6, padding: "6px 10px", fontSize: 12, width: 90 }}
-                    />
-                  </td>
-                  <td style={{ padding: "6px 10px", color: COLORS.accent, fontWeight: 600, whiteSpace: "nowrap" }}>
-                    ₹{lineTotal(it)}
-                  </td>
-                  <td style={{ padding: "6px 10px" }}>
-                    {lineItems.length > 1 && (
-                      <button
-                        onClick={() => removeLine(idx)}
-                        style={{ background: "none", border: "none", color: COLORS.danger, cursor: "pointer", fontSize: 16, padding: "0 4px" }}
-                      >×</button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <datalist id="stock-names">
-          {stocks.map((s) => <option key={s.id} value={s.name} />)}
-        </datalist>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <button
-            onClick={addLine}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "none", border: `1px dashed ${COLORS.border}`,
-              color: COLORS.muted, padding: "7px 14px", borderRadius: 8, fontSize: 13, cursor: "pointer"
-            }}
-          >
-            <Plus size={14} /> Add Item
-          </button>
-          <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 11, color: COLORS.muted, marginBottom: 2 }}>GRAND TOTAL</p>
-            <p style={{ fontWeight: 700, color: COLORS.accent, fontSize: 22, letterSpacing: "-0.02em" }}>
-              ₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-            </p>
-          </div>
-        </div>
-
-        {grandTotal > 10000 && (
-          <div
-            style={{
-              background: "rgba(232, 168, 56, 0.12)",
-              border: `1px solid ${COLORS.accent}66`,
-              borderRadius: 8,
-              padding: "10px 14px",
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <AlertTriangle size={18} color={COLORS.accent} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: COLORS.accent, fontWeight: 600 }}>
-              Threshold Notice: Orders exceeding ₹10,000 (currently ₹{fmt(grandTotal)}) require managerial authorization and will be automatically routed to the Approvals Queue upon submission.
+          {/* Line Items Table */}
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Order Line Items ({lineItems.length})
             </span>
           </div>
-        )}
 
-        <div style={{ display: "flex", gap: 10, paddingTop: 16, borderTop: `1px solid ${COLORS.border}`, flexWrap: "wrap" }}>
-          <Btn onClick={submit} loading={submitting} style={{ flex: 1 }}>Create Purchase Order</Btn>
-          <Btn variant="ghost" onClick={autoDraft}>Auto-Draft (Low Stock)</Btn>
-          <Btn variant="ghost" onClick={generateWhatsAppPO} disabled={lowStockItems.length === 0} style={{ color: COLORS.success, borderColor: COLORS.success }}>
-            Share via WhatsApp
-          </Btn>
-          <Btn variant="ghost" onClick={copyPOToClipboard} disabled={lowStockItems.length === 0} style={{ color: COLORS.accent, borderColor: COLORS.accent }}>
-            Copy PO
-          </Btn>
-          <Btn variant="ghost" onClick={() => {
-            setForm({ supplier_id: "", date: today(), notes: "" });
-            setLineItems([{ ...emptyItem }]);
-          }}>Clear Form</Btn>
-        </div>
-      </Card>
+          <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: "hidden", marginBottom: 16 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: COLORS.bg, color: COLORS.muted, textAlign: "left", borderBottom: `1px solid ${COLORS.border}` }}>
+                  <th style={{ padding: "9px 12px" }}>Item Name & Search</th>
+                  <th style={{ padding: "9px 12px" }}>Code</th>
+                  <th style={{ padding: "9px 12px" }}>Quantity</th>
+                  <th style={{ padding: "9px 12px" }}>Unit</th>
+                  <th style={{ padding: "9px 12px" }}>Unit Price (₹)</th>
+                  <th style={{ padding: "9px 12px" }}>Line Total</th>
+                  <th style={{ padding: "9px 12px", textAlign: "right" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lineItems.map((it, idx) => {
+                  const match = stocks.find((s) => s.name && s.name.toLowerCase() === (it.name || "").toLowerCase());
+                  const allowedUnits = match?.unit ? getCompatibleUnits(match.unit) : UNITS;
+                  const isIncompatible = match?.unit && !areUnitsCompatible(it.unit, match.unit, it.name);
+                  const itemRates = ratesCache[it.name?.toLowerCase()];
+                  const cheapestRate = itemRates && itemRates.length > 0 ? itemRates[0] : null;
 
-      {/* Recent POs Table */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, flexShrink: 0 }}>
-        <h3 style={{ margin: "10px 0 0", fontSize: "16px", fontWeight: 600, color: COLORS.text }}>
-          Recent Purchase Orders
-        </h3>
+                  return (
+                    <tr key={idx} style={{ borderBottom: `1px solid ${COLORS.border}`, verticalAlign: "top" }}>
+                      {/* Name input */}
+                      <td style={{ padding: "8px 12px", minWidth: 220 }}>
+                        <input
+                          list="stock-names-autocomplete"
+                          value={it.name}
+                          onChange={(e) => updateLine(idx, "name", e.target.value)}
+                          placeholder="Type or select item..."
+                          style={{
+                            width: "100%", padding: "7px 10px", background: COLORS.bg,
+                            border: `1px solid ${COLORS.border}`, borderRadius: 6,
+                            color: COLORS.text, fontSize: 12.5
+                          }}
+                        />
+                        {/* Intelligent Lowest Rate Pill */}
+                        {cheapestRate && (
+                          <div style={{
+                            display: "flex", alignItems: "center", gap: 6, marginTop: 4,
+                            fontSize: 11, color: COLORS.accent
+                          }}>
+                            <span>Cheapest: <strong>{cheapestRate.supplier}</strong> (₹{cheapestRate.price})</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateLine(idx, "unit_price", cheapestRate.price.toString());
+                                if (!form.supplier_id && cheapestRate.supplier_id) {
+                                  setForm(f => ({ ...f, supplier_id: cheapestRate.supplier_id.toString() }));
+                                }
+                              }}
+                              style={{
+                                background: "rgba(232, 168, 56, 0.15)", border: "none",
+                                color: COLORS.accent, borderRadius: 4, padding: "1px 6px",
+                                cursor: "pointer", fontSize: 10.5, fontWeight: 700
+                              }}
+                            >
+                              Use Rate
+                            </button>
+                          </div>
+                        )}
+                      </td>
 
-        {/* Filters Bar */}
-        <div style={{
-          display: "flex", gap: 10, alignItems: "center",
-          flexWrap: "wrap", flexShrink: 0
-        }}>
-          <input
-            value={filters.q}
-            onChange={(e) => { setFilters((f) => ({ ...f, q: e.target.value })); load({ page: 1, q: e.target.value }); }}
-            placeholder="Search PO# or supplier…"
-            style={{
-              flex: 1, minWidth: 200, padding: "8px 12px",
-              border: `1px solid ${COLORS.border}`, borderRadius: 8,
-              fontSize: 13, background: "#fff", color: COLORS.text
-            }}
-          />
-          {/* Status pills */}
-          <div style={{ display: "flex", gap: 6 }}>
-            {["", ...PO_STATUSES].map((s) => {
-              const isActive = filters.status === s;
-              const sc = s ? STATUS_CONFIG[s] : null;
-              return (
-                <button
-                  key={s}
-                  onClick={() => { setFilters((f) => ({ ...f, status: s })); load({ page: 1, status: s }); }}
-                  style={{
-                    padding: "6px 14px", fontSize: 12, fontWeight: 600,
-                    borderRadius: 20, border: `1px solid ${isActive ? (sc?.dot || COLORS.brand) : COLORS.border}`,
-                    background: isActive ? (sc?.bg || COLORS.brand + "15") : "transparent",
-                    color: isActive ? (sc?.text || COLORS.brand) : COLORS.muted,
-                    cursor: "pointer", transition: "all 0.15s"
-                  }}
-                >
-                  {s || "All"}
-                </button>
-              );
-            })}
-          </div>
-          <select
-            value={filters.supplier_id}
-            onChange={(e) => { setFilters((f) => ({ ...f, supplier_id: e.target.value })); load({ page: 1, supplier_id: e.target.value }); }}
-            style={{ padding: "8px 12px", background: "#fff", border: `1px solid ${COLORS.border}`, color: COLORS.text, borderRadius: 8, fontSize: 13, minWidth: 140 }}
-          >
-            <option value="">All Suppliers</option>
-            {supplierList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
+                      {/* Code */}
+                      <td style={{ padding: "8px 12px", width: 100 }}>
+                        <input
+                          value={it.item_code}
+                          onChange={(e) => updateLine(idx, "item_code", e.target.value)}
+                          placeholder="KPL-###"
+                          style={{
+                            width: "100%", padding: "7px 10px", background: COLORS.bg,
+                            border: `1px solid ${COLORS.border}`, borderRadius: 6,
+                            color: COLORS.brand, fontSize: 12, fontFamily: "monospace"
+                          }}
+                        />
+                      </td>
 
-        {msg && msg.text && <p style={{ color: msg.color, fontSize: 12 }}>{msg.text}</p>}
+                      {/* Qty */}
+                      <td style={{ padding: "8px 12px", width: 90 }}>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0.01"
+                          value={it.qty}
+                          onChange={(e) => updateLine(idx, "qty", e.target.value)}
+                          placeholder="Qty"
+                          style={{
+                            width: "100%", padding: "7px 10px", background: COLORS.bg,
+                            border: `1px solid ${COLORS.border}`, borderRadius: 6,
+                            color: COLORS.text, fontSize: 12.5
+                          }}
+                        />
+                      </td>
 
-        {/* PO Table */}
-        <Card style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          {loading ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: COLORS.muted, fontSize: 13 }}>
-              Loading orders…
-            </div>
-          ) : error ? (
-            <ErrorMsg error={error} />
-          ) : items.length === 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, gap: 12 }}>
-              <div style={{ fontSize: 40 }}>📋</div>
-              <p style={{ color: COLORS.muted, fontSize: 14, fontWeight: 500 }}>No purchase orders yet</p>
-            </div>
-          ) : (
-            <>
-              <div className="resp-table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>PO Number</th>
-                      <th>Supplier</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Total</th>
-                      <th>Items</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((po) => {
-                      const sc = STATUS_CONFIG[po.status] || STATUS_CONFIG.Draft;
-                      return (
-                        <tr
-                          key={po.id}
-                          onClick={() => openDetail(po.id)}
-                          style={{ cursor: "pointer" }}
+                      {/* Unit */}
+                      <td style={{ padding: "8px 12px", width: 110 }}>
+                        <select
+                          value={it.unit}
+                          onChange={(e) => updateLine(idx, "unit", e.target.value)}
+                          style={{
+                            width: "100%", padding: "7px 8px", fontSize: 12,
+                            background: isIncompatible ? "rgba(239, 68, 68, 0.15)" : COLORS.bg,
+                            border: `1px solid ${isIncompatible ? COLORS.danger : COLORS.border}`,
+                            color: COLORS.text, borderRadius: 6
+                          }}
                         >
-                          <td>
-                            <span style={{ fontFamily: "monospace", color: COLORS.brand, fontWeight: 700, fontSize: 13 }}>
-                              {po.po_number}
-                            </span>
-                          </td>
-                          <td style={{ fontWeight: 500 }}>{po.supplier_name}</td>
-                          <td style={{ color: COLORS.muted }}>{new Date(po.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                          <td>
-                            <span style={{
-                              display: "inline-flex", alignItems: "center", gap: 5,
-                              background: sc.bg, color: sc.text,
-                              padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600
-                            }}>
-                              {sc.icon} {po.status}
-                            </span>
-                          </td>
-                          <td style={{ fontWeight: 700, color: COLORS.accent }}>
-                            ₹{fmt(po.total_amount)}
-                          </td>
-                          <td style={{ color: COLORS.muted }}>
-                            {po.item_count || "—"}
-                          </td>
-                          <td>
-                            <ChevronRight size={16} color={COLORS.muted} />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div style={{ borderTop: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
-                <Pagination page={page} total={total} limit={LIMIT} onPage={(p) => load({ page: p })} />
-              </div>
-            </>
-          )}
-        </Card>
-      </div>
+                          {allowedUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                        {isIncompatible && (
+                          <div style={{ fontSize: 10, color: COLORS.danger, marginTop: 2 }}>
+                            Stock is {match.unit}
+                          </div>
+                        )}
+                      </td>
 
-      <RateComparisonModal open={compareOpen} onClose={() => setCompareOpen(false)} stocks={stocks} />
+                      {/* Price */}
+                      <td style={{ padding: "8px 12px", width: 120 }}>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={it.unit_price}
+                          onChange={(e) => updateLine(idx, "unit_price", e.target.value)}
+                          placeholder="0.00"
+                          style={{
+                            width: "100%", padding: "7px 10px", background: COLORS.bg,
+                            border: `1px solid ${COLORS.border}`, borderRadius: 6,
+                            color: COLORS.text, fontSize: 12.5
+                          }}
+                        />
+                      </td>
+
+                      {/* Line Total */}
+                      <td style={{ padding: "8px 12px", fontWeight: 700, color: COLORS.accent, whiteSpace: "nowrap" }}>
+                        ₹{lineTotal(it)}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ padding: "8px 12px", textAlign: "right", whiteSpace: "nowrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompareItemCode(it.item_code || "");
+                            setCompareOpen(true);
+                          }}
+                          title="Compare rates for this item"
+                          style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.muted, padding: 4 }}
+                        >
+                          <Scale size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => duplicateLine(idx)}
+                          title="Duplicate line"
+                          style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.muted, padding: 4 }}
+                        >
+                          <Copy size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeLine(idx)}
+                          title="Remove line"
+                          style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.danger, padding: 4 }}
+                        >
+                          <XCircle size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <datalist id="stock-names-autocomplete">
+            {stocks.map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name} (Code: {s.item_code} | Available: {parseFloat(s.remaining || 0).toFixed(1)} {s.unit})
+              </option>
+            ))}
+          </datalist>
+
+          {/* Add Line & Grand Total */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+            <button
+              onClick={addLine}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "8px 14px", borderRadius: 8, background: "none",
+                border: `1px dashed ${COLORS.border}`, color: COLORS.text,
+                fontSize: 13, fontWeight: 600, cursor: "pointer"
+              }}
+            >
+              <Plus size={15} /> Add Another Line
+            </button>
+
+            <div style={{ textAlign: "right" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase" }}>Grand Total</span>
+              <div style={{ fontSize: 24, fontWeight: 800, color: COLORS.accent, letterSpacing: "-0.02em" }}>
+                ₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+          </div>
+
+          {/* Threshold Gate Banner */}
+          {grandTotal > 10000 && (
+            <div style={{
+              background: "rgba(232, 168, 56, 0.1)", border: `1px solid ${COLORS.accent}55`,
+              borderRadius: 8, padding: "10px 14px", marginBottom: 16,
+              display: "flex", alignItems: "center", gap: 10
+            }}>
+              <AlertTriangle size={18} color={COLORS.accent} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 12.5, color: COLORS.accent, fontWeight: 600 }}>
+                Managerial Authorization Gate: Purchase orders exceeding ₹10,000 (Current: ₹{fmt(grandTotal)}) automatically trigger the dual-authorization protocol upon creation.
+              </span>
+            </div>
+          )}
+
+          {/* Action Submission Buttons */}
+          <div style={{ display: "flex", gap: 10, paddingTop: 16, borderTop: `1px solid ${COLORS.border}`, flexWrap: "wrap" }}>
+            <Btn onClick={submit} loading={submitting} style={{ flex: 1 }}>
+              Submit Purchase Order
+            </Btn>
+            <Btn variant="ghost" onClick={autoDraft} disabled={!form.supplier_id}>
+              Auto-Draft Reorders
+            </Btn>
+            <Btn variant="ghost" onClick={generateWhatsAppPO} disabled={lowStockItems.length === 0} style={{ color: COLORS.success, borderColor: COLORS.success }}>
+              Share Inquiries (WA)
+            </Btn>
+            <Btn variant="ghost" onClick={copyPOToClipboard} disabled={lowStockItems.length === 0} style={{ color: COLORS.accent, borderColor: COLORS.accent }}>
+              Copy Text
+            </Btn>
+            <Btn variant="ghost" onClick={() => {
+              setForm({ supplier_id: "", date: today(), delivery_date: "", payment_terms: "Net 30", notes: "" });
+              setLineItems([{ ...emptyItem }]);
+              setAuditResults(null);
+            }}>
+              Clear
+            </Btn>
+          </div>
+        </Card>
+      )}
+
+      {/* ────────────────────────────────────────────────────── */}
+      {/* 2B. RECENT PURCHASE ORDERS LIST GRID                   */}
+      {/* ────────────────────────────────────────────────────── */}
+      {view === "list" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Filter Bar */}
+          <Card style={{ padding: "14px 18px" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              {/* Search */}
+              <div style={{ flex: 1, minWidth: 220, position: "relative" }}>
+                <Search size={15} color={COLORS.muted} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
+                <input
+                  value={filters.q}
+                  onChange={(e) => {
+                    setFilters((f) => ({ ...f, q: e.target.value }));
+                    load({ page: 1, q: e.target.value });
+                  }}
+                  placeholder="Search by PO Number or Vendor Name…"
+                  style={{
+                    width: "100%", padding: "8px 12px 8px 32px", background: COLORS.bg,
+                    border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                    fontSize: 13, color: COLORS.text
+                  }}
+                />
+              </div>
+
+              {/* Vendor Filter */}
+              <select
+                value={filters.supplier_id}
+                onChange={(e) => {
+                  setFilters((f) => ({ ...f, supplier_id: e.target.value }));
+                  load({ page: 1, supplier_id: e.target.value });
+                }}
+                style={{
+                  padding: "8px 12px", background: COLORS.bg, border: `1px solid ${COLORS.border}`,
+                  color: COLORS.text, borderRadius: 8, fontSize: 13, minWidth: 170
+                }}
+              >
+                <option value="">All Suppliers</option>
+                {supplierList.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+
+              {/* CSV Export Button */}
+              <button
+                type="button"
+                onClick={exportToCSV}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${COLORS.border}`, color: COLORS.text,
+                  fontSize: 12.5, fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                <FileSpreadsheet size={14} /> Export CSV
+              </button>
+            </div>
+
+            {/* Status Tabs */}
+            <div style={{ display: "flex", gap: 6, marginTop: 12, overflowX: "auto", paddingBottom: 2 }}>
+              {["", ...PO_STATUSES].map((st) => {
+                const isActive = filters.status === st;
+                const sc = st ? STATUS_CONFIG[st] : null;
+                return (
+                  <button
+                    key={st}
+                    onClick={() => {
+                      setFilters((f) => ({ ...f, status: st }));
+                      load({ page: 1, status: st });
+                    }}
+                    style={{
+                      padding: "5px 14px", fontSize: 12, fontWeight: 600,
+                      borderRadius: 20, border: `1px solid ${isActive ? (sc?.dot || COLORS.brand) : COLORS.border}`,
+                      background: isActive ? (sc?.bg || "rgba(232, 168, 56, 0.15)") : "transparent",
+                      color: isActive ? (sc?.text || COLORS.accent) : COLORS.muted,
+                      cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap"
+                    }}
+                  >
+                    {st || "All Orders"}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Orders Data Table */}
+          <Card style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            {loading ? (
+              <div style={{ padding: 60, textAlign: "center", color: COLORS.muted, fontSize: 13 }}>
+                Loading purchase orders…
+              </div>
+            ) : error ? (
+              <ErrorMsg error={error} />
+            ) : items.length === 0 ? (
+              <div style={{ padding: 60, textAlign: "center", color: COLORS.muted }}>
+                <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 6px" }}>No purchase orders found</p>
+                <p style={{ fontSize: 13, margin: 0 }}>Try clearing search filters or create a new purchase order above.</p>
+              </div>
+            ) : (
+              <>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: COLORS.bg, textAlign: "left", color: COLORS.muted, borderBottom: `1px solid ${COLORS.border}` }}>
+                        <th style={{ padding: "10px 16px" }}>PO Number</th>
+                        <th style={{ padding: "10px 16px" }}>Vendor / Supplier</th>
+                        <th style={{ padding: "10px 16px" }}>PO Date</th>
+                        <th style={{ padding: "10px 16px" }}>Status</th>
+                        <th style={{ padding: "10px 16px" }}>Items</th>
+                        <th style={{ padding: "10px 16px" }}>Total Amount</th>
+                        <th style={{ padding: "10px 16px", textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((po) => {
+                        const sc = STATUS_CONFIG[po.status] || STATUS_CONFIG.Draft;
+                        return (
+                          <tr
+                            key={po.id}
+                            style={{
+                              borderBottom: `1px solid ${COLORS.border}`,
+                              cursor: "pointer",
+                              transition: "background 0.15s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                          >
+                            <td style={{ padding: "11px 16px" }} onClick={() => openDetail(po.id)}>
+                              <span style={{ fontFamily: "monospace", color: COLORS.brand, fontWeight: 700, fontSize: 13 }}>
+                                {po.po_number}
+                              </span>
+                            </td>
+
+                            <td style={{ padding: "11px 16px" }} onClick={() => openDetail(po.id)}>
+                              <div style={{ fontWeight: 600, color: COLORS.text }}>{po.supplier_name}</div>
+                              {po.notes && (
+                                <div style={{ fontSize: 11, color: COLORS.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  {po.notes}
+                                </div>
+                              )}
+                            </td>
+
+                            <td style={{ padding: "11px 16px", color: COLORS.muted }} onClick={() => openDetail(po.id)}>
+                              {new Date(po.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                            </td>
+
+                            <td style={{ padding: "11px 16px" }} onClick={() => openDetail(po.id)}>
+                              <span style={{
+                                display: "inline-flex", alignItems: "center", gap: 5,
+                                background: sc.bg, color: sc.text,
+                                padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600
+                              }}>
+                                {sc.icon} {po.status}
+                              </span>
+                            </td>
+
+                            <td style={{ padding: "11px 16px", color: COLORS.muted }} onClick={() => openDetail(po.id)}>
+                              {po.item_count ? `${po.item_count} items` : "—"}
+                            </td>
+
+                            <td style={{ padding: "11px 16px", fontWeight: 700, color: COLORS.accent }} onClick={() => openDetail(po.id)}>
+                              ₹{fmt(po.total_amount)}
+                            </td>
+
+                            <td style={{ padding: "11px 16px", textAlign: "right", whiteSpace: "nowrap" }}>
+                              <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => openDetail(po.id)}
+                                  title="View Details"
+                                  style={{
+                                    padding: "4px 8px", background: "none", border: `1px solid ${COLORS.border}`,
+                                    color: COLORS.text, borderRadius: 6, cursor: "pointer", fontSize: 11.5
+                                  }}
+                                >
+                                  View
+                                </button>
+                                {["Approved", "Sent"].includes(po.status) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      api.purchaseOrders.getOne(po.id).then(r => {
+                                        if (setGrnPreFill) setGrnPreFill(r.data);
+                                        if (setCurrentScreen) setCurrentScreen("grn");
+                                      });
+                                    }}
+                                    title="Receive in GRN"
+                                    style={{
+                                      padding: "4px 8px", background: COLORS.accent, border: "none",
+                                      color: "#18181b", borderRadius: 6, cursor: "pointer", fontSize: 11.5, fontWeight: 700
+                                    }}
+                                  >
+                                    GRN
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={{ padding: "10px 16px", borderTop: `1px solid ${COLORS.border}` }}>
+                  <Pagination page={page} total={total} limit={LIMIT} onPage={(p) => load({ page: p })} />
+                </div>
+              </>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* Vendor Rate Comparison Modal */}
+      <RateComparisonModal
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+        stocks={stocks}
+        initialItemCode={compareItemCode}
+        onSelectSupplierRate={({ supplier_name, rate, item_code }) => {
+          // If in create view, update matching line item
+          if (view === "create") {
+            setLineItems((prev) => {
+              const idx = prev.findIndex(it => (it.item_code && it.item_code === item_code) || it.name.toLowerCase() === item_code.toLowerCase());
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx].unit_price = rate.toString();
+                return next;
+              }
+              return prev;
+            });
+            const matchedSup = supplierList.find(s => s.name.toLowerCase() === supplier_name.toLowerCase());
+            if (matchedSup && !form.supplier_id) {
+              setForm(f => ({ ...f, supplier_id: matchedSup.id.toString() }));
+            }
+            flash(`Applied rate ₹${rate} for ${item_code} from ${supplier_name} ✓`);
+          }
+        }}
+      />
     </div>
   );
 }
