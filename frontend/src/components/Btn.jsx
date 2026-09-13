@@ -21,6 +21,14 @@ export default function Btn({ children, onClick, variant = "primary", icon, smal
   const [isHovered, setIsHovered] = useState(false);
   const isInteractive = !disabled && !loading;
 
+  const customBg = style.backgroundColor || style.background;
+  const baseBg = isHovered ? hovers[variant]?.background : variants[variant]?.background;
+  const computedBg = customBg || baseBg;
+
+  const sanitizedStyle = { ...style };
+  delete sanitizedStyle.backgroundColor;
+  delete sanitizedStyle.background;
+
   return (
     <button
       onClick={isInteractive ? onClick : undefined}
@@ -29,7 +37,7 @@ export default function Btn({ children, onClick, variant = "primary", icon, smal
       onMouseLeave={() => isInteractive && setIsHovered(false)}
       style={{
         ...variants[variant],
-        ...(isHovered ? hovers[variant] : {}),
+        background: computedBg,
         padding: small ? "6px 12px" : "8px 18px",
         opacity: isInteractive ? 1 : 0.6,
         cursor: isInteractive ? "pointer" : "not-allowed",
@@ -42,7 +50,7 @@ export default function Btn({ children, onClick, variant = "primary", icon, smal
         fontWeight: 500,
         borderRadius: "8px",
         transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
-        ...style,
+        ...sanitizedStyle,
       }}
     >
       {loading && <span className="pulse" style={{ width: 12, height: 12, border: "2px solid currentColor", borderRightColor: "transparent", borderRadius: "50%", display: "inline-block" }}></span>}

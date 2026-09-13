@@ -25,6 +25,7 @@ import QuickAdjustmentModal from "./QuickAdjustmentModal";
 import AddItemDrawer from "./AddItemDrawer";
 import StockImportModal from "../../components/StockImportModal";
 import EditItemDrawer from "./EditItemDrawer";
+import ErrorBoundary from "../../components/ErrorBoundary";
 import ExportReportModal from "../../components/ExportReportModal";
 
 // Extracted shared components
@@ -820,17 +821,19 @@ export default function StockScreen() {
         }}
       />
       {/* Edit / Append / Delete Item Drawer */}
-      <EditItemDrawer
-        item={editItem}
-        onClose={() => setEditItem(null)}
-        onSaved={() => {
-          load({ page: 1 });
-          refreshStockNames();
-          refreshActiveTab();
-          setMsg("Item updated ✓");
-          setTimeout(() => setMsg(""), 3000);
-        }}
-      />
+      <ErrorBoundary title="Item Maintenance Drawer Error">
+        <EditItemDrawer
+          item={editItem}
+          onClose={() => setEditItem(null)}
+          onSaved={() => {
+            load({ page: 1 });
+            refreshStockNames();
+            refreshActiveTab();
+            setMsg("Item updated ✓");
+            setTimeout(() => setMsg(""), 3000);
+          }}
+        />
+      </ErrorBoundary>
 
       {/* 360° Item Detail Dossier Drawer */}
       <ItemDetailDrawer

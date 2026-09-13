@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { COLORS, UNITS, STOCK_CATEGORIES } from "../../styles/colors";
 import { Edit3, X, PlusCircle, Trash2, PenSquare, AlertCircle } from "lucide-react";
 import Input from "../../components/Input";
+import Btn from "../../components/Btn";
 import * as api from "../../api";
 import UnitDimensionBadge from "../../components/UnitDimensionBadge";
 import { getDimensionConfig, getUnitDimension } from "../../utils/units";
@@ -134,7 +135,7 @@ export default function EditItemDrawer({ item, onClose, onSaved }) {
               <Edit3 size={22} style={{ color: "var(--color-gold)" }} /> Maintain Item Record: {item.name}
             </h3>
             <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "var(--text-muted)" }}>
-              <strong style={{ color: "var(--color-gold)" }}>{item.item_code}</strong> · Current Balance: <strong style={{ color: "#10b981" }}>{parseFloat(item.remaining).toFixed(2)} {item.unit}</strong>
+              <strong style={{ color: "var(--color-gold)" }}>{item.item_code}</strong> · Current Balance: <strong style={{ color: "#10b981" }}>{parseFloat(item.remaining || 0).toFixed(2)} {item.unit}</strong>
             </p>
           </div>
           <button onClick={onClose} style={{ background: "var(--border-color)", border: "1px solid var(--border-color)", borderRadius: 6, padding: 6, cursor: "pointer", color: "var(--text-muted)" }}>
