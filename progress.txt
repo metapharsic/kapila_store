@@ -43,24 +43,25 @@ Current Sprint: Unit Compatibility, Indent Safeguards & Reconciliation
       Commit: Verified
       Details: Implemented unit dimension checks, multiplier scaling, and FIFO batch draining with accurate stock ledger postings.
 - [x] Inward Stock Unit Safeguards across PO, GRN, and Stock Master
-      Commit: Verified
+      Commit: 52392e8
       Details: Enforced areUnitsCompatible in stockController.create/update, grnController.create, purchaseOrderController.create, and frontend screens.
+- [x] [BACKLOG-02] Add unit dimension badge to Stock Master & Add Item Drawer
+      Commit: d9438fb (2026-09-13)
+      Details: Implemented UnitDimensionBadge and getDimensionConfig with dimension indicators (Weight / Volume / Count / Packaging) across StockTable, AddItemDrawer, EditItemDrawer, ItemDetailDrawer, and NewStockEntryForm, with real-time dimensional mismatch conflict warnings.
+
+- [x] [BACKLOG-03] Implement automated PR validation action with CodeRabbit integration
+      Commit: 0d65230 (2026-09-13)
+      Details: Implemented `.github/workflows/verify.yml` with dual parallel verification matrix (Frontend Vite build, Backend PostgreSQL migration & Jest test runner), concurrency grouping, and CodeRabbit review quality gate.
 
 [ACTIVE_BACKLOG]
 # Format: [ ] Task description | Priority: High/Medium/Low | Scope: FE/BE/DB
 
-- [ ] [BACKLOG-02] Add unit dimension badge to Stock Master & Add Item Drawer
-      Priority: Medium
-      Scope: Frontend (Stock/AddItemDrawer.jsx, Stock/EditItemDrawer.jsx)
-      Description: Display dimension indicator (Weight / Volume / Count) when choosing or editing stock units.
-
-- [ ] [BACKLOG-03] Implement automated PR validation action with CodeRabbit integration
-      Priority: Medium
-      Scope: CI/CD (.github/workflows/verify.yml)
-      Description: Ensure GitHub Actions runs frontend build and backend tests on pull requests.
+# All active backlog tasks completed.
 
 [LOOP_TELEMETRY]
-Total Iterations: 1
+Total Iterations: 3
 Active Agent: Antigravity / Ralph
-Status: IN_PROGRESS
+Status: COMPLETED
+
+ALL_TASKS_COMPLETED
 
