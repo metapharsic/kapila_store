@@ -123,11 +123,12 @@ export default function Dashboard() {
 
       // Build Activity Feed
       const events = [];
-      const addEvents = (arr, type, color, msgFn) => {
-        if (Array.isArray(arr)) {
-          arr.forEach(item => {
+      const addEvents = (items, type, color, msgFn) => {
+        if (items && Array.isArray(items)) {
+          items.forEach((item, idx) => {
+            const itemId = item.id != null ? item.id : (item.name || idx);
             events.push({
-              id: `${type}-${item.id}`,
+              id: `${type}-${itemId}-${idx}`,
               type,
               color,
               timestamp: new Date(item.created_at || item.date || new Date()).getTime(),
@@ -145,9 +146,10 @@ export default function Dashboard() {
       
       // Add alerts as events
       if (summaryRes.data?.low_stock_items) {
-        summaryRes.data.low_stock_items.forEach(alert => {
+        summaryRes.data.low_stock_items.forEach((alert, idx) => {
+           const alertId = alert.id != null ? alert.id : `${alert.item_code || alert.name || "item"}-${idx}`;
            events.push({
-             id: `alert-${alert.name}`,
+             id: `alert-${alertId}-${idx}`,
              type: "alert",
              color: THEME.danger,
              timestamp: new Date().getTime(),
@@ -269,8 +271,8 @@ export default function Dashboard() {
 
   // Alerts merge
   const alertsList = [
-    ...low_stock_items.map(s => ({
-      id: `ls-${s.name}`,
+    ...low_stock_items.map((s, idx) => ({
+      id: `ls-${s.id || s.item_code || s.name}-${idx}`,
       title: "Low Stock",
       detail: `${s.name} is at ${parseFloat(s.remaining).toFixed(1)} ${s.unit} (${s.pct}% left)`,
       color: THEME.danger,
@@ -413,9 +415,9 @@ export default function Dashboard() {
           {/* Panel A - Weekly Waste Trend */}
           <Card style={{ padding: "20px" }}>
             <SectionTitle title="Weekly Waste Trend" />
-            <div style={{ height: "240px", width: "100%" }}>
+            <div style={{ height: 240, width: "100%", minHeight: 240, minWidth: 0, position: "relative" }}>
               {weekly_waste && weekly_waste.length > 0 ? (
-                <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+                <ResponsiveContainer width="100%" height={240}>
                   <AreaChart data={weekly_waste} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorWaste" x1="0" y1="0" x2="0" y2="1">
@@ -455,9 +457,9 @@ export default function Dashboard() {
           {/* Panel B - Production by Dept */}
           <Card style={{ padding: "20px" }}>
             <SectionTitle title="Production by Dept" />
-            <div style={{ height: "240px", width: "100%" }}>
+            <div style={{ height: 240, width: "100%", minHeight: 240, minWidth: 0, position: "relative" }}>
               {dept_stats && dept_stats.length > 0 ? (
-                <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+                <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={dept_stats} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={THEME.border} />
                     <XAxis type="number" hide />
@@ -491,10 +493,10 @@ export default function Dashboard() {
           {/* Panel C - Stock Health Donut */}
           <Card style={{ padding: "20px", display: "flex", flexDirection: "column" }}>
             <SectionTitle title="Stock Health" />
-            <div style={{ flex: 1, position: "relative" }}>
+            <div style={{ height: 160, minHeight: 160, width: "100%", minWidth: 0, position: "relative" }}>
               {kpis.total_stock > 0 ? (
                 <>
-                  <ResponsiveContainer width="99%" height={160} minWidth={1} minHeight={1}>
+                  <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
                       <Pie
                         data={pieData}
@@ -610,8 +612,8 @@ export default function Dashboard() {
                   <p style={{ fontSize: 11, fontWeight: 700, color: THEME.danger, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
                     Approved, Never Issued ({indentFunnel.stuck.length})
                   </p>
-                  {indentFunnel.stuck.map((s) => (
-                    <div key={s.id} onClick={() => setCurrentScreen("issuance")} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${THEME.border}`, cursor: "pointer" }}>
+                  {indentFunnel.stuck.map((s, idx) => (
+                    <div key={`${s.id || "stuck"}-${idx}`} onClick={() => setCurrentScreen("issuance")} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${THEME.border}`, cursor: "pointer" }}>
                       <span style={{ fontSize: 12.5, color: THEME.text }}>#{s.id} · {s.dept}</span>
                       <span style={{ fontSize: 11.5, fontWeight: 600, color: s.age_hours >= 8 ? THEME.danger : THEME.warning }}>
                         {s.age_hours}h waiting{s.last_event ? ` · last: ${s.last_event}` : ""}
@@ -721,8 +723,8 @@ export default function Dashboard() {
             {/* Price Trend Sparkline */}
             <div>
               <p style={{ fontSize: "12px", fontWeight: 600, color: THEME.muted, marginBottom: "8px", textTransform: "uppercase" }}>{priceTrend.name} Price Trend (Recent)</p>
-              <div style={{ height: "60px", width: "100%" }}>
-                <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+              <div style={{ height: 60, width: "100%", minHeight: 60, minWidth: 0, position: "relative" }}>
+                <ResponsiveContainer width="100%" height={60}>
                   <LineChart data={priceTrend.data}>
                     <Line type="monotone" dataKey="val" stroke={THEME.primary} strokeWidth={3} dot={false} />
                   </LineChart>

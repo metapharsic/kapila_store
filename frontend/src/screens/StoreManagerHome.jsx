@@ -708,8 +708,8 @@ export default function StoreManagerHome() {
               <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: 6, color: COLORS.text }}>
                 <Activity size={16} color={COLORS.warning} /> Issuances — Last 7 Days
               </h3>
-              <div style={{ height: 200 }}>
-                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+              <div style={{ height: 200, minHeight: 200, width: "100%", minWidth: 0, position: "relative" }}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={issuanceTrend}>
                     <XAxis dataKey="day" tick={{ fontSize: 11, fill: COLORS.muted }} axisLine={false} tickLine={false} />
                     <Tooltip cursor={{ fill: '#F8FAFC' }} />
@@ -724,8 +724,8 @@ export default function StoreManagerHome() {
                 <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: 6, color: COLORS.text }}>
                   <TrendingDown size={16} color={COLORS.danger} /> Lowest Stock Items
                 </h3>
-                <div style={{ height: 200 }}>
-                  <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                <div style={{ height: 200, minHeight: 200, width: "100%", minWidth: 0, position: "relative" }}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={lowStockItems} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} stroke="#e2e8f0" />
                       <XAxis type="number" hide domain={[0, 100]} />
