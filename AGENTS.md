@@ -40,19 +40,22 @@ kapila/
    - *Agent Loader*: Batch theoretical stock loading, real-time variance calculation against physical counts, pack conversion math.
    - *Agent Auditor*: Comprehensive historical reconciliation sessions audit trail, expandable item breakdown, unit-rate valuation.
    - *Agent Veritas*: Two-stage verification dialog with impact ledger preview, automatic inventory level adjustment and atomic double-entry ledger postings (`ADJUSTMENT_ADD` / `ADJUSTMENT_DEDUCT` with session document links).
-3. **Indent** — Department nightly material requests
+3. **Inbound Delivery Challan (DC) & 3-Way Match Engine**
+   - *Morning Challan Intake Protocol*: Supports early-dawn supplies (Milk, Produce, Vegetables, Bakery, LPG Cylinders) arriving with delivery challan before vendor tax invoice. Credits active stock immediately with transaction type `INWARD_DC_PROVISIONAL` so kitchen stations can issue and cook without operational delay.
+   - *3-Way Match & Zero Double-Counting Guarantee*: Matches pending provisional DCs against consolidated weekly/monthly vendor tax invoices with automated variance & discrepancy tolerance indicators. Atomically converts to formal Goods Receipt Note (`GRN`), updates unit purchase costs, and seamlessly retags double-entry `stock_ledger` records from `INWARD_DC_PROVISIONAL` to `INWARD_GRN` with ZERO inventory duplication.
+4. **Indent** — Department nightly material requests
    - *Recipe Planner & Auto-Indent*: Scaled recipe-based portion calculator and historical weekday average trend recommendation engine.
    - *Multi-Agent Indent Processor & Harmonizer*: Multi-department batch ingestion, item alias normalization, unit conversion reconciliation.
    - *Consolidated Disposables & Single Indent Protocol*: Ingests and bundles Central Stores packaging & disposable materials (containers, foil, cling wrap, carry bags, plates, cutlery) directly alongside kitchen food ingredients into **one single unified indent document** across all 9 canonical kitchen departments (`TIFFINS`, `STAFF`, `SI-MEALS`, `NORTH INDIAN`, `CHAT & SOFTY`, `CHINESE & DOSA`, `MOCKTAILS & CONTINENTAL`, `RESTAURANT`, `ROOM SERVICE`).
    - *Requisition Slip & Export Compiler Agent*: Generates branded Hotel Kapila `.xlsx` workbooks (Section A: Kitchen Ingredients & Raw Materials, Section B: Packaging & Disposables, station prep notes callouts, totals, and physical 3-tier signature blocks) and instant browser print/PDF vouchers (`printRequisitionSlip`) immediately upon preparation, in the Store Approvals Queue, and in Master History.
-4. **Issuance** — Storekeeper issues goods, AI scan of paper forms, auto batch deduction
-5. **Production** — Plates/portions logged per department
-6. **Leftovers** — Unsold food carried forward
-7. **Kitchen Assets & Maintenance (CMMS)** — Equipment lifecycle, preventive maintenance schedules, breakdown work orders
-8. **Security Gate & Utilities** — Returnable/non-returnable gate passes, daily utility consumption meter logging (power, water, gas, diesel)
-9. **Food Safety & Waste** — Critical control point logs (temperature, oil quality, cleaning audits), waste logging with financial impact
-10. **Staff HRMS & Night Audit** — Shift attendance, roster management, automated day-end closing reconciliation
-11. **Dashboard** — Cross-module KPIs and alerts
+5. **Issuance** — Storekeeper issues goods, AI scan of paper forms, auto batch deduction
+6. **Production** — Plates/portions logged per department
+7. **Leftovers** — Unsold food carried forward
+8. **Kitchen Assets & Maintenance (CMMS)** — Equipment lifecycle, preventive maintenance schedules, breakdown work orders
+9. **Security Gate, Returnable Assets (RGP) & Utilities** — Returnable/non-returnable gate passes, active asset custody tracking (47.5kg commercial LPG cylinders, 40L milk cans, crates, banquet vessels), 1-click return reconciliation (`reconcileRgp`), and daily utility consumption meter logging (power, water, gas, diesel).
+10. **Food Safety & Waste** — Critical control point logs (temperature, oil quality, cleaning audits), waste logging with financial impact
+11. **Staff HRMS & Night Audit** — Shift attendance, roster management, automated day-end closing reconciliation
+12. **Dashboard** — Cross-module KPIs and alerts
     - *Store Manager Home*: Live at-a-glance view of pending indents, low stock alerts, offline sync status, recent activity feeds, quick action shortcuts, and shift handoff notes.
 
 ## Departments (fixed list)

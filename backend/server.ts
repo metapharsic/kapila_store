@@ -159,6 +159,7 @@ app.use("/api/waste",           require("./routes/waste"));
 app.use("/api/staff",           require("./routes/staffHrms"));
 app.use("/api/night-audit",     require("./routes/nightAudit"));
 app.use("/api/system",          require("./routes/systemConfigRoutes"));
+app.use("/api/inbound-dc",      require("./routes/inboundDc"));
 
 // AI health check — tells the frontend if Gemini API is configured
 app.get("/api/ai-health", authenticate, async (req: Request, res: Response) => {

@@ -37,6 +37,8 @@ import GateAndUtilitiesScreen from "./screens/GateAndUtilities";
 import FoodSafetyAndWasteScreen from "./screens/FoodSafetyAndWaste";
 import StaffAndNightAuditScreen from "./screens/StaffAndNightAudit";
 import SystemConfigScreen from "./screens/SystemConfig";
+import InboundDCScreen from "./screens/InboundDC";
+import ReturnableAssetTracker from "./screens/GateAndUtilities/ReturnableAssetTracker";
 
 
 import StoreManagerHome from "./screens/StoreManagerHome";
@@ -64,6 +66,7 @@ const NAV_CATEGORIES = [
     title: "Procurement",
     items: [
       { id: "pos",          label: "Purchase Orders", permission: "purchase_orders.view", icon: <Receipt size={16} /> },
+      { id: "inbound_dc",   label: "Inbound Challans (DC)", permission: "inbound_dc.view", icon: <Truck size={16} /> },
       { id: "grn",          label: "Goods Receipt",   permission: "grn.view", icon: <Inbox size={16} /> },
       { id: "reorder",      label: "Reorder Points",  permission: "reorder_points.view", icon: <Bell size={16} /> },
       { id: "approvals",    label: "Approval Queue",  permission: "purchase_orders.approve", icon: <ClipboardCheck size={16} /> },
@@ -85,6 +88,7 @@ const NAV_CATEGORIES = [
       { id: "production",   label: "Daily Production & Waste", permission: "users.manage_roles", icon: <ChefHat size={16} /> },
       { id: "maintenance",  label: "Kitchen Asset CMMS", permission: "maintenance.view", icon: <Wrench size={16} /> },
       { id: "gate_utilities", label: "Gate & Utilities", permission: ["security.view", "utility.view"], icon: <Truck size={16} /> },
+      { id: "returnable_assets", label: "Returnable Assets (RGP)", permission: "security.view", icon: <ShieldCheck size={16} /> },
       { id: "staff_audit",   label: "Staff & Night Audit", permission: ["staff.view", "night_audit.view"], icon: <Users size={16} /> },
       { id: "chef_stats",    label: "Chef Statistics",  permission: "chef_stats.view", icon: <BarChart3 size={16} /> },
     ]
@@ -232,6 +236,7 @@ function Inner() {
     suppliers:  <ProtectedScreen permission="suppliers.view"><SuppliersScreen /></ProtectedScreen>,
     departments: <ProtectedScreen permission="departments.view"><DepartmentsScreen /></ProtectedScreen>,
     pos:        <ProtectedScreen permission="purchase_orders.view"><PurchaseOrdersScreen /></ProtectedScreen>,
+    inbound_dc: <ProtectedScreen permission="inbound_dc.view"><InboundDCScreen /></ProtectedScreen>,
     grn:        <ProtectedScreen permission="grn.view"><GoodsReceiptScreen /></ProtectedScreen>,
     reorder:    <ProtectedScreen permission="reorder_points.view"><ReorderPointsScreen /></ProtectedScreen>,
     reconcile:  <ProtectedScreen permission="reconciliation.view"><ReconciliationScreen /></ProtectedScreen>,
@@ -260,6 +265,7 @@ function Inner() {
     chef_home: <ProtectedScreen permission={["recipes.view", "indents.view", "chef_stats.view"]}><ChefHome /></ProtectedScreen>,
     maintenance: <ProtectedScreen permission="maintenance.view"><MaintenanceScreen /></ProtectedScreen>,
     gate_utilities: <ProtectedScreen permission={["security.view", "utility.view"]}><GateAndUtilitiesScreen /></ProtectedScreen>,
+    returnable_assets: <ProtectedScreen permission="security.view"><ReturnableAssetTracker /></ProtectedScreen>,
     staff_audit: <ProtectedScreen permission={["staff.view", "night_audit.view"]}><StaffAndNightAuditScreen /></ProtectedScreen>,
     system_config: <ProtectedScreen permission="users.view"><SystemConfigScreen /></ProtectedScreen>,
   };

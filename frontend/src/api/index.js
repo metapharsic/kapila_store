@@ -381,5 +381,13 @@ export const systemConfig = {
   updateRemote: (remote_url) => api.post("/system/update-remote", { remote_url }),
 };
 
+export const inboundDc = {
+  list: (params) => api.get("/inbound-dc", params),
+  getOne: (id) => api.get(`/inbound-dc/${id}`),
+  create: (body) => api.post("/inbound-dc", body),
+  matchInvoice: (id, body) => api.post(`/inbound-dc/${id}/match-invoice`, body),
+  cancel: (id, reason) => api.post(`/inbound-dc/${id}/cancel`, { reason }),
+};
+
 
 

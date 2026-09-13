@@ -43,6 +43,7 @@ async function recordEntry(trx, {
   const ALLOWED_TYPES = [
     "INWARD_GRN",
     "INWARD_PURCHASE",
+    "INWARD_DC_PROVISIONAL",
     "OUTWARD_ISSUE",
     "ADJUSTMENT_ADD",
     "ADJUSTMENT_DEDUCT",
@@ -79,7 +80,7 @@ async function recordEntry(trx, {
       before = parseFloat(latestLedgerRow.balance_qty_after);
     } else {
       // If no prior ledger entry exists for this SKU:
-      if (["INWARD_GRN", "INWARD_PURCHASE", "OPENING_BALANCE", "TRANSFER_IN"].includes(transaction_type)) {
+      if (["INWARD_GRN", "INWARD_PURCHASE", "INWARD_DC_PROVISIONAL", "OPENING_BALANCE", "TRANSFER_IN"].includes(transaction_type)) {
         before = 0;
       } else {
         const stockAggregate = await runner("stock")
@@ -96,6 +97,7 @@ async function recordEntry(trx, {
     const isInflow = [
       "INWARD_GRN",
       "INWARD_PURCHASE",
+      "INWARD_DC_PROVISIONAL",
       "ADJUSTMENT_ADD",
       "OPENING_BALANCE",
       "TRANSFER_IN"
@@ -209,8 +211,8 @@ async function queryLedger(filters = {}, pagination = {}) {
   const [{ count }] = await db("stock_ledger").modify(applyFilters).count("id as count");
 
   const [aggregates] = await db("stock_ledger").modify(applyFilters).select(
-    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'ADJUSTMENT_ADD', 'OPENING_BALANCE', 'TRANSFER_IN') THEN qty ELSE 0 END), 0) as total_inflow_qty"),
-    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'ADJUSTMENT_ADD', 'OPENING_BALANCE', 'TRANSFER_IN') THEN total_value ELSE 0 END), 0) as total_inflow_value"),
+    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'INWARD_DC_PROVISIONAL', 'ADJUSTMENT_ADD', 'OPENING_BALANCE', 'TRANSFER_IN') THEN qty ELSE 0 END), 0) as total_inflow_qty"),
+    db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('INWARD_GRN', 'INWARD_PURCHASE', 'INWARD_DC_PROVISIONAL', 'ADJUSTMENT_ADD', 'OPENING_BALANCE', 'TRANSFER_IN') THEN total_value ELSE 0 END), 0) as total_inflow_value"),
     db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('OUTWARD_ISSUE', 'ADJUSTMENT_DEDUCT', 'RETURN_TO_VENDOR', 'TRANSFER_OUT', 'TRANSFER_LOSS') THEN qty ELSE 0 END), 0) as total_outflow_qty"),
     db.raw("COALESCE(SUM(CASE WHEN transaction_type IN ('OUTWARD_ISSUE', 'ADJUSTMENT_DEDUCT', 'RETURN_TO_VENDOR', 'TRANSFER_OUT', 'TRANSFER_LOSS') THEN total_value ELSE 0 END), 0) as total_outflow_value")
   );
@@ -241,7 +243,44 @@ async function queryLedger(filters = {}, pagination = {}) {
   };
 }
 
+/**
+ * Atomically re-tag existing provisional ledger entries to confirmed GRN upon 3-way invoice match.
+ * Prevents double-counting while updating valuation and final document references.
+ */
+async function retagEntry(trx, {
+  reference_doc_type = "DC",
+  reference_doc_id,
+  new_transaction_type = "INWARD_GRN",
+  new_reference_doc_type = "GRN",
+  new_reference_doc_id = null,
+  new_reference_doc_no = null,
+  invoice_no = null,
+  unit_price = null,
+  total_value = null,
+  notes = null
+}) {
+  const runner = trx || db;
+  const updatePayload = {
+    transaction_type: new_transaction_type,
+    reference_doc_type: new_reference_doc_type,
+  };
+  if (new_reference_doc_id) updatePayload.reference_doc_id = new_reference_doc_id;
+  if (new_reference_doc_no) updatePayload.reference_doc_no = new_reference_doc_no;
+  if (invoice_no) updatePayload.invoice_no = invoice_no;
+  if (unit_price !== null && unit_price !== undefined) updatePayload.unit_price = parseFloat(unit_price);
+  if (total_value !== null && total_value !== undefined) updatePayload.total_value = parseFloat(total_value);
+  if (notes) updatePayload.notes = notes;
+
+  const count = await runner("stock_ledger")
+    .where("reference_doc_type", reference_doc_type)
+    .where("reference_doc_id", reference_doc_id)
+    .update(updatePayload);
+
+  return count;
+}
+
 module.exports = {
   recordEntry,
-  queryLedger
+  queryLedger,
+  retagEntry
 };
