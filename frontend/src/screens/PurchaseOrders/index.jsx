@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import Card from "../../components/Card";
 import Btn from "../../components/Btn";
-import Input from "../../components/Input";
 import Pagination from "../../components/Pagination";
 import ErrorMsg from "../../components/ErrorMsg";
 import { COLORS, UNITS } from "../../styles/colors";
 import { getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
-import { Plus, ArrowLeft, FileText, Truck, CheckCircle, XCircle, Clock, ChevronRight, Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle } from "lucide-react";
+import * as api from "../../api";
+import { Plus, ArrowLeft, FileText, CheckCircle, XCircle, Clock, ChevronRight, Mic, FileImage, Loader, Camera, Scale, Share2, Copy, Printer, AlertTriangle } from "lucide-react";
 import RateComparisonModal from "./RateComparisonModal";
 import PrintPOModal from "./PrintPOModal";
 import P2PAgentStatusBar from "../../components/agents/P2PAgentStatusBar";
@@ -33,6 +33,19 @@ const STATUS_ICONS = {
 const STATUS_CONFIG = Object.fromEntries(
   PO_STATUSES.map((s) => [s, { ...PO_STATUS_CONFIG[s], icon: STATUS_ICONS[s] }])
 );
+
+const StatusBadge = ({ status }) => {
+  const c = STATUS_CONFIG[status] || STATUS_CONFIG.Draft;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      background: c.bg, color: c.text,
+      padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600
+    }}>
+      {c.icon} {status}
+    </span>
+  );
+};
 
 const emptyItem = { item_code: "", name: "", qty: "", unit: UNITS[0], unit_price: "" };
 
@@ -339,33 +352,6 @@ export default function PurchaseOrdersScreen() {
     return item.min_alert_qty !== null ? item.remaining <= item.min_alert_qty : pct < 25;
   });
 
-  const expiringSoonItems = stocks.filter((item) => {
-    if (!item.expiry_date || item.remaining <= 0) return false;
-    const todayVal = new Date(today());
-    const expiryVal = new Date(item.expiry_date);
-    const diffTime = expiryVal - todayVal;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 3;
-  });
-
-  const handleReorderClick = (item) => {
-    const needed = item.min_alert_qty ? (item.min_alert_qty * 2) : 10;
-    const newItem = {
-      item_code: item.item_code,
-      name: item.name,
-      qty: needed,
-      unit: item.unit || UNITS[0],
-      unit_price: item.price || ""
-    };
-    setLineItems((prev) => {
-      if (prev.length === 1 && !prev[0].name && !prev[0].qty) {
-        return [newItem];
-      }
-      return [...prev, newItem];
-    });
-    flash(`Added ${item.name} to PO items ✓`);
-  };
-
   const generateWhatsAppPO = () => {
     if (lowStockItems.length === 0) return;
     const header = "*KAPILA INVENTORY - PURCHASE ORDER*\n\nGenerated: " + today() + "\n\n";
@@ -389,20 +375,6 @@ export default function PurchaseOrdersScreen() {
     flash("PO copied to clipboard ✓");
   };
 
-  // ── Status badge ───────────────────────────────────────
-  const StatusBadge = ({ status }) => {
-    const c = STATUS_CONFIG[status] || STATUS_CONFIG.Draft;
-    return (
-      <span style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        background: c.bg, color: c.text,
-        padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600
-      }}>
-        {c.icon} {status}
-      </span>
-    );
-  };
-
   const shareDetailViaWhatsApp = (po) => {
     const lines = (po.items || []).map(
       (it, idx) => `${idx + 1}. *${it.name}* (${it.qty} ${it.unit}) @ ₹${parseFloat(it.unit_price || 0).toFixed(2)} = ₹${parseFloat(it.total_price || 0).toFixed(2)}`
@@ -424,7 +396,6 @@ export default function PurchaseOrdersScreen() {
 
   // ── DETAIL VIEW ────────────────────────────────────────
   if (view === "detail" && detail) {
-    const sc = STATUS_CONFIG[detail.status] || STATUS_CONFIG.Draft;
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
         {/* Swarm Telemetry */}
