@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { COLORS, UNITS, STOCK_CATEGORIES } from "../../styles/colors";
 import { Edit3, X, PlusCircle, Trash2, PenSquare, AlertCircle } from "lucide-react";
-import Btn from "../../components/Btn";
 import Input from "../../components/Input";
 import * as api from "../../api";
+import UnitDimensionBadge from "../../components/UnitDimensionBadge";
+import { getDimensionConfig, getUnitDimension } from "../../utils/units";
 
 const MODES = [
   { id: "modify", label: "Modify", icon: <PenSquare size={13} /> },
@@ -172,10 +173,36 @@ export default function EditItemDrawer({ item, onClose, onSaved }) {
                     <Input label="Item Name" value={name} onChange={(e) => setName(e.target.value)} />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                       <div>
-                        <label style={{ fontSize: 11.5, color: "var(--text-muted)", display: "block", marginBottom: 4, fontWeight: 500 }}>Base Unit</label>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                          <label style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 500 }}>Base Unit</label>
+                          <UnitDimensionBadge unit={unit} />
+                        </div>
                         <select value={unit} onChange={(e) => setUnit(e.target.value)} style={{ width: "100%", padding: "8px 10px", fontSize: 13, background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: 6 }}>
                           {UNITS.map((u) => <option key={u}>{u}</option>)}
                         </select>
+                        <div style={{ fontSize: 10.5, color: "var(--text-muted)", marginTop: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span>Used for recipe scaling.</span>
+                          <span style={{ color: getDimensionConfig(unit).color, fontWeight: 600 }}>
+                            {getDimensionConfig(unit).description}
+                          </span>
+                        </div>
+                        {item?.unit && unit && getUnitDimension(item.unit) !== getUnitDimension(unit) && (
+                          <div style={{
+                            fontSize: 10.5,
+                            color: "#f87171",
+                            background: "rgba(239, 68, 68, 0.12)",
+                            border: "1px solid rgba(239, 68, 68, 0.3)",
+                            borderRadius: 6,
+                            padding: "4px 8px",
+                            marginTop: 6,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4
+                          }}>
+                            <AlertCircle size={12} style={{ flexShrink: 0 }} />
+                            <span>Dimension mismatch: {getDimensionConfig(item.unit).label} → {getDimensionConfig(unit).label} breaks history!</span>
+                          </div>
+                        )}
                         <div style={{ fontSize: 10.5, color: "#ef4444", marginTop: 4 }}>Warning: Changing unit breaks historical reports.</div>
                       </div>
                       <Input label="Unit Price (₹)" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />

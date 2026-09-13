@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { COLORS } from "../../styles/colors";
 import Btn from "../Btn";
 import * as api from "../../api";
+import UnitDimensionBadge from "../UnitDimensionBadge";
 import {
   X, MapPin, Building2, Calendar, Clock, DollarSign,
   Package, AlertTriangle, CheckCircle, Printer, Edit3,
@@ -194,6 +195,7 @@ export default function ItemDetailDrawer({
               >
                 {item?.category || "General"}
               </span>
+              {item?.unit && <UnitDimensionBadge unit={item.unit} />}
               <span
                 style={{
                   fontSize: 11.5,

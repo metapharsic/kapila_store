@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { today } from "../../utils/dates";
 import StockSkeletonLoader from "./StockSkeletonLoader";
+import UnitDimensionBadge from "../UnitDimensionBadge";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "—";
@@ -362,7 +363,10 @@ export function StockTable({
                             </span>
                           </td>
                           <td style={{ fontWeight: 600, color: healthy ? COLORS.success : COLORS.danger }}>
-                            {item.remaining.toFixed(2)} {item.unit}
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span>{item.remaining.toFixed(2)} {item.unit}</span>
+                              <UnitDimensionBadge unit={item.unit} compact />
+                            </div>
                           </td>
                           <td>{avgCost > 0 ? `₹${avgCost.toFixed(2)}` : "—"}</td>
                           <td style={{ fontWeight: 700, color: COLORS.teal }}>₹{totalVal.toFixed(2)}</td>
@@ -471,7 +475,10 @@ export function StockTable({
 
                                           <div style={{ flex: 1, maxWidth: 220, display: "flex", flexDirection: "column", gap: 4 }}>
                                             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
-                                              <span style={{ color: bColor, fontWeight: 600 }}>{parseFloat(b.remaining).toFixed(1)} / {b.qty} {b.unit}</span>
+                                              <span style={{ color: bColor, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                                {parseFloat(b.remaining).toFixed(1)} / {b.qty} {b.unit}
+                                                <UnitDimensionBadge unit={b.unit} compact />
+                                              </span>
                                               <span style={{ color: COLORS.muted }}>({bPct.toFixed(0)}%)</span>
                                             </div>
                                             <div style={{ height: 6, background: COLORS.border + "55", borderRadius: 3, overflow: "hidden" }}>
@@ -598,8 +605,13 @@ export function StockTable({
                     </div>
 
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <span style={{ fontSize: 16, fontWeight: 700, color }}>{parseFloat(item.remaining).toFixed(1)}</span>
-                      <span style={{ fontSize: 11, color: COLORS.muted }}> {item.unit}</span>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
+                        <span style={{ fontSize: 16, fontWeight: 700, color }}>{parseFloat(item.remaining).toFixed(1)}</span>
+                        <span style={{ fontSize: 11, color: COLORS.muted }}> {item.unit}</span>
+                      </div>
+                      <div style={{ marginTop: 2, display: "flex", justifyContent: "flex-end" }}>
+                        <UnitDimensionBadge unit={item.unit} compact />
+                      </div>
                     </div>
                   </div>
 
@@ -783,7 +795,10 @@ export function StockTable({
                             <span style={{ fontWeight: 700, fontSize: 14, color: color === "#10b981" ? "#047857" : color === "#f59e0b" ? "#b45309" : "#dc2626" }}>
                               {parseFloat(item.remaining || 0).toFixed(2)}
                             </span>
-                            <span style={{ fontSize: 11.5, color: "#334155", fontWeight: 600 }}>{item.unit}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ fontSize: 11.5, color: "#334155", fontWeight: 600 }}>{item.unit}</span>
+                              <UnitDimensionBadge unit={item.unit} compact />
+                            </div>
                           </div>
                           <div style={{ height: 5, background: "rgba(15, 23, 42, 0.08)", borderRadius: 3, width: 90, overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: color }} />

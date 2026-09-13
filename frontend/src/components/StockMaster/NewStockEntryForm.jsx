@@ -12,6 +12,7 @@ import { PlusCircle, Plus, Trash2, Camera, Mic, RefreshCw, ChevronDown, ChevronU
 import CreateVendorModal from "../CreateVendorModal";
 import MultiAgentStatusBar from "../MultiAgentStatusBar";
 import LIFOSuggestionBanner from "../LIFOSuggestionBanner";
+import UnitDimensionBadge from "../UnitDimensionBadge";
 
 const toTitleCase = (str) => {
   if (!str) return "";
@@ -604,7 +605,14 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
                       )}
                     </td>
                     <td><input type="number" className="excel-input" value={it.qty} onChange={(e) => updateItem(idx, "qty", e.target.value)} placeholder="0" /></td>
-                    <td><select className="excel-input" value={it.unit} onChange={(e) => updateItem(idx, "unit", e.target.value)} style={{ padding: "4px 8px", border: "none", borderRadius: 0, height: "100%" }}>{UNITS.map((u) => <option key={u}>{u}</option>)}</select></td>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", height: "100%", paddingRight: 4 }}>
+                        <select className="excel-input" value={it.unit} onChange={(e) => updateItem(idx, "unit", e.target.value)} style={{ padding: "4px 6px", border: "none", borderRadius: 0, height: "100%", flex: 1 }}>
+                          {UNITS.map((u) => <option key={u}>{u}</option>)}
+                        </select>
+                        <UnitDimensionBadge unit={it.unit} compact />
+                      </div>
+                    </td>
                     <td><input type="number" step="0.01" className="excel-input" value={it.price} onChange={(e) => updateItem(idx, "price", e.target.value)} placeholder="0.00" /></td>
                     <td><input type="date" className="excel-input" value={it.expiry_date} onChange={(e) => updateItem(idx, "expiry_date", e.target.value)} /></td>
                     <td><input type="number" className="excel-input" value={it.min_alert_qty} onChange={(e) => updateItem(idx, "min_alert_qty", e.target.value)} placeholder="e.g. 5" /></td>
@@ -682,7 +690,10 @@ export function NewStockEntryForm({ onSuccess, reorderItem }) {
                     </div>
 
                     <div className="mob-item-field">
-                      <label>Unit</label>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+                        <label>Unit</label>
+                        <UnitDimensionBadge unit={it.unit} compact />
+                      </div>
                       <select value={it.unit} onChange={(e) => updateItem(idx, "unit", e.target.value)}>
                         {UNITS.map((u) => <option key={u}>{u}</option>)}
                       </select>

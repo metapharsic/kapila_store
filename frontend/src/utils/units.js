@@ -25,6 +25,65 @@ export const getUnitDimension = (unit) => {
   return "other";
 };
 
+export const getDimensionConfig = (dimensionOrUnit) => {
+  const dim = ["weight", "volume", "count", "packaging", "other"].includes(dimensionOrUnit)
+    ? dimensionOrUnit
+    : getUnitDimension(dimensionOrUnit);
+
+  switch (dim) {
+    case "weight":
+      return {
+        dimension: "weight",
+        label: "Weight",
+        shortLabel: "WT",
+        color: "#38bdf8",
+        bg: "rgba(56, 189, 248, 0.12)",
+        border: "rgba(56, 189, 248, 0.3)",
+        description: "Mass (kg, g)"
+      };
+    case "volume":
+      return {
+        dimension: "volume",
+        label: "Volume",
+        shortLabel: "VOL",
+        color: "#2dd4bf",
+        bg: "rgba(45, 212, 191, 0.12)",
+        border: "rgba(45, 212, 191, 0.3)",
+        description: "Liquid (L, ml)"
+      };
+    case "count":
+      return {
+        dimension: "count",
+        label: "Count",
+        shortLabel: "CNT",
+        color: "#fbbf24",
+        bg: "rgba(251, 191, 36, 0.12)",
+        border: "rgba(251, 191, 36, 0.3)",
+        description: "Units (pcs, dozen)"
+      };
+    case "packaging":
+      return {
+        dimension: "packaging",
+        label: "Packaging",
+        shortLabel: "PKG",
+        color: "#a78bfa",
+        bg: "rgba(167, 139, 250, 0.12)",
+        border: "rgba(167, 139, 250, 0.3)",
+        description: "Container (box, pkt, bottle, tin, jar)"
+      };
+    default:
+      return {
+        dimension: "other",
+        label: "General",
+        shortLabel: "GEN",
+        color: "#94a3b8",
+        bg: "rgba(148, 163, 184, 0.12)",
+        border: "rgba(148, 163, 184, 0.3)",
+        description: "Unspecified"
+      };
+  }
+};
+
 export const getCompatibleUnits = (baseUnit) => {
   if (!baseUnit) {
     return ["kg", "g", "L", "ml", "pcs", "dozen", "box", "pkt", "bottle", "tin", "jar", "bulk"];

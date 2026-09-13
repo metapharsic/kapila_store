@@ -11,6 +11,8 @@ import { today } from "../../utils/dates";
 import CreateVendorModal from "../../components/CreateVendorModal";
 import MultiAgentStatusBar from "../../components/MultiAgentStatusBar";
 import LIFOSuggestionBanner from "../../components/LIFOSuggestionBanner";
+import UnitDimensionBadge from "../../components/UnitDimensionBadge";
+import { getDimensionConfig } from "../../utils/units";
 
 const STORAGE_ZONES = [
   "General Store & Provisions",
@@ -323,7 +325,10 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                     placeholder="Auto-generated if empty"
                   />
                   <div>
-                    <label style={{ fontSize: 11.5, color: "var(--text-muted)", display: "block", marginBottom: 4, fontWeight: 500 }}>Base Unit</label>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                      <label style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 500 }}>Base Unit</label>
+                      <UnitDimensionBadge unit={form.unit} />
+                    </div>
                     <select
                       value={form.unit}
                       onChange={(e) => set("unit", e.target.value)}
@@ -333,7 +338,12 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                         <option key={u} value={u} style={{ background: "var(--bg-modal)" }}>{u}</option>
                       ))}
                     </select>
-                    <div style={{ fontSize: 10.5, color: "var(--text-muted)", marginTop: 4 }}>Used for recipe scaling.</div>
+                    <div style={{ fontSize: 10.5, color: "var(--text-muted)", marginTop: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span>Used for recipe scaling.</span>
+                      <span style={{ color: getDimensionConfig(form.unit).color, fontWeight: 600 }}>
+                        {getDimensionConfig(form.unit).description}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
