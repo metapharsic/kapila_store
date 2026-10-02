@@ -294,4 +294,139 @@ async function changePassword(req, res, next) {
   }
 }
 
-module.exports = { login, heartbeat, me, refresh, logout, changePassword };
+async function stations(req, res, next) {
+  try {
+    // Multi-threaded parallel query execution: active users with roles, shifts, terminal config
+    const [usersWithRoles, rawShifts] = await Promise.all([
+      db("users")
+        .join("user_roles", "users.id", "user_roles.user_id")
+        .join("roles", "user_roles.role_id", "roles.id")
+        .where("users.is_active", true)
+        .select(
+          "users.id",
+          "users.employee_code",
+          "users.name",
+          "users.email",
+          "users.pin_hash",
+          "roles.key as role_key",
+          "roles.name as role_name"
+        )
+        .orderBy("users.id", "asc"),
+
+      db("shift_patterns")
+        .where("is_active", true)
+        .orderBy("start_time", "asc"),
+    ]);
+
+    let shifts = rawShifts;
+    if (!shifts || shifts.length === 0) {
+      // Auto-seed canonical shifts if table is empty
+      const defaultShifts = [
+        { name: "Morning Shift", shift_type: "MORNING", start_time: "06:00:00", end_time: "14:00:00", department: "Central Store", is_active: true },
+        { name: "Evening Shift", shift_type: "EVENING", start_time: "14:00:00", end_time: "22:00:00", department: "Central Store", is_active: true },
+        { name: "Night Shift", shift_type: "NIGHT", start_time: "22:00:00", end_time: "06:00:00", department: "Central Store", is_active: true },
+        { name: "General Shift", shift_type: "GENERAL", start_time: "08:00:00", end_time: "17:00:00", department: "Central Store", is_active: true },
+      ];
+      try {
+        await db("shift_patterns").insert(defaultShifts);
+        shifts = await db("shift_patterns").where("is_active", true).orderBy("start_time", "asc");
+      } catch (e) {
+        shifts = defaultShifts.map((s, idx) => ({ id: idx + 1, ...s }));
+      }
+    }
+
+    const ROLE_THEMES = {
+      chef: {
+        icon: "ChefHat",
+        color: "#10b981",
+        bg: "rgba(16, 185, 129, 0.14)",
+        border: "rgba(16, 185, 129, 0.4)",
+        glow: "rgba(16, 185, 129, 0.25)",
+        dept: "Kitchen & Production",
+        routeHint: "Direct to Kitchen Station",
+        landingTab: "chef_home",
+      },
+      store_manager: {
+        icon: "Store",
+        color: "#e8a838",
+        bg: "rgba(232, 168, 56, 0.14)",
+        border: "rgba(232, 168, 56, 0.4)",
+        glow: "rgba(232, 168, 56, 0.25)",
+        dept: "Central Store",
+        routeHint: "Direct to Store Manager Hub",
+        landingTab: "store_manager_home",
+      },
+      admin: {
+        icon: "ShieldCheck",
+        color: "#3b82f6",
+        bg: "rgba(59, 130, 246, 0.14)",
+        border: "rgba(59, 130, 246, 0.4)",
+        glow: "rgba(59, 130, 246, 0.25)",
+        dept: "Executive Office",
+        routeHint: "Direct to Master Dashboard",
+        landingTab: "inventory",
+      },
+      manager: {
+        icon: "Building2",
+        color: "#8b5cf6",
+        bg: "rgba(139, 92, 246, 0.14)",
+        border: "rgba(139, 92, 246, 0.4)",
+        glow: "rgba(139, 92, 246, 0.25)",
+        dept: "Operations",
+        routeHint: "Direct to Operations Hub",
+        landingTab: "inventory",
+      },
+      employee: {
+        icon: "Cpu",
+        color: "#64748b",
+        bg: "rgba(100, 116, 139, 0.14)",
+        border: "rgba(100, 116, 139, 0.4)",
+        glow: "rgba(100, 116, 139, 0.25)",
+        dept: "Floor Operations",
+        routeHint: "Direct to Floor Tasks",
+        landingTab: "inventory",
+      },
+    };
+
+    const stations = usersWithRoles.map((u) => {
+      const theme = ROLE_THEMES[u.role_key] || ROLE_THEMES.employee;
+      return {
+        id: u.id,
+        code: u.employee_code || `EMP-${u.id}`,
+        label: u.name,
+        email: u.email,
+        role: u.role_name,
+        roleKey: u.role_key,
+        dept: theme.dept,
+        routeHint: theme.routeHint,
+        landingTab: theme.landingTab,
+        icon: theme.icon,
+        color: theme.color,
+        bg: theme.bg,
+        border: theme.border,
+        glow: theme.glow,
+        hasPin: Boolean(u.pin_hash),
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        stations,
+        shifts: shifts.map((s) => ({
+          id: s.id,
+          name: s.name,
+          shift_type: s.shift_type,
+          start_time: s.start_time,
+          end_time: s.end_time,
+          department: s.department || "Central Store",
+        })),
+        defaultTerminal: "STORE-KIOSK-01",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { login, heartbeat, me, refresh, logout, changePassword, stations };

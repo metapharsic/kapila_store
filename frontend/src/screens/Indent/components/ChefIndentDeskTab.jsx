@@ -1226,18 +1226,6 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
         >
           <Bot size={16} />
           <span>Multi-Agent Telemetry</span>
-          <span
-            style={{
-              fontSize: "0.7rem",
-              background: "#10b981",
-              color: "#fff",
-              padding: "2px 6px",
-              borderRadius: 10,
-              fontWeight: 700,
-            }}
-          >
-            ACTIVE
-          </span>
         </button>
       </div>
 
@@ -3416,18 +3404,6 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                   <span style={{ fontSize: "0.72rem", fontWeight: 700, color: COLORS.brandDark }}>
                     CODE: {sc.code}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      background: "#d1fae5",
-                      color: "#065f46",
-                      padding: "2px 8px",
-                      borderRadius: 10,
-                      fontWeight: 700,
-                    }}
-                  >
-                    ACTIVE
-                  </span>
                 </div>
               </Card>
             ))}
@@ -3466,7 +3442,7 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                 {telemetry?.totalIndentsIssued || 0}
               </div>
               <span style={{ fontSize: "0.75rem", color: COLORS.muted }}>
-                Fulfillment Rate: {telemetry?.fulfillmentRatePct || 100}%
+                Fulfillment Rate: {telemetry?.fulfillmentRatePct ?? '—'}%
               </span>
             </Card>
 
@@ -3487,10 +3463,10 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                 INBUILT CATALOG
               </span>
               <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#3b82f6", margin: "4px 0" }}>
-                {telemetry?.totalMasterItems || 92} Items
+                {telemetry?.totalMasterItems ?? '—'} Items
               </div>
               <span style={{ fontSize: "0.75rem", color: COLORS.muted }}>
-                {telemetry?.totalSubcategories || 16} Sub-categories
+                {telemetry?.totalSubcategories ?? '—'} Sub-categories
               </span>
             </Card>
           </div>
@@ -3519,22 +3495,7 @@ export default function ChefIndentDeskTab({ onIndentCreated }) {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{agent.agentName}</span>
-                      <span
-                        style={{
-                          fontSize: "0.68rem",
-                          background: "#d1fae5",
-                          color: "#065f46",
-                          padding: "2px 6px",
-                          borderRadius: 4,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {agent.status}
-                      </span>
                     </div>
-                    <span style={{ fontSize: "0.75rem", color: COLORS.muted }}>
-                      Latency: {agent.latencyMs}ms
-                    </span>
                   </div>
 
                   <p style={{ margin: 0, fontSize: "0.82rem", color: COLORS.text }}>

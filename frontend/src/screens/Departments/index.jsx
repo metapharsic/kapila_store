@@ -4,7 +4,6 @@ import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
 import ErrorMsg from "../../components/ErrorMsg";
-import MasterDataAgentStatusBar from "../../components/agents/MasterDataAgentStatusBar";
 import { useAppContext } from "../../context/AppContext";
 import { COLORS, RADIUS, SPACING } from "../../styles/colors";
 import { Search, Building2, UserCheck, ArrowRight, Utensils, ArrowLeftRight, ChefHat, CheckCircle2 } from "lucide-react";
@@ -113,9 +112,6 @@ export default function DepartmentsScreen() {
 
   return (
     <Section title="Departments" sub="Manage kitchen units, dining rooms, operational routing, and head chef scoping">
-      {/* Multi-Agent Governance Bar */}
-      <MasterDataAgentStatusBar entityType="departments" />
-
       {/* KPI Stats Strip */}
       <div
         style={{

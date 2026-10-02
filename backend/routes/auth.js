@@ -5,6 +5,7 @@ const { authenticate } = require("../middleware/auth");
 
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
 
+router.get("/stations", ctrl.stations);
 router.post("/login", loginLimiter, ctrl.login);
 router.post("/heartbeat", authenticate, ctrl.heartbeat);
 router.post("/refresh", ctrl.refresh);

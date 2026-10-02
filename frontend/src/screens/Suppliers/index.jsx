@@ -11,7 +11,6 @@ import { poStatusStyle } from "../../utils/poStatus";
 import { usePaginatedApi } from "../../hooks/useApi";
 import { useAppContext } from "../../context/AppContext";
 import * as api from "../../api";
-import MasterDataAgentStatusBar from "../../components/agents/MasterDataAgentStatusBar";
 import { Users, Phone, Building2, ChevronDown, ChevronRight, Activity, TrendingUp, Search, PlusCircle, Trash2, Edit2, AlertTriangle, X, Receipt } from "lucide-react";
 
 const LIMIT = 20;
@@ -138,9 +137,6 @@ export default function SuppliersScreen() {
 
   return (
     <Section title="Suppliers" sub="Manage vendor master — contacts, GSTIN, address" style={{ backgroundColor: "#F8FAFC" }}>
-      {/* Swarm Telemetry */}
-      <MasterDataAgentStatusBar entityType="suppliers" />
-      
       {/* KPI Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', borderLeft: `4px solid #3B82F6` }}>

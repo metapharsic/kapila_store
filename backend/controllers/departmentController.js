@@ -1,16 +1,155 @@
 const db = require("../db");
 const { getDepartmentNames } = require("../services/permissionService");
 
+const DEPT_METADATA = {
+  'TIFFINS': { icon: '🥞', color: '#e8a838', bg: 'rgba(232, 168, 56, 0.14)', desc: 'Breakfast, Idli, Dosa & Batter' },
+  'STAFF': { icon: '👥', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)', desc: 'Staff Kitchen Meals & Rations' },
+  'SI-MEALS': { icon: '🍛', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)', desc: 'South Indian Thali, Sambar & Dal' },
+  'NORTH INDIAN': { icon: '🥘', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.14)', desc: 'Gravies, Paneer, Roti & Biryani' },
+  'CHAT & SOFTY': { icon: '🍦', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.14)', desc: 'Chaat, Softies & JP Disposables' },
+  'CHINESE & DOSA': { icon: '🍜', color: '#f97316', bg: 'rgba(249, 115, 22, 0.14)', desc: 'Noodles, Fried Rice & Special Dosas' },
+  'MOCKTAILS & CONTINENTAL': { icon: '🍹', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.14)', desc: 'Mocktails, Shakes, Pizzas & Pastas' },
+  'RESTAURANT': { icon: '🍽️', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.14)', desc: 'Main Dining Service & Dairy' },
+  'ROOM SERVICE': { icon: '🛎️', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.14)', desc: 'In-Room Dining Orders & Supplies' },
+};
+
 // GET /api/departments
 async function list(req, res, next) {
   try {
-    let query = db("departments").select("*").orderBy("name", "asc");
+    let deptQuery = db("departments").select("*").orderBy("id", "asc");
     if (!req.user.isAdmin && !req.user.isManager) {
       const deptNames = await getDepartmentNames(req.user);
-      query.whereIn("name", deptNames);
+      deptQuery.whereIn("name", deptNames);
     }
-    const rows = await query;
-    res.json({ success: true, data: rows });
+
+    // Parallel multi-thread queries: departments and live item counts from subcategories
+    const [rows, itemCounts] = await Promise.all([
+      deptQuery,
+      db("indent_subcategories as s")
+        .join("indent_subcategory_items as i", "s.id", "i.subcategory_id")
+        .groupBy("s.department_name")
+        .select("s.department_name")
+        .count("i.id as count")
+    ]);
+
+    const countMap = {};
+    itemCounts.forEach(c => {
+      countMap[(c.department_name || "").toUpperCase()] = parseInt(c.count, 10);
+    });
+
+    const enriched = rows.map((r) => {
+      const upperName = (r.name || "").toUpperCase();
+      const meta = DEPT_METADATA[upperName] || {
+        icon: '🍽️',
+        color: '#e8a838',
+        bg: 'rgba(232, 168, 56, 0.14)',
+        desc: `${r.name} Kitchen Station`
+      };
+      const itemsCount = countMap[upperName] || 0;
+      return {
+        ...r,
+        itemsCount,
+        items_count: itemsCount,
+        icon: meta.icon,
+        color: meta.color,
+        bg: meta.bg,
+        desc: meta.desc,
+      };
+    });
+
+    res.json({ success: true, data: enriched });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/departments/chef-config
+async function getChefConfig(req, res, next) {
+  try {
+    // Run multi-threaded queries for all dynamic configurations from DB
+    const [depts, stockUnits, indentUnits, subcatUnits, itemCounts] = await Promise.all([
+      db("departments").select("*").orderBy("id", "asc"),
+      db("stock").distinct("unit").whereNotNull("unit"),
+      db("indent_items").distinct("unit").whereNotNull("unit"),
+      db("indent_subcategory_items").distinct("unit").whereNotNull("unit"),
+      db("indent_subcategories as s")
+        .join("indent_subcategory_items as i", "s.id", "i.subcategory_id")
+        .groupBy("s.department_name")
+        .select("s.department_name")
+        .count("i.id as count")
+    ]);
+
+    const countMap = {};
+    itemCounts.forEach(c => {
+      countMap[(c.department_name || "").toUpperCase()] = parseInt(c.count, 10);
+    });
+
+    const enrichedDepts = depts.map((r) => {
+      const upperName = (r.name || "").toUpperCase();
+      const meta = DEPT_METADATA[upperName] || {
+        icon: '🍽️',
+        color: '#e8a838',
+        bg: 'rgba(232, 168, 56, 0.14)',
+        desc: `${r.name} Kitchen Station`
+      };
+      const itemsCount = countMap[upperName] || 0;
+      return {
+        ...r,
+        itemsCount,
+        items_count: itemsCount,
+        icon: meta.icon,
+        color: meta.color,
+        bg: meta.bg,
+        desc: meta.desc,
+      };
+    });
+
+    // Extract unique normalized units from DB
+    const unitSet = new Set(["KG", "GM", "LTR", "ML", "PCS", "PACK", "BOTTLE", "BOX", "TIN", "BUNDLE", "CAN"]);
+    [...stockUnits, ...indentUnits, ...subcatUnits].forEach(u => {
+      if (u.unit) unitSet.add(u.unit.trim().toUpperCase());
+    });
+    const units = Array.from(unitSet).sort();
+
+    const tabs = [
+      { id: 'catalog', label: '📋 Predefined Indent', icon: 'ClipboardList', key: 'catalog_items' },
+      { id: 'required', label: '🚨 Critical Radar', icon: 'AlertTriangle', key: 'critical_items' },
+      { id: 'disposables', label: '📦 Packaging & Disposables', icon: 'Package', key: 'disposables' },
+      { id: 'recipes', label: '🍲 Recipe Demand', icon: 'Utensils', key: 'station_recipes' }
+    ];
+
+    const priorities = [
+      { value: 'NORMAL', label: 'Routine (Standard)', color: '#10b981' },
+      { value: 'URGENT', label: 'Urgent (Morning Prep)', color: '#f59e0b' },
+      { value: 'EMERGENCY', label: 'Emergency Shortage', color: '#ef4444' }
+    ];
+
+    const shifts = [
+      { value: 'NIGHT_INDENT', label: 'Night Replenishment' },
+      { value: 'MORNING', label: 'Morning 6 AM Prep' },
+      { value: 'EVENING', label: 'Evening 4 PM Service' }
+    ];
+
+    const quickIncrements = [1, 5, 10, 25, 50, 100];
+
+    const dockConfig = {
+      mode: 'right',
+      width: 500,
+      floatPos: { x: 40, y: 80 },
+      isMinimized: false,
+      sheetHeight: 'half'
+    };
+
+    res.json({
+      success: true,
+      departments: enrichedDepts,
+      tabs,
+      units,
+      priorities,
+      shifts,
+      quickIncrements,
+      dockConfig
+    });
   } catch (err) {
     next(err);
   }
@@ -116,6 +255,28 @@ async function remove(req, res, next) {
   }
 }
 
+// GET /api/departments/item-counts
+// Single GROUP BY query returning a live item count per department, keyed by
+// department name (uppercased) to match frontend DEPARTMENT_TILES.name.
+async function getDepartmentItemCounts(req, res, next) {
+  try {
+    const itemCounts = await db("indent_subcategories as s")
+      .join("indent_subcategory_items as i", "s.id", "i.subcategory_id")
+      .groupBy("s.department_name")
+      .select("s.department_name")
+      .count("i.id as count");
+
+    const data = itemCounts.map((c) => {
+      const name = (c.department_name || "").trim().toUpperCase();
+      return { name, item_count: parseInt(c.count, 10) };
+    });
+
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // GET /api/departments/items
 async function getDepartmentItems(req, res, next) {
   try {
@@ -212,5 +373,5 @@ async function addItemToDepartmentTemplate(req, res, next) {
   }
 }
 
-module.exports = { list, create, update, remove, getDepartmentItems, addItemToDepartmentTemplate };
+module.exports = { list, getChefConfig, create, update, remove, getDepartmentItems, getDepartmentItemCounts, addItemToDepartmentTemplate };
 

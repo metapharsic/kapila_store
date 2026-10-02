@@ -18,9 +18,55 @@ export default function RaiseIndentItemModal({
   defaultDept = 'TIFFINS',
   isOpen,
   onClose,
-  onItemStaged
+  onItemStaged,
+  onSuccess,
+  availableDepartments,
+  availableUnits,
+  availablePriorities,
+  availableShifts,
+  quickIncrements
 }) {
   const { setCurrentScreen, setIndentPreFill } = useAppContext();
+
+  const [dbConfig, setDbConfig] = useState(null);
+
+  useEffect(() => {
+    if (!availableDepartments || !availableUnits) {
+      if (api.departments && api.departments.chefConfig) {
+        api.departments.chefConfig().then(res => {
+          if (res?.departments) setDbConfig(res);
+        }).catch(() => {});
+      }
+    }
+  }, [availableDepartments, availableUnits]);
+
+  const depts = (availableDepartments && availableDepartments.length > 0)
+    ? availableDepartments.map(d => typeof d === 'string' ? d : d.name)
+    : (dbConfig?.departments ? dbConfig.departments.map(d => d.name) : CANONICAL_DEPARTMENTS);
+
+  const unitsList = (availableUnits && availableUnits.length > 0)
+    ? availableUnits
+    : (dbConfig?.units || ['KG', 'GM', 'LTR', 'ML', 'PCS', 'PACK', 'BOTTLE', 'BOX', 'TIN', 'BUNDLE', 'CAN']);
+
+  const prioritiesList = (availablePriorities && availablePriorities.length > 0)
+    ? availablePriorities
+    : (dbConfig?.priorities || [
+        { value: 'NORMAL', label: 'Routine (Standard)', color: '#10b981' },
+        { value: 'URGENT', label: 'Urgent (Morning Prep)', color: '#f59e0b' },
+        { value: 'EMERGENCY', label: 'Emergency Shortage', color: '#ef4444' }
+      ]);
+
+  const shiftsList = (availableShifts && availableShifts.length > 0)
+    ? availableShifts
+    : (dbConfig?.shifts || [
+        { value: 'NIGHT_INDENT', label: 'Night Replenishment' },
+        { value: 'MORNING', label: 'Morning 6 AM Prep' },
+        { value: 'EVENING', label: 'Evening 4 PM Service' }
+      ]);
+
+  const incrementsList = (quickIncrements && quickIncrements.length > 0)
+    ? quickIncrements
+    : (dbConfig?.quickIncrements || [1, 5, 10, 25, 50, 100]);
 
   const [dept, setDept] = useState(defaultDept);
   const [qty, setQty] = useState('1');
@@ -405,7 +451,7 @@ export default function RaiseIndentItemModal({
                 outline: 'none'
               }}
             >
-              {CANONICAL_DEPARTMENTS.map((d) => (
+              {depts.map((d) => (
                 <option key={d} value={d} style={{ background: '#0f172a', color: '#ffffff' }}>
                   {d} Kitchen Station
                 </option>
@@ -504,7 +550,7 @@ export default function RaiseIndentItemModal({
                   outline: 'none'
                 }}
               >
-                {['KG', 'GM', 'LTR', 'ML', 'PCS', 'PACK', 'BOTTLE', 'BOX', 'TIN', 'BUNDLE', 'CAN'].map((u) => (
+                {unitsList.map((u) => (
                   <option key={u} value={u} style={{ background: '#0f172a' }}>{u}</option>
                 ))}
               </select>
@@ -512,7 +558,7 @@ export default function RaiseIndentItemModal({
 
             {/* Quick Touch Increment Chips */}
             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-              {[1, 5, 10, 25, 50, 100].map((inc) => (
+              {incrementsList.map((inc) => (
                 <button
                   key={inc}
                   type="button"
@@ -556,9 +602,11 @@ export default function RaiseIndentItemModal({
                   outline: 'none'
                 }}
               >
-                <option value="NORMAL" style={{ background: '#0f172a', color: '#10b981' }}>Routine (Standard)</option>
-                <option value="URGENT" style={{ background: '#0f172a', color: '#f59e0b' }}>Urgent (Morning Prep)</option>
-                <option value="EMERGENCY" style={{ background: '#0f172a', color: '#ef4444' }}>Emergency Shortage</option>
+                {prioritiesList.map((p) => (
+                  <option key={p.value} value={p.value} style={{ background: '#0f172a', color: p.color || '#ffffff' }}>
+                    {p.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -581,9 +629,11 @@ export default function RaiseIndentItemModal({
                   outline: 'none'
                 }}
               >
-                <option value="NIGHT_INDENT" style={{ background: '#0f172a' }}>Night Replenishment</option>
-                <option value="MORNING" style={{ background: '#0f172a' }}>Morning 6 AM Prep</option>
-                <option value="AFTERNOON" style={{ background: '#0f172a' }}>Afternoon Lunch</option>
+                {shiftsList.map((s) => (
+                  <option key={s.value} value={s.value} style={{ background: '#0f172a' }}>
+                    {s.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

@@ -296,50 +296,6 @@ async function generateWorkbook(options = {}, metadata = {}) {
   });
   wsDash.getRow(6).height = 28;
 
-  // Multi-Agent Swarm Status Table
-  wsDash.getCell("B9").value = "MULTI-AGENT SWARM OPERATIONAL STATUS & LIVE WIRING TELEMETRY";
-  wsDash.getCell("B9").font = { name: "Calibri", size: 11, bold: true, color: { argb: PALETTE.navyDark } };
-  safeMergeCells(wsDash, "B9:F9");
-
-  const agentHeaders = ["Agent Designation", "Operational Function", "Live Engine Status", "Telemetry Details"];
-  ["B", "C", "D", "E"].forEach((c, idx) => {
-    const cell = wsDash.getCell(`${c}10`);
-    cell.value = agentHeaders[idx];
-    cell.font = { name: "Calibri", size: 10, bold: true, color: { argb: PALETTE.white } };
-    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: PALETTE.navyHeader } };
-    cell.alignment = { vertical: "middle", horizontal: idx === 2 ? "center" : "left" };
-    cell.border = BORDER_THIN;
-  });
-  safeMergeCells(wsDash, "E10:F10");
-  wsDash.getRow(10).height = 25;
-
-  const agentList = [
-    { name: "Agent 1: Deep Reader", role: "Catalog & SKU Ingestion", status: "ONLINE (100%)", details: `Scanned all ${enrichedItems.length} live database SKUs and verified UOM & Pricing.` },
-    { name: "Agent 2: Pattern Diagnostician", role: "Demand & Surge Modeling", status: "ONLINE (100%)", details: `Extracted weekday surge patterns across ${deptProfiles.length} active departments.` },
-    { name: "Agent 3: Automation Modeler", role: "ROP & Algorithmic Equations", status: "ONLINE (100%)", details: "Derived dynamic indent equations: Max(0, (Demand + SafetyStock) - LiveStock)." },
-    { name: "Agent 4: Workbook Architect", role: "Excel Engine Compilation", status: "ONLINE (100%)", details: "Compiles multi-sheet live workbook streamed dynamically through the app." },
-    { name: "Agent 5: QA & Integrity Auditor", role: "Data Integrity & Formula Audit", status: "ONLINE (100%)", details: "Verified 100% of cell formulas, number formatting, and zero hardcoding." },
-  ];
-
-  agentList.forEach((ag, i) => {
-    const rNum = 11 + i;
-    safeMergeCells(wsDash, `E${rNum}:F${rNum}`);
-    wsDash.getCell(`B${rNum}`).value = ag.name;
-    wsDash.getCell(`C${rNum}`).value = ag.role;
-    const statCell = wsDash.getCell(`D${rNum}`);
-    statCell.value = ag.status;
-    statCell.font = { bold: true, color: { argb: PALETTE.greenSuccess } };
-    statCell.alignment = { horizontal: "center" };
-    wsDash.getCell(`E${rNum}`).value = ag.details;
-
-    ["B", "C", "D", "E", "F"].forEach((c) => {
-      const cell = wsDash.getCell(`${c}${rNum}`);
-      cell.border = BORDER_THIN;
-      if (i % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: PALETTE.zebraBg } };
-    });
-    wsDash.getRow(rNum).height = 22;
-  });
-
   // ==========================================
   // SHEET 2: Department x Day Indent Pattern Matrix
   // ==========================================
@@ -708,13 +664,6 @@ async function getAutomationSummary() {
         "Item-by-Item Indent Engine",
         "Recipe Explosion Matrix",
         "Auto-Indent Simulator"
-      ],
-      agents: [
-        { name: "Agent 1: Deep Reader", status: "ONLINE", role: "Catalog & SKU Ingestion" },
-        { name: "Agent 2: Pattern Diagnostician", status: "ONLINE", role: "Demand & Surge Modeling" },
-        { name: "Agent 3: Automation Modeler", status: "ONLINE", role: "ROP & Algorithmic Equations" },
-        { name: "Agent 4: Workbook Architect", status: "ONLINE", role: "Excel Engine Compilation" },
-        { name: "Agent 5: QA & Integrity Auditor", status: "ONLINE", role: "Data Integrity & Formula Audit" },
       ]
     }
   };

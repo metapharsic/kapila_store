@@ -6,7 +6,7 @@ import kapilaLogo from '../assets/kapila-logo.png';
 import { 
   ChefHat, ClipboardList, UtensilsCrossed, BarChart3, 
   ShieldCheck, LogOut, ArrowRight, Sparkles, TrendingUp, AlertTriangle,
-  Smartphone, Tablet, Monitor, Cpu, Search
+  Smartphone, Tablet, Monitor, Search
 } from 'lucide-react';
 import ChefRequisitionWorkspace from '../components/chef/ChefRequisitionWorkspace';
 import RaiseIndentItemModal from '../components/chef/RaiseIndentItemModal';
@@ -58,7 +58,6 @@ export const DEPARTMENT_TILES = [
     icon: '🥞',
     color: '#e8a838',
     bg: 'rgba(232, 168, 56, 0.14)',
-    itemsCount: 158,
     desc: 'Breakfast, Idli, Dosa & Batter'
   },
   {
@@ -67,7 +66,6 @@ export const DEPARTMENT_TILES = [
     icon: '👥',
     color: '#3b82f6',
     bg: 'rgba(59, 130, 246, 0.14)',
-    itemsCount: 71,
     desc: 'Staff Kitchen Meals & Rations'
   },
   {
@@ -76,7 +74,6 @@ export const DEPARTMENT_TILES = [
     icon: '🍛',
     color: '#10b981',
     bg: 'rgba(16, 185, 129, 0.14)',
-    itemsCount: 92,
     desc: 'South Indian Thali, Sambar & Dal'
   },
   {
@@ -85,7 +82,6 @@ export const DEPARTMENT_TILES = [
     icon: '🥘',
     color: '#ef4444',
     bg: 'rgba(239, 68, 68, 0.14)',
-    itemsCount: 116,
     desc: 'Gravies, Paneer, Roti & Biryani'
   },
   {
@@ -94,7 +90,6 @@ export const DEPARTMENT_TILES = [
     icon: '🍦',
     color: '#ec4899',
     bg: 'rgba(236, 72, 153, 0.14)',
-    itemsCount: 113,
     desc: 'Chaat, Softies & JP Disposables'
   },
   {
@@ -103,7 +98,6 @@ export const DEPARTMENT_TILES = [
     icon: '🍜',
     color: '#f97316',
     bg: 'rgba(249, 115, 22, 0.14)',
-    itemsCount: 85,
     desc: 'Noodles, Fried Rice & Special Dosas'
   },
   {
@@ -112,7 +106,6 @@ export const DEPARTMENT_TILES = [
     icon: '🍹',
     color: '#8b5cf6',
     bg: 'rgba(139, 92, 246, 0.14)',
-    itemsCount: 93,
     desc: 'Mocktails, Shakes, Pizzas & Pastas'
   },
   {
@@ -121,7 +114,6 @@ export const DEPARTMENT_TILES = [
     icon: '🍽️',
     color: '#06b6d4',
     bg: 'rgba(6, 182, 212, 0.14)',
-    itemsCount: 75,
     desc: 'Main Dining Service & Dairy'
   },
   {
@@ -130,7 +122,6 @@ export const DEPARTMENT_TILES = [
     icon: '🛎️',
     color: '#a855f7',
     bg: 'rgba(168, 85, 247, 0.14)',
-    itemsCount: 60,
     desc: 'In-Room Dining Orders & Supplies'
   }
 ];
@@ -191,6 +182,64 @@ export default function ChefHome() {
   const [quickSearch, setQuickSearch] = useState('');
   const [quickResults, setQuickResults] = useState([]);
   const [quickLoading, setQuickLoading] = useState(false);
+
+  const [departmentsList, setDepartmentsList] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (api.departments && api.departments.list) {
+      api.departments.list().then((res) => {
+        if (!isMounted) return;
+        const list = res?.data || res || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setDepartmentsList(list);
+        }
+      }).catch((err) => {
+        console.error('Failed to load departments from database:', err);
+      });
+    }
+    return () => { isMounted = false; };
+  }, []);
+
+  const [departmentItemCounts, setDepartmentItemCounts] = useState(null); // null = loading, {} = loaded (possibly empty), 'error' = failed
+  useEffect(() => {
+    let isMounted = true;
+    Promise.resolve()
+      .then(() => {
+        if (!api.departments || !api.departments.itemCounts) {
+          throw new Error('departments.itemCounts API not available');
+        }
+        return api.departments.itemCounts();
+      })
+      .then((res) => {
+        if (!isMounted) return;
+        const rows = res?.data || res || [];
+        const map = {};
+        if (Array.isArray(rows)) {
+          rows.forEach((r) => {
+            const key = (r.name || '').trim().toUpperCase();
+            if (key) map[key] = r.item_count;
+          });
+        }
+        setDepartmentItemCounts(map);
+      })
+      .catch((err) => {
+        console.error('Failed to load department item counts:', err);
+        if (isMounted) setDepartmentItemCounts('error');
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  const activeDepartments = departmentsList.length > 0 ? departmentsList : DEPARTMENT_TILES;
+
+  const getDeptItemCount = (dept) => {
+    if (typeof dept.itemsCount === 'number') return dept.itemsCount; // live count already attached by backend (e.g. /departments)
+    if (departmentItemCounts === null) return '…';
+    if (departmentItemCounts === 'error') return '—';
+    const key = (dept.name || '').trim().toUpperCase();
+    const count = departmentItemCounts[key];
+    return typeof count === 'number' ? count : '—';
+  };
 
   useEffect(() => {
     const q = quickSearch.trim();
@@ -261,17 +310,6 @@ export default function ChefHome() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{
-            display: isMobile ? 'none' : 'flex',
-            alignItems: 'center',
-            gap: 6,
-            fontSize: 12,
-            color: '#94a3b8'
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
-            KitchenOps: <strong style={{ color: '#ffffff' }}>Active</strong>
-          </div>
-
           <button
             onClick={() => setShowWorkspace(prev => !prev)}
             style={{
@@ -454,7 +492,6 @@ export default function ChefHome() {
             <div>
               <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>Chef Keen Requisition Cockpit & Station Radar</span>
-                <span style={{ fontSize: 10, background: '#10b981', color: '#080c14', padding: '2px 8px', borderRadius: 10, fontWeight: 800 }}>TOUCHPAD ACTIVE</span>
               </div>
               <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0' }}>
                 See what is required very keenly: Central Store live balances, critical shortages, daily staples & single-indent disposables. Flexible windowing lets you dock anywhere.
@@ -640,7 +677,7 @@ export default function ChefHome() {
             gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
             gap: isMobile ? 10 : 14,
           }}>
-            {DEPARTMENT_TILES.map((dept) => {
+            {activeDepartments.map((dept) => {
               const isHovered = hoveredDept === dept.name;
               return (
                 <button
@@ -732,7 +769,7 @@ export default function ChefHome() {
                         alignItems: 'center',
                         gap: 3
                       }}>
-                        <span>✓ {dept.itemsCount} items</span>
+                        <span>✓ {getDeptItemCount(dept)} items</span>
                       </span>
                       <button
                         onClick={(e) => {
@@ -879,31 +916,6 @@ export default function ChefHome() {
           })}
         </div>
 
-        {/* Multi-Agent Swarm Telemetry Footer */}
-        <div style={{
-          marginTop: 36,
-          padding: '14px 20px',
-          borderRadius: 12,
-          background: 'rgba(15, 23, 42, 0.6)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 10,
-          boxSizing: 'border-box'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#cbd5e1' }}>
-            <Cpu size={15} style={{ color: '#e8a838' }} />
-            <span><strong>Multi-Agent Kitchen Governance:</strong> Production & Waste locked to Admin. Recipe lines and night indents synchronized with Central Store.</span>
-          </div>
-
-          <span style={{ fontSize: 11, color: '#10b981', fontWeight: 700 }}>
-            ● SENTINEL VERIFIED
-          </span>
-        </div>
-
       </main>
 
       {/* Flexible Chef Touch Requisition Workspace */}
@@ -921,6 +933,7 @@ export default function ChefHome() {
           isOpen={Boolean(indentModalItem)}
           onClose={() => setIndentModalItem(null)}
           onSuccess={() => setIndentModalItem(null)}
+          availableDepartments={activeDepartments}
         />
       )}
     </div>

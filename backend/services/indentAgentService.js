@@ -172,7 +172,6 @@ class IndentAgentService {
    * ============================================================================
    */
   static async submitChefIndent(input, user = null) {
-    const startTime = Date.now();
     const {
       dept,
       subcategoryId,
@@ -358,7 +357,6 @@ class IndentAgentService {
       remarks,
     }).catch((err) => console.warn("[IndentAgentService] notifyIndentRaised warning:", err.message));
 
-    const latencyMs = Date.now() - startTime;
 
     return {
       success: true,
@@ -379,9 +377,7 @@ class IndentAgentService {
         agentCode: "CHEF_INDENT_SUBMISSION_AGENT",
         agentName: "ChefIndentSubmissionAgent",
         domainScope: "Chef Requisition Intake & Verification",
-        status: "ONLINE_ACTIVE",
         lastAction: `Validated and filed Chef Requisition #${result.trackingNumber} for ${canonicalDept} (${validatedLineItems.length} items, est. ₹${totalEstimatedValue.toLocaleString("en-IN")})`,
-        latencyMs,
         metrics: {
           itemsRequested: validatedLineItems.length,
           totalEstimatedValue,
@@ -399,7 +395,6 @@ class IndentAgentService {
    * ============================================================================
    */
   static async processStoreFulfillment(input, user = null) {
-    const startTime = Date.now();
     const {
       indentId,
       action, // "APPROVE" | "ISSUE" | "REJECT"
@@ -475,9 +470,7 @@ class IndentAgentService {
           agentCode: "STORE_FULFILLMENT_AGENT",
           agentName: "StoreFulfillmentAgent",
           domainScope: "Store Fulfillment & Material Dispatch",
-          status: "ONLINE_ACTIVE",
           lastAction: `Rejected indent #${indentId} (${items.length} line items). Reason: ${rejectionReason || "Storekeeper discretion"}.`,
-          latencyMs: Date.now() - startTime,
         },
       };
     }
@@ -521,9 +514,7 @@ class IndentAgentService {
           agentCode: "STORE_FULFILLMENT_AGENT",
           agentName: "StoreFulfillmentAgent",
           domainScope: "Store Fulfillment & Material Dispatch",
-          status: "ONLINE_ACTIVE",
           lastAction: `Approved indent #${indentId} for ${indent.dept}. Authorized for store dispatch.`,
-          latencyMs: Date.now() - startTime,
         },
       };
     }
@@ -697,9 +688,7 @@ class IndentAgentService {
           agentCode: "STORE_FULFILLMENT_AGENT",
           agentName: "StoreFulfillmentAgent",
           domainScope: "Store Fulfillment & Material Dispatch",
-          status: "ONLINE_ACTIVE",
           lastAction: `Dispatched Issue Slip #${issueSlipNumber} for Indent #${indentId} (${indent.dept}). Total dispatched: ₹${totalIssuedValue.toLocaleString("en-IN")}.`,
-          latencyMs: Date.now() - startTime,
         },
       };
     }
@@ -714,8 +703,6 @@ class IndentAgentService {
    * ============================================================================
    */
   static async getAuditTelemetry() {
-    const startTime = Date.now();
-
     const [
       totalSubcategories,
       totalItems,
@@ -756,16 +743,12 @@ class IndentAgentService {
         ? Number(((totalIndentsIssued / totalIndentsSubmitted) * 100).toFixed(1))
         : 100;
 
-    const latencyMs = Date.now() - startTime;
-
     const agents = [
       {
         agentCode: "INDENT_TEMPLATE_AGENT",
         agentName: "IndentTemplateAgent",
         domainScope: "Sub-category & Catalog Auto-Provisioner",
-        status: "ONLINE_ACTIVE",
         lastAction: `Synchronized ${totalSubcategories?.count || 16} sub-categories and ${totalItems?.count || 92} master recipe items.`,
-        latencyMs: 12,
         metrics: {
           subcategories: parseInt(totalSubcategories?.count || 16),
           masterItems: parseInt(totalItems?.count || 92),
@@ -775,9 +758,7 @@ class IndentAgentService {
         agentCode: "CHEF_INDENT_SUBMISSION_AGENT",
         agentName: "ChefIndentSubmissionAgent",
         domainScope: "Chef Requisition Intake & Limit Validator",
-        status: "ONLINE_ACTIVE",
         lastAction: `Validated ${totalIndentsSubmitted} kitchen requisitions totaling ₹${Math.round(totalRequisitionValue).toLocaleString("en-IN")}.`,
-        latencyMs: 18,
         metrics: {
           totalIndentsSubmitted,
           totalRequisitionValue: Math.round(totalRequisitionValue),
@@ -788,9 +769,7 @@ class IndentAgentService {
         agentCode: "STORE_FULFILLMENT_AGENT",
         agentName: "StoreFulfillmentAgent",
         domainScope: "Store Queue, Issuance Slip Dispatcher & Batch Deductor",
-        status: "ONLINE_ACTIVE",
         lastAction: `Issued ${totalIndentsIssued} official store slips totaling ₹${Math.round(totalIssuedValue).toLocaleString("en-IN")}. Fulfillment rate: ${fulfillmentRatePct}%.`,
-        latencyMs: 24,
         metrics: {
           totalIndentsIssued,
           totalIssuedValue: Math.round(totalIssuedValue),
@@ -801,9 +780,7 @@ class IndentAgentService {
         agentCode: "INDENT_AUDIT_TELEMETRY_AGENT",
         agentName: "IndentAuditTelemetryAgent",
         domainScope: "Cross-Department Audit & Enterprise Compliance",
-        status: "SYNCHRONIZED",
         lastAction: "Audited multi-department shift requisitions against standard consumption patterns.",
-        latencyMs: latencyMs,
         metrics: {
           monitoredDepartments: 9,
           activeAlerts: 0,

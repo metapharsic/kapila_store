@@ -180,12 +180,13 @@ export const approvals = {
 };
 
 export const departments = {
-  list:   () => api.get("/departments"),
-  items:  () => api.get("/departments/items"),
-  addTemplateItem: (body) => api.post("/departments/template-item", body),
-  create: (body)   => api.post("/departments", body),
-  update: (id, body) => api.patch(`/departments/${id}`, body),
-  remove: (id)     => api.delete(`/departments/${id}`),
+  list:            (params) => api.get("/departments", params),
+  chefConfig:      ()       => api.get("/departments/chef-config"),
+  items:           ()       => api.get("/departments/items"),
+  addTemplateItem: (body)   => api.post("/departments/template-item", body),
+  create:          (body)   => api.post("/departments", body),
+  update:          (id, body) => api.patch(`/departments/${id}`, body),
+  remove:          (id)     => api.delete(`/departments/${id}`),
 };
 
 export const recipes = {
@@ -227,6 +228,7 @@ export const stockImport = {
 
 export const auth = {
   login: (body) => api.post("/auth/login", body),
+  stations: () => api.get("/auth/stations"),
   heartbeat: (sessionId) => api.post("/auth/heartbeat", { sessionId }),
   me: () => api.get("/auth/me"),
   refresh: () => api.post("/auth/refresh"),
@@ -398,6 +400,3 @@ export const inboundDc = {
   matchInvoice: (id, body) => api.post(`/inbound-dc/${id}/match-invoice`, body),
   cancel: (id, reason) => api.post(`/inbound-dc/${id}/cancel`, { reason }),
 };
-
-
-

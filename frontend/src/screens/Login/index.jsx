@@ -2,14 +2,25 @@ import { useState, useEffect } from "react";
 import kapilaLogo from "../../assets/kapila-logo.png";
 import { COLORS, globalCss } from "../../styles/colors";
 import { useAuth } from "../../context/AuthContext";
+import * as api from "../../api";
 import { 
   Lock, AlertCircle, CheckCircle2, 
   Store, ChefHat, ShieldCheck, Cpu, Eye, EyeOff,
   LogIn, Sparkles, Smartphone, Tablet, Monitor,
-  RotateCcw, Delete, Zap, Shield, ArrowRight
+  RotateCcw, Delete, Zap, Shield, ArrowRight, Building2
 } from "lucide-react";
 
-const QUICK_ROLES = [
+function renderStationIcon(iconKey) {
+  switch (iconKey) {
+    case "ChefHat": return <ChefHat size={22} />;
+    case "Store": return <Store size={22} />;
+    case "ShieldCheck": return <ShieldCheck size={22} />;
+    case "Building2": return <Building2 size={22} />;
+    default: return <Cpu size={22} />;
+  }
+}
+
+const DEFAULT_QUICK_ROLES = [
   { 
     label: "Main Chef", 
     code: "KPL-CHEF", 
@@ -17,7 +28,7 @@ const QUICK_ROLES = [
     dept: "All Kitchens", 
     role: "Kitchen & Production", 
     routeHint: "Direct to Kitchen Station",
-    icon: <ChefHat size={22} />,
+    icon: "ChefHat",
     color: "#10b981",
     bg: "rgba(16, 185, 129, 0.14)",
     border: "rgba(16, 185, 129, 0.4)",
@@ -30,7 +41,7 @@ const QUICK_ROLES = [
     dept: "Central Store", 
     role: "Store Operations", 
     routeHint: "Direct to Store Manager Hub",
-    icon: <Store size={22} />,
+    icon: "Store",
     color: "#e8a838",
     bg: "rgba(232, 168, 56, 0.14)",
     border: "rgba(232, 168, 56, 0.4)",
@@ -43,7 +54,7 @@ const QUICK_ROLES = [
     dept: "Executive Office", 
     role: "Full System Access", 
     routeHint: "Direct to Master Dashboard",
-    icon: <ShieldCheck size={22} />,
+    icon: "ShieldCheck",
     color: "#3b82f6",
     bg: "rgba(59, 130, 246, 0.14)",
     border: "rgba(59, 130, 246, 0.4)",
@@ -51,21 +62,25 @@ const QUICK_ROLES = [
   },
 ];
 
-const DEFAULT_PASSWORD = "ChangeMe123!";
-
 export default function LoginScreen() {
   const { login, sessionTerminatedNotice, clearTerminationNotice } = useAuth();
 
+  // Dynamic stations & shifts state (loaded from PostgreSQL database)
+  const [stations, setStations] = useState(DEFAULT_QUICK_ROLES);
+  const [shifts, setShifts] = useState([]);
+  const [selectedShift, setSelectedShift] = useState("Morning");
+  const [terminalCode, setTerminalCode] = useState("STORE-KIOSK-01");
+
   // Station memory: check if device has saved station
   const savedStation = typeof window !== "undefined" ? localStorage.getItem("kapila_device_station") : null;
-  const initialRole = QUICK_ROLES.find(r => r.code === savedStation) || QUICK_ROLES[0];
+  const initialRole = stations.find(r => r.code === savedStation) || stations[0];
 
   const [selectedRoleCode, setSelectedRoleCode] = useState(initialRole.code);
   const [activeTab, setActiveTab] = useState("touch"); // 'touch' (Touch Station & PIN) | 'form' (Credentials)
   
   // Credentials state
-  const [identifier, setIdentifier] = useState(initialRole.email);
-  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [identifier, setIdentifier] = useState(initialRole.email || initialRole.code);
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -75,6 +90,34 @@ export default function LoginScreen() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Load dynamic stations and shifts from database via multi-thread backend
+  useEffect(() => {
+    let isMounted = true;
+    api.auth.stations()
+      .then(res => {
+        if (!isMounted) return;
+        const d = res.data;
+        if (d?.stations && d.stations.length > 0) {
+          setStations(d.stations);
+          const saved = localStorage.getItem("kapila_device_station");
+          const found = d.stations.find(s => s.code === saved) || d.stations[0];
+          setSelectedRoleCode(found.code);
+          setIdentifier(found.email || found.code);
+        }
+        if (d?.shifts && d.shifts.length > 0) {
+          setShifts(d.shifts);
+          setSelectedShift(d.shifts[0].name);
+        }
+        if (d?.defaultTerminal) {
+          setTerminalCode(d.defaultTerminal);
+        }
+      })
+      .catch(err => {
+        console.warn("Could not fetch database stations, running on default presets:", err.message);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   // Device telemetry detection (Mobile / Touchpad / Desktop)
   const [deviceProfile, setDeviceProfile] = useState({
@@ -118,8 +161,7 @@ export default function LoginScreen() {
 
   const handleSelectRole = (role) => {
     setSelectedRoleCode(role.code);
-    setIdentifier(role.email);
-    setPassword(DEFAULT_PASSWORD);
+    setIdentifier(role.email || role.code);
     setPin("");
     setError("");
     setPinError("");
@@ -128,7 +170,7 @@ export default function LoginScreen() {
     } catch (e) {}
   };
 
-  // Perform login
+  // Perform standard password login
   const executeLogin = async (id, pwd) => {
     setError("");
     setPinError("");
@@ -139,11 +181,36 @@ export default function LoginScreen() {
         employee_code: id.trim(),
         username: id.trim(),
         password: pwd,
+        terminal_code: terminalCode || "STORE-KIOSK-01",
+        shift_type: selectedShift || "Morning",
       }, rememberMe);
     } catch (err) {
       const msg = err.message || "Invalid credentials. Please verify your account and password.";
       setError(msg);
       setPinError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Perform genuine database-backed PIN authentication
+  const executePinLogin = async (targetStation, enteredPin) => {
+    setError("");
+    setPinError("");
+    setLoading(true);
+    try {
+      await login({
+        employee_code: targetStation.code,
+        email: targetStation.email,
+        pin: enteredPin,
+        terminal_code: terminalCode || "STORE-KIOSK-01",
+        shift_type: selectedShift || "Morning",
+      }, rememberMe);
+    } catch (err) {
+      const msg = err.message || "Invalid Station PIN. Please verify your 4-digit PIN.";
+      setPinError(msg);
+      setError(msg);
+      setPin("");
     } finally {
       setLoading(false);
     }
@@ -171,9 +238,9 @@ export default function LoginScreen() {
       setPin(nextPin);
       setPinError("");
       if (nextPin.length === 4) {
-        // Auto clock-in when 4 digits entered
-        const role = QUICK_ROLES.find(r => r.code === selectedRoleCode) || QUICK_ROLES[0];
-        executeLogin(role.email, DEFAULT_PASSWORD);
+        // Auto authenticate with database-stored PIN
+        const currentStation = stations.find(r => r.code === selectedRoleCode) || stations[0];
+        executePinLogin(currentStation, nextPin);
       }
     }
   };
@@ -192,11 +259,15 @@ export default function LoginScreen() {
 
   // Instant 1-Tap Clock-in
   const handleQuickClockIn = () => {
-    const role = QUICK_ROLES.find(r => r.code === selectedRoleCode) || QUICK_ROLES[0];
-    executeLogin(role.email, DEFAULT_PASSWORD);
+    const currentStation = stations.find(r => r.code === selectedRoleCode) || stations[0];
+    if (pin.length === 4) {
+      executePinLogin(currentStation, pin);
+    } else {
+      setPinError("Please enter your 4-digit PIN on the numeric keypad below");
+    }
   };
 
-  const selectedRole = QUICK_ROLES.find(r => r.code === selectedRoleCode) || QUICK_ROLES[0];
+  const selectedRole = stations.find(r => r.code === selectedRoleCode) || stations[0] || DEFAULT_QUICK_ROLES[0];
 
   return (
     <>
@@ -441,8 +512,9 @@ export default function LoginScreen() {
             </div>
 
             <div className="station-grid">
-              {QUICK_ROLES.map((role) => {
+              {stations.map((role) => {
                 const isSelected = selectedRoleCode === role.code;
+                const iconEl = typeof role.icon === "string" ? renderStationIcon(role.icon) : (role.icon || renderStationIcon(role.iconKey));
                 return (
                   <button
                     key={role.code}
@@ -469,7 +541,7 @@ export default function LoginScreen() {
                       flexShrink: 0,
                       transition: "all 0.2s ease"
                     }}>
-                      {role.icon}
+                      {iconEl}
                     </div>
                     <div className="station-btn-text" style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "#ffffff" : "#cbd5e1" }}>
@@ -482,6 +554,51 @@ export default function LoginScreen() {
                   </button>
                 );
               })}
+            </div>
+
+            {/* Operating Shift Selector (Fetched from shift_patterns) */}
+            <div style={{
+              marginTop: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "rgba(0, 0, 0, 0.25)",
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(255, 255, 255, 0.06)"
+            }}>
+              <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Operating Shift:
+              </span>
+              <select
+                value={selectedShift}
+                onChange={(e) => setSelectedShift(e.target.value)}
+                style={{
+                  background: "#0b1220",
+                  color: "#ffffff",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  borderRadius: 6,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  outline: "none",
+                  cursor: "pointer"
+                }}
+              >
+                {shifts.length > 0 ? (
+                  shifts.map((s) => (
+                    <option key={s.id || s.name} value={s.name}>
+                      {s.name} {s.start_time ? `(${s.start_time.slice(0, 5)} - ${s.end_time.slice(0, 5)})` : ""}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Morning">Morning Shift (06:00 - 14:00)</option>
+                    <option value="Evening">Evening Shift (14:00 - 22:00)</option>
+                    <option value="Night">Night Shift (22:00 - 06:00)</option>
+                  </>
+                )}
+              </select>
             </div>
           </div>
 
@@ -743,25 +860,27 @@ export default function LoginScreen() {
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <label style={sectionLabelStyle}>Password</label>
-                  <button
-                    type="button"
-                    onClick={() => { setPassword(DEFAULT_PASSWORD); setError(""); }}
-                    style={{
-                      fontSize: 11,
-                      color: selectedRole.color,
-                      background: "rgba(255, 255, 255, 0.05)",
-                      padding: "2px 8px",
-                      borderRadius: 5,
-                      fontWeight: 600,
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    <Sparkles size={11} /> Reset Default
-                  </button>
+                  {password && (
+                    <button
+                      type="button"
+                      onClick={() => { setPassword(""); setError(""); }}
+                      style={{
+                        fontSize: 11,
+                        color: "#94a3b8",
+                        background: "rgba(255, 255, 255, 0.05)",
+                        padding: "2px 8px",
+                        borderRadius: 5,
+                        fontWeight: 600,
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <RotateCcw size={11} /> Clear
+                    </button>
+                  )}
                 </div>
 
                 <div style={{ position: "relative" }}>

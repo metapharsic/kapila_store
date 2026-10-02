@@ -903,11 +903,78 @@ async function getChefRadar(req, res, next) {
     const dept = (req.query.dept || "TIFFINS").toUpperCase().trim();
     const today = new Date().toISOString().slice(0, 10);
 
-    // 1. Fetch subcategories and template items for this department
-    const subcats = await IndentAgentService.getSubcategories(dept);
+    const DEPT_METADATA = {
+      'TIFFINS': { icon: '🥞', color: '#e8a838', bg: 'rgba(232, 168, 56, 0.14)', desc: 'Breakfast, Idli, Dosa & Batter' },
+      'STAFF': { icon: '👥', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)', desc: 'Staff Kitchen Meals & Rations' },
+      'SI-MEALS': { icon: '🍛', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)', desc: 'South Indian Thali, Sambar & Dal' },
+      'NORTH INDIAN': { icon: '🥘', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.14)', desc: 'Gravies, Paneer, Roti & Biryani' },
+      'CHAT & SOFTY': { icon: '🍦', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.14)', desc: 'Chaat, Softies & JP Disposables' },
+      'CHINESE & DOSA': { icon: '🍜', color: '#f97316', bg: 'rgba(249, 115, 22, 0.14)', desc: 'Noodles, Fried Rice & Special Dosas' },
+      'MOCKTAILS & CONTINENTAL': { icon: '🍹', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.14)', desc: 'Mocktails, Shakes, Pizzas & Pastas' },
+      'RESTAURANT': { icon: '🍽️', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.14)', desc: 'Main Dining Service & Dairy' },
+      'ROOM SERVICE': { icon: '🛎️', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.14)', desc: 'In-Room Dining Orders & Supplies' },
+    };
+
+    // Parallel multi-thread queries across distinct database subsystems
+    const [
+      subcats,
+      disposables,
+      criticalStock,
+      activeIndent,
+      stationRecipes,
+      deptRecords,
+      itemCounts,
+      stockUnits,
+      indentUnits
+    ] = await Promise.all([
+      IndentAgentService.getSubcategories(dept),
+      db("stock")
+        .where((b) => {
+          b.whereILike("category", "%dispos%")
+            .orWhereILike("category", "%pack%")
+            .orWhereILike("name", "%container%")
+            .orWhereILike("name", "%foil%")
+            .orWhereILike("name", "%box%")
+            .orWhereILike("name", "%bag%")
+            .orWhereILike("name", "%paper%")
+            .orWhereILike("name", "%cling%");
+        })
+        .select("item_code", "name", "unit", "price", "remaining as current_stock")
+        .limit(100),
+      db("stock")
+        .where((b) => {
+          b.where("remaining", "<=", 10).orWhereRaw("remaining <= COALESCE(min_alert_qty, 5)");
+        })
+        .select("item_code", "name", "unit", "price", "remaining as current_stock", "min_alert_qty")
+        .orderBy("remaining", "asc")
+        .limit(100),
+      db("indents")
+        .whereRaw("UPPER(dept) = ?", [dept])
+        .where("date", today)
+        .orderBy("id", "desc")
+        .first(),
+      db("recipes")
+        .whereRaw("UPPER(category) LIKE ? OR UPPER(name) LIKE ?", [`%${dept}%`, `%${dept}%`])
+        .select("id", "name", "category", "description")
+        .limit(50),
+      db("departments").select("*").orderBy("id", "asc"),
+      db("indent_subcategories as s")
+        .join("indent_subcategory_items as i", "s.id", "i.subcategory_id")
+        .groupBy("s.department_name")
+        .select("s.department_name")
+        .count("i.id as count"),
+      db("stock").distinct("unit").whereNotNull("unit"),
+      db("indent_items").distinct("unit").whereNotNull("unit")
+    ]);
+
+    // Fetch items for all subcategories in parallel multi-thread promises
+    const subcatItemsList = await Promise.all(
+      subcats.map((sc) => IndentAgentService.getSubcategoryItems(sc.id))
+    );
+
     const catalogItems = [];
-    for (const sc of subcats) {
-      const { items } = await IndentAgentService.getSubcategoryItems(sc.id);
+    subcats.forEach((sc, idx) => {
+      const { items } = subcatItemsList[idx] || { items: [] };
       items.forEach((it) =>
         catalogItems.push({
           ...it,
@@ -923,39 +990,9 @@ async function getChefRadar(req, res, next) {
           subcat_icon: sc.icon,
         })
       );
-    }
+    });
 
-    // 2. Query Central Store packaging & disposables
-    const disposables = await db("stock")
-      .where((b) => {
-        b.whereILike("category", "%dispos%")
-          .orWhereILike("category", "%pack%")
-          .orWhereILike("name", "%container%")
-          .orWhereILike("name", "%foil%")
-          .orWhereILike("name", "%box%")
-          .orWhereILike("name", "%bag%")
-          .orWhereILike("name", "%paper%")
-          .orWhereILike("name", "%cling%");
-      })
-      .select("item_code", "name", "unit", "price", "remaining as current_stock")
-      .limit(40);
-
-    // 3. Query Critical shortages and low stock items (current stock <= 10 or <= min_alert_qty)
-    const criticalStock = await db("stock")
-      .where((b) => {
-        b.where("remaining", "<=", 10).orWhereRaw("remaining <= COALESCE(min_alert_qty, 5)");
-      })
-      .select("item_code", "name", "unit", "price", "remaining as current_stock", "min_alert_qty")
-      .orderBy("remaining", "asc")
-      .limit(30);
-
-    // 4. Check active indents today for this department
-    const activeIndent = await db("indents")
-      .whereRaw("UPPER(dept) = ?", [dept])
-      .where("date", today)
-      .orderBy("id", "desc")
-      .first();
-
+    // Check active indent items
     let activeItemsCount = 0;
     let activeItems = [];
     if (activeIndent) {
@@ -963,22 +1000,83 @@ async function getChefRadar(req, res, next) {
       activeItemsCount = activeItems.length;
     }
 
-    // 5. Query daily recipes relevant to this station
-    const stationRecipes = await db("recipes")
-      .whereRaw("UPPER(category) LIKE ? OR UPPER(name) LIKE ?", [`%${dept}%`, `%${dept}%`])
-      .select("id", "name", "category", "description")
-      .limit(20);
+    // Build enriched department list with real live database counts
+    const countMap = {};
+    itemCounts.forEach((c) => {
+      countMap[(c.department_name || "").toUpperCase()] = parseInt(c.count, 10);
+    });
+
+    const enrichedDepts = deptRecords.map((r) => {
+      const upperName = (r.name || "").toUpperCase();
+      const meta = DEPT_METADATA[upperName] || {
+        icon: '🍽️',
+        color: '#e8a838',
+        bg: 'rgba(232, 168, 56, 0.14)',
+        desc: `${r.name} Kitchen Station`
+      };
+      const itemsCount = countMap[upperName] || 0;
+      return {
+        ...r,
+        itemsCount,
+        items_count: itemsCount,
+        icon: meta.icon,
+        color: meta.color,
+        bg: meta.bg,
+        desc: meta.desc,
+      };
+    });
+
+    const currentDeptObj = enrichedDepts.find((d) => d.name === dept) || {
+      name: dept,
+      code: dept.slice(0, 3).toUpperCase(),
+      icon: '🍽️',
+      color: '#e8a838',
+      bg: 'rgba(232, 168, 56, 0.14)',
+      itemsCount: catalogItems.length
+    };
+
+    // Extract unique normalized units from DB
+    const unitSet = new Set(["KG", "GM", "LTR", "ML", "PCS", "PACK", "BOTTLE", "BOX", "TIN", "BUNDLE", "CAN"]);
+    [...stockUnits, ...indentUnits].forEach((u) => {
+      if (u.unit) unitSet.add(u.unit.trim().toUpperCase());
+    });
+    const unitsList = Array.from(unitSet).sort();
+
+    // Dynamic database-driven tabs definition
+    const tabs = [
+      { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || dept})`, count: catalogItems.length },
+      { id: 'required', label: '🚨 Critical Radar', count: criticalStock.length },
+      { id: 'disposables', label: '📦 Packaging & Disposables', count: disposables.length },
+      { id: 'recipes', label: '🍲 Recipe Demand', count: stationRecipes.length }
+    ];
 
     // Telemetry and response
     res.json({
       success: true,
       dept,
+      dept_info: currentDeptObj,
       today,
       subcategories: subcats,
       catalog_items: catalogItems,
       disposables,
       critical_items: criticalStock,
       station_recipes: stationRecipes,
+      departments: enrichedDepts,
+      tabs,
+      options: {
+        units: unitsList,
+        priorities: [
+          { value: 'NORMAL', label: 'Routine (Standard)', color: '#10b981' },
+          { value: 'URGENT', label: 'Urgent (Morning Prep)', color: '#f59e0b' },
+          { value: 'EMERGENCY', label: 'Emergency Shortage', color: '#ef4444' }
+        ],
+        shifts: [
+          { value: 'NIGHT_INDENT', label: 'Night Replenishment' },
+          { value: 'MORNING', label: 'Morning 6 AM Prep' },
+          { value: 'EVENING', label: 'Evening 4 PM Service' }
+        ],
+        quick_increments: [1, 5, 10, 25, 50, 100]
+      },
       active_indent: activeIndent
         ? {
             id: activeIndent.id,
@@ -992,27 +1090,27 @@ async function getChefRadar(req, res, next) {
       agents: {
         scout: {
           name: "Agent Requisition Scout",
-          status: "ONLINE",
           role: "Depletion & Shortage Radar",
+          status: "ONLINE",
           items_monitored: catalogItems.length + criticalStock.length,
           critical_shortages_count: criticalStock.filter((s) => parseFloat(s.current_stock) <= 0).length,
         },
         recipe: {
           name: "Agent Recipe Synthesizer",
-          status: "ONLINE",
           role: "Portion Scaler & Ingredient Exploder",
+          status: "ONLINE",
           recipes_count: stationRecipes.length,
         },
         guardian: {
           name: "Agent Disposables Guardian",
-          status: "ONLINE",
           role: "Central Store Disposables & Bit-Pieces",
+          status: "ONLINE",
           disposables_count: disposables.length,
         },
         dispatcher: {
           name: "Agent Dispatch Verifier",
-          status: "ONLINE",
           role: "Zero-Reset & 2-Hour TTL Requisition Dispatcher",
+          status: "ONLINE",
           active_status: activeIndent ? activeIndent.status.toUpperCase() : "READY_FOR_DRAFT",
         },
       },

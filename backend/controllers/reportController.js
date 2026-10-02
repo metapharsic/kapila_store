@@ -180,7 +180,7 @@ async function getItemHistory(req, res, next) {
       // Base stock record(s)
       db("stock")
         .where("item_code", itemCode)
-        .select("id", "item_code", "name", "category", "unit", "remaining", "price", "supplier_id", "batch_no", "expiry_date", "rack", "shelf", "bin_location", "created_at"),
+        .select("id", "item_code", "name", "category", "unit", "remaining", "price", "supplier_id", "batch_no", "expiry_date", "rack_location", "storage_zone", "invoice_no", "purchase_time", "created_at"),
 
       ledgerQ,
 

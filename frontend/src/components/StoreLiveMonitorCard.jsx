@@ -4,17 +4,9 @@ import { COLORS } from "../styles/colors";
 import { 
   ShieldAlert, Activity, User, Monitor, Clock, 
   PowerOff, RefreshCw, Radio, CheckCircle, AlertTriangle, 
-  Cpu, Lock, ShieldCheck
+  Lock, ShieldCheck
 } from "lucide-react";
 import Btn from "./Btn";
-
-const AGENT_STATUSES = [
-  { name: "SecOps", label: "Auth & Kill-Switch", status: "ONLINE", color: "#10b981" },
-  { name: "StoreOps", label: "Kiosk & Shift Sync", status: "SYNCED", color: "#10b981" },
-  { name: "AdminMonitor", label: "Live SSE Telemetry", status: "STREAMING", color: "#3b82f6" },
-  { name: "DataArchitect", label: "Session Schema", status: "HEALTHY", color: "#10b981" },
-  { name: "UIX Sentinel", label: "Dual Kiosk UI", status: "ACTIVE", color: "#e8a838" },
-];
 
 export default function StoreLiveMonitorCard() {
   const [sessions, setSessions] = useState([]);
@@ -140,40 +132,6 @@ export default function StoreLiveMonitorCard() {
         <Btn size="sm" variant="outline" onClick={loadData} style={{ fontSize: 12, border: "1px solid rgba(232, 168, 56, 0.3)", color: "#e8a838" }}>
           <RefreshCw size={13} style={{ marginRight: 4 }} /> Refresh
         </Btn>
-      </div>
-
-      {/* Multi-Agent Status Mini Strip */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "8px 12px",
-        background: "rgba(0, 0, 0, 0.35)",
-        borderRadius: 8,
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        marginBottom: 16,
-        overflowX: "auto",
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#e8a838", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
-          <Cpu size={13} /> Swarm Status:
-        </div>
-        {AGENT_STATUSES.map((agent) => (
-          <div key={agent.name} style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
-            padding: "2px 8px",
-            borderRadius: 6,
-            background: "rgba(255, 255, 255, 0.04)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            fontSize: 11,
-            whiteSpace: "nowrap",
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: agent.color }} />
-            <strong style={{ color: "#ffffff" }}>{agent.name}:</strong>
-            <span style={{ color: agent.color, fontWeight: 700 }}>{agent.status}</span>
-          </div>
-        ))}
       </div>
 
       {error && <div style={{ color: "#ef4444", fontSize: 13, marginBottom: 12 }}>{error}</div>}

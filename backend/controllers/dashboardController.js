@@ -423,50 +423,66 @@ async function indentFunnel(req, res, next) {
 }
 
 // GET /api/dashboard/store-home
-// Consolidated single-call API for Store Manager Dashboard
+// Consolidated single-call API for Store Manager Dashboard with multi-threaded parallel execution
 async function storeHome(req, res, next) {
   try {
     // Emit Kafka event
     publish("dashboard-events", "dashboard.viewed", {
-      user_id: req.user.id,
+      user_id: req.user?.id,
       timestamp: new Date().toISOString()
     }).catch(e => console.error("Kafka error:", e));
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const soon = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
 
-    // Get today's issuances
-    const issuancesRes = await db("issuances").where("date", todayStr).count("id as count").first();
-    const todayIssuances = parseInt(issuancesRes?.count || 0, 10);
-
-    // Get today's GRNs and stock purchase entries
-    const [grnRes, stockEntriesRes] = await Promise.all([
+    // Multi-threaded parallel query execution of all dashboard metrics & configuration
+    const [
+      issuancesRes,
+      grnRes,
+      stockEntriesRes,
+      pendingIndentsRes,
+      lowStockRes,
+      expiringRes,
+      trendRows,
+      highValueRes,
+      recentActivity,
+      shiftsRes
+    ] = await Promise.all([
+      db("issuances").where("date", todayStr).count("id as count").first(),
       db("goods_receipt_notes").where("date", todayStr).count("id as count").first(),
-      db("stock").where("date", todayStr).count("id as count").first()
+      db("stock").where("date", todayStr).count("id as count").first(),
+      db("indents").whereIn("status", ["pending", "approved", "partial"]).count("id as count").first(),
+      db("stock").whereRaw("remaining <= COALESCE(min_alert_qty, qty * 0.25)").count("id as count").first(),
+      db("stock").whereBetween("expiry_date", [todayStr, soon]).count("id as count").first(),
+      db("issuances")
+        .where("date", ">=", db.raw("CURRENT_DATE - 6"))
+        .select(db.raw("date::text as day"))
+        .count("id as count")
+        .groupBy("date")
+        .orderBy("date", "asc"),
+      db("notifications")
+        .whereIn("type", ["indent_high_value", "issuance_high_value"])
+        .where("created_at", ">=", db.raw("CURRENT_DATE - 6"))
+        .count("id as count").first(),
+      db("kafka_event_log")
+        .whereIn("topic", ["indent-events", "issuance-events", "stock-events", "leftover-events"])
+        .orderBy("produced_at", "desc")
+        .limit(10)
+        .select("topic", "event_type", "payload", "produced_at"),
+      db("shift_patterns")
+        .where("is_active", true)
+        .orderBy("start_time", "asc")
     ]);
+
+    const todayIssuances = parseInt(issuancesRes?.count || 0, 10);
     const grnCount = parseInt(grnRes?.count || 0, 10);
     const stockEntriesCount = parseInt(stockEntriesRes?.count || 0, 10);
     const todayStockEntries = grnCount > 0 ? grnCount : stockEntriesCount;
-
-    // Pending indents requiring store attention (pending approval, approved awaiting dispatch, or partial)
-    const pendingIndentsRes = await db("indents").whereIn("status", ["pending", "approved", "partial"]).count("id as count").first();
     const pendingIndents = parseInt(pendingIndentsRes?.count || 0, 10);
-
-    // Low stock alerts
-    const lowStockRes = await db("stock").whereRaw("remaining <= COALESCE(min_alert_qty, qty * 0.25)").count("id as count").first();
     const lowStockCount = parseInt(lowStockRes?.count || 0, 10);
-
-    // Expiring soon count (done server-side to save network bandwidth)
-    const expiringRes = await db("stock").whereBetween("expiry_date", [todayStr, soon]).count("id as count").first();
     const expiringCount = parseInt(expiringRes?.count || 0, 10);
+    const highValueAlertCount = parseInt(highValueRes?.count || 0, 10);
 
-    // 7-day issuance trend (for dashboard mini chart)
-    const trendRows = await db("issuances")
-      .where("date", ">=", db.raw("CURRENT_DATE - 6"))
-      .select(db.raw("date::text as day"))
-      .count("id as count")
-      .groupBy("date")
-      .orderBy("date", "asc");
     const trendMap = Object.fromEntries(trendRows.map(r => [r.day, parseInt(r.count, 10)]));
     const issuanceTrend = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - (6 - i));
@@ -474,19 +490,80 @@ async function storeHome(req, res, next) {
       return { day: d.toLocaleDateString('en-US', { weekday: 'short' }), count: trendMap[key] || 0 };
     });
 
-    // High-value indent/issuance alerts, last 7 days (utils/highValueAlert.js)
-    const highValueRes = await db("notifications")
-      .whereIn("type", ["indent_high_value", "issuance_high_value"])
-      .where("created_at", ">=", db.raw("CURRENT_DATE - 6"))
-      .count("id as count").first();
-    const highValueAlertCount = parseInt(highValueRes?.count || 0, 10);
+    const userPerms = new Set(req.user?.permissions || []);
+    const isAdmin = Boolean(req.user?.isAdmin);
 
-    // Fetch recent activity from Kafka event log
-    const recentActivity = await db("kafka_event_log")
-      .whereIn("topic", ["indent-events", "issuance-events", "stock-events", "leftover-events"])
-      .orderBy("produced_at", "desc")
-      .limit(10)
-      .select("topic", "event_type", "payload", "produced_at");
+    const ALL_MODULES = [
+      {
+        id: 'store_manager_available_stock',
+        icon_key: 'Package',
+        title: 'Available Stock',
+        description: 'View current stock levels, expiry alerts, and inventory health across all items.',
+        accentColor: '#f59e0b',
+        bgAccent: 'rgba(245, 158, 11, 0.1)',
+        permission: 'stock.view',
+      },
+      {
+        id: 'store_manager_stock_purchase',
+        icon_key: 'ShoppingCart',
+        title: 'Receive Stock',
+        description: 'Record new stock purchases, scan receipts, and update supplier information.',
+        accentColor: '#f59e0b',
+        bgAccent: 'rgba(245, 158, 11, 0.1)',
+        permission: 'stock.create',
+      },
+      {
+        id: 'pos',
+        icon_key: 'FileText',
+        title: 'Purchase Orders',
+        description: 'Same Purchase Orders window as admin — create, approve, mark sent/received, print.',
+        accentColor: '#f59e0b',
+        bgAccent: 'rgba(245, 158, 11, 0.1)',
+        permission: 'purchase_orders.view',
+      },
+      {
+        id: 'suppliers',
+        icon_key: 'Building2',
+        title: 'Vendors & Suppliers',
+        description: 'Register and manage vendor profiles, GSTIN, contacts, and live reliability benchmarks.',
+        accentColor: '#f59e0b',
+        bgAccent: 'rgba(245, 158, 11, 0.1)',
+        permission: 'suppliers.view',
+      },
+      {
+        id: 'store_manager_store_issuance',
+        icon_key: 'ClipboardList',
+        title: 'Store Issuance',
+        description: 'Issue materials to kitchens and departments against pending indent requests with LIFO priority.',
+        accentColor: '#f59e0b',
+        bgAccent: 'rgba(245, 158, 11, 0.1)',
+        permission: 'issuances.create',
+      },
+      {
+        id: 'store_manager_indent',
+        icon_key: 'FileText',
+        title: 'Indent Request',
+        description: 'View, review, and manage department material indent requests. Smart auto-indent and recipe planner included.',
+        accentColor: '#f59e0b',
+        bgAccent: 'rgba(245, 158, 11, 0.1)',
+        permission: 'indents.view',
+      },
+    ];
+
+    const modules = ALL_MODULES.filter(m => isAdmin || !m.permission || userPerms.has(m.permission));
+
+    const shifts = (shiftsRes && shiftsRes.length > 0) ? shiftsRes.map(s => ({
+      id: s.id,
+      name: s.name,
+      shift_type: s.shift_type,
+      start_time: s.start_time,
+      end_time: s.end_time,
+      department: s.department || "Central Store"
+    })) : [
+      { id: 1, name: "Morning Shift", shift_type: "MORNING", start_time: "06:00:00", end_time: "14:00:00" },
+      { id: 2, name: "Evening Shift", shift_type: "EVENING", start_time: "14:00:00", end_time: "22:00:00" },
+      { id: 3, name: "Night Shift", shift_type: "NIGHT", start_time: "22:00:00", end_time: "06:00:00" },
+    ];
 
     res.json({
       success: true,
@@ -498,17 +575,19 @@ async function storeHome(req, res, next) {
         today_stock_entries: todayStockEntries,
         high_value_alert_count: highValueAlertCount,
         issuance_trend: issuanceTrend,
+        modules,
+        shifts,
         recent_activity: recentActivity.map(event => {
           let desc = `System event: ${event.event_type}`;
-          if (event.event_type === "indent_created") desc = `New indent request from ${event.payload.dept}`;
-          if (event.event_type === "indent_approved") desc = `Indent approved for ${event.payload.dept}`;
-          if (event.event_type === "issuance_created") desc = `Materials issued to ${event.payload.dept}`;
-          if (event.event_type === "stock_received") desc = `New stock received from ${event.payload.supplier_name || 'supplier'}`;
-          if (event.event_type === "low_stock_alert") desc = `Low stock alert: ${event.payload.item_name}`;
-          if (event.event_type === "leftover_logged") desc = `Leftovers logged from ${event.payload.dept}`;
+          if (event.event_type === "indent_created") desc = `New indent request from ${event.payload?.dept || 'kitchen'}`;
+          if (event.event_type === "indent_approved") desc = `Indent approved for ${event.payload?.dept || 'kitchen'}`;
+          if (event.event_type === "issuance_created") desc = `Materials issued to ${event.payload?.dept || 'department'}`;
+          if (event.event_type === "stock_received") desc = `New stock received from ${event.payload?.supplier_name || 'supplier'}`;
+          if (event.event_type === "low_stock_alert") desc = `Low stock alert: ${event.payload?.item_name || 'item'}`;
+          if (event.event_type === "leftover_logged") desc = `Leftovers logged from ${event.payload?.dept || 'kitchen'}`;
           
           return {
-            type: event.topic.split("-")[0],
+            type: event.topic?.split("-")[0] || "system",
             desc,
             date: event.produced_at
           };

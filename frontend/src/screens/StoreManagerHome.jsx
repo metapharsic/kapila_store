@@ -14,10 +14,21 @@ import MultiAgentStatusBar from '../components/MultiAgentStatusBar';
 import { COLORS } from '../styles/colors';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 
-const MODULE_CARDS = [
+function renderModuleIcon(iconKey) {
+  switch (iconKey) {
+    case 'Package': return <Package size={28} />;
+    case 'ShoppingCart': return <ShoppingCart size={28} />;
+    case 'FileText': return <FileText size={28} />;
+    case 'Building2': return <Building2 size={28} />;
+    case 'ClipboardList': return <ClipboardList size={28} />;
+    default: return <Package size={28} />;
+  }
+}
+
+const DEFAULT_MODULE_CARDS = [
   {
     id: 'store_manager_available_stock',
-    icon: <Package size={28} />,
+    icon_key: 'Package',
     title: 'Available Stock',
     description: 'View current stock levels, expiry alerts, and inventory health across all items.',
     accentColor: COLORS.warning,
@@ -25,7 +36,7 @@ const MODULE_CARDS = [
   },
   {
     id: 'store_manager_stock_purchase',
-    icon: <ShoppingCart size={28} />,
+    icon_key: 'ShoppingCart',
     title: 'Receive Stock',
     description: 'Record new stock purchases, scan receipts, and update supplier information.',
     accentColor: COLORS.warning,
@@ -33,7 +44,7 @@ const MODULE_CARDS = [
   },
   {
     id: 'pos',
-    icon: <FileText size={28} />,
+    icon_key: 'FileText',
     title: 'Purchase Orders',
     description: 'Same Purchase Orders window as admin — create, approve, mark sent/received, print.',
     accentColor: COLORS.warning,
@@ -41,7 +52,7 @@ const MODULE_CARDS = [
   },
   {
     id: 'suppliers',
-    icon: <Building2 size={28} />,
+    icon_key: 'Building2',
     title: 'Vendors & Suppliers',
     description: 'Register and manage vendor profiles, GSTIN, contacts, and live reliability benchmarks.',
     accentColor: COLORS.warning,
@@ -49,7 +60,7 @@ const MODULE_CARDS = [
   },
   {
     id: 'store_manager_store_issuance',
-    icon: <ClipboardList size={28} />,
+    icon_key: 'ClipboardList',
     title: 'Store Issuance',
     description: 'Issue materials to kitchens and departments against pending indent requests with LIFO priority.',
     accentColor: COLORS.warning,
@@ -57,7 +68,7 @@ const MODULE_CARDS = [
   },
   {
     id: 'store_manager_indent',
-    icon: <FileText size={28} />,
+    icon_key: 'FileText',
     title: 'Indent Request',
     description: 'View, review, and manage department material indent requests. Smart auto-indent and recipe planner included.',
     accentColor: COLORS.warning,
@@ -89,6 +100,8 @@ export default function StoreManagerHome() {
   // Shift Notes
   const [handoffNote, setHandoffNote] = useState('');
   const [handoffShift, setHandoffShift] = useState('Morning');
+  const [availableShifts, setAvailableShifts] = useState([]);
+  const [modules, setModules] = useState(DEFAULT_MODULE_CARDS);
   const [aiSummary, setAiSummary] = useState('');
   const [noteSaving, setNoteSaving] = useState(false);
 
@@ -158,6 +171,15 @@ export default function StoreManagerHome() {
           setHighValueAlertCount(d.high_value_alert_count || 0);
           setRecentActivity(d.recent_activity || []);
           setIssuanceTrend(d.issuance_trend || []);
+          if (Array.isArray(d.modules) && d.modules.length > 0) {
+            setModules(d.modules);
+          }
+          if (Array.isArray(d.shifts) && d.shifts.length > 0) {
+            setAvailableShifts(d.shifts);
+            if (d.shifts[0]?.name) {
+              setHandoffShift(d.shifts[0].name);
+            }
+          }
         }
 
         if (predictiveRes.success) {
@@ -438,10 +460,11 @@ export default function StoreManagerHome() {
             </Card>
           </div>
 
-          {/* Module Cards — quick nav, own full-width row */}
+          {/* Module Cards — dynamic backend driven quick nav */}
           <div className="resp-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-            {MODULE_CARDS.map((card) => {
+            {modules.map((card) => {
               const isHovered = hoveredCard === card.id;
+              const iconEl = card.icon || renderModuleIcon(card.icon_key || card.id);
               return (
                 <button
                   key={card.id}
@@ -455,7 +478,7 @@ export default function StoreManagerHome() {
                   onMouseLeave={() => setHoveredCard(null)}
                   style={{
                     background: '#ffffff',
-                    border: `1px solid ${isHovered ? card.accentColor : '#e2e8f0'}`,
+                    border: `1px solid ${isHovered ? (card.accentColor || COLORS.warning) : '#e2e8f0'}`,
                     borderRadius: '16px',
                     padding: '24px',
                     cursor: 'pointer',
@@ -469,8 +492,8 @@ export default function StoreManagerHome() {
                     outline: 'none',
                   }}
                 >
-                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: card.bgAccent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.accentColor }}>
-                    {card.icon}
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: card.bgAccent || 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.accentColor || COLORS.warning }}>
+                    {iconEl}
                   </div>
                   <div>
                     <h2 style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, margin: '0 0 6px 0' }}>{card.title}</h2>
@@ -762,8 +785,18 @@ export default function StoreManagerHome() {
                     outline: 'none'
                   }}
                 >
-                  <option value="Morning">Morning Shift</option>
-                  <option value="Evening">Evening Shift</option>
+                  {availableShifts.length > 0 ? (
+                    availableShifts.map((s) => (
+                      <option key={s.id || s.name} value={s.name}>
+                        {s.name} {s.start_time ? `(${s.start_time.slice(0, 5)} - ${s.end_time.slice(0, 5)})` : ''}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="Morning">Morning Shift</option>
+                      <option value="Evening">Evening Shift</option>
+                    </>
+                  )}
                 </select>
               </div>
 

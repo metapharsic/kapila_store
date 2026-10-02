@@ -5,7 +5,6 @@ import Card from "../../components/Card";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
 import StoreLiveMonitorCard from "../../components/StoreLiveMonitorCard";
-import MasterDataAgentStatusBar from "../../components/agents/MasterDataAgentStatusBar";
 import Pill from "../../components/ui/Pill";
 import AvatarRow from "../../components/ui/AvatarRow";
 import { COLORS, RADIUS, SPACING } from "../../styles/colors";
@@ -279,9 +278,6 @@ export default function UserManagementScreen() {
 
   return (
     <Section title="User Management" sub="Create users, assign roles and departments, and manage account status">
-      {/* Multi-Agent Governance Bar */}
-      <MasterDataAgentStatusBar entityType="users" />
-
       {/* RBAC & Identity Health KPIs */}
       <div
         style={{

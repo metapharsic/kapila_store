@@ -70,7 +70,10 @@ export default function ChefRequisitionWorkspace({
 
   // --- Department Selection ---
   const [activeDept, setActiveDept] = useState(defaultDept);
-  const currentDeptObj = CANONICAL_DEPARTMENTS.find(d => d.name === activeDept) || CANONICAL_DEPARTMENTS[0];
+  const departments = (radarData?.departments && radarData.departments.length > 0)
+    ? radarData.departments
+    : CANONICAL_DEPARTMENTS;
+  const currentDeptObj = departments.find(d => d.name === activeDept) || departments[0] || CANONICAL_DEPARTMENTS[0];
 
   // Sync activeDept if defaultDept changes from parent callers
   useEffect(() => {
@@ -408,6 +411,27 @@ export default function ChefRequisitionWorkspace({
       return name.includes(searchQ) || code.includes(searchQ);
     });
   }, [radarData?.catalog_items, isTwoLetterSearch, searchQ]);
+
+  // Dynamic database-driven tabs definition
+  const availableTabs = useMemo(() => {
+    if (radarData?.tabs && Array.isArray(radarData.tabs) && radarData.tabs.length > 0) {
+      return radarData.tabs.map((tab) => {
+        let count = 0;
+        if (tab.id === 'catalog') count = isTwoLetterSearch ? filteredCatalog.length : (radarData?.catalog_items?.length || 0);
+        else if (tab.id === 'required') count = isTwoLetterSearch ? filteredCritical.length : (radarData?.critical_items?.length || 0);
+        else if (tab.id === 'disposables') count = isTwoLetterSearch ? filteredDisposables.length : (radarData?.disposables?.length || 0);
+        else if (tab.id === 'recipes') count = isTwoLetterSearch ? filteredRecipes.length : (radarData?.station_recipes?.length || 0);
+        else count = tab.count || 0;
+        return { ...tab, count };
+      });
+    }
+    return [
+      { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || activeDept})`, count: isTwoLetterSearch ? filteredCatalog.length : (radarData?.catalog_items?.length || 0) },
+      { id: 'required', label: '🚨 Critical Radar', count: isTwoLetterSearch ? filteredCritical.length : (radarData?.critical_items?.length || 0) },
+      { id: 'disposables', label: '📦 Packaging & Disposables', count: isTwoLetterSearch ? filteredDisposables.length : (radarData?.disposables?.length || 0) },
+      { id: 'recipes', label: '🍲 Recipe Demand', count: isTwoLetterSearch ? filteredRecipes.length : (radarData?.station_recipes?.length || 0) }
+    ];
+  }, [radarData, isTwoLetterSearch, filteredCatalog.length, filteredCritical.length, filteredDisposables.length, filteredRecipes.length, currentDeptObj.code, activeDept]);
 
   // Central Store live lookup for 2-letter search queries
   const [centralStoreMatches, setCentralStoreMatches] = useState([]);
@@ -791,7 +815,7 @@ export default function ChefRequisitionWorkspace({
         WebkitOverflowScrolling: 'touch',
         flexShrink: 0
       }}>
-        {CANONICAL_DEPARTMENTS.map((dept) => {
+        {departments.map((dept) => {
           const isSelected = dept.name === activeDept;
           return (
             <button
@@ -841,7 +865,10 @@ export default function ChefRequisitionWorkspace({
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Sparkles size={12} />
           <span>
-            <strong>Multi-Agent Swarm:</strong> Scout ({radarData?.agents?.scout?.status || 'ONLINE'}) · Guardian ({radarData?.agents?.guardian?.status || 'ONLINE'}) · Dispatcher ({radarData?.agents?.dispatcher?.status || 'READY'})
+            <strong>Station Radar:</strong> {radarData?.agents?.scout?.items_monitored ?? '—'} items monitored
+            {typeof radarData?.agents?.scout?.critical_shortages_count === 'number' && (
+              <> · {radarData.agents.scout.critical_shortages_count} critical shortages</>
+            )}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -892,12 +919,7 @@ export default function ChefRequisitionWorkspace({
         background: 'rgba(15, 23, 42, 0.8)',
         flexShrink: 0
       }}>
-        {[
-          { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || activeDept})`, count: isTwoLetterSearch ? filteredCatalog.length : (radarData?.catalog_items?.length || 0) },
-          { id: 'required', label: '🚨 Critical Radar', count: isTwoLetterSearch ? filteredCritical.length : (radarData?.critical_items?.length || 0) },
-          { id: 'disposables', label: '📦 Packaging & Disposables', count: isTwoLetterSearch ? filteredDisposables.length : (radarData?.disposables?.length || 0) },
-          { id: 'recipes', label: '🍲 Recipe Demand', count: isTwoLetterSearch ? filteredRecipes.length : (radarData?.station_recipes?.length || 0) }
-        ].map((tab) => {
+        {availableTabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
@@ -2110,6 +2132,11 @@ export default function ChefRequisitionWorkspace({
         defaultDept={activeDept}
         isOpen={Boolean(configuringItem)}
         onClose={() => setConfiguringItem(null)}
+        availableDepartments={departments}
+        availableUnits={radarData?.options?.units}
+        availablePriorities={radarData?.options?.priorities}
+        availableShifts={radarData?.options?.shifts}
+        quickIncrements={radarData?.options?.quick_increments}
         onItemStaged={(stagedItem) => {
           setDraftItems(prev => {
             const key = stagedItem.item_code || stagedItem.name;

@@ -30,7 +30,7 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdm
     loadData();
   }, []);
 
-  const { yieldData, totalPlates, totalIssuedCost, dailyTrend } = useMemo(() => {
+  const { yieldData, totalPlates, totalIssuedCost, dailyTrend, itemsMissingPrice } = useMemo(() => {
     let filteredProd = productionData;
     let filteredIss = issuanceData;
 
@@ -51,8 +51,12 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdm
       platesSum += plates;
     });
 
-    // 2. Group raw materials issued by department (simulate cost by qty for now)
+    // 2. Group raw materials issued by department using the real unit_price
+    // recorded on each issuance item (issuance_items.unit_price). Items with
+    // no recorded price are excluded from the cost sum (not faked) and
+    // counted so the UI can disclose incomplete data instead of hiding it.
     let costSum = 0;
+    let itemsMissingPrice = 0;
     filteredIss.forEach(i => {
       const d = i.dept || "Unknown";
       if (!deptStats[d]) deptStats[d] = { name: d, IssuedRaw: 0, PlatesProduced: 0 };
@@ -60,7 +64,12 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdm
       let issueCost = 0;
       if (Array.isArray(i.items)) {
         i.items.forEach(item => {
-           issueCost += Number(item.qty) * (item.price || 150); // rough estimate if price missing
+          const price = Number(item.unit_price);
+          if (!price) {
+            itemsMissingPrice += 1;
+            return;
+          }
+          issueCost += Number(item.qty) * price;
         });
       }
       deptStats[d].IssuedRaw += issueCost;
@@ -69,22 +78,45 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdm
 
     const yieldArray = Object.values(deptStats).sort((a,b) => b.PlatesProduced - a.PlatesProduced);
 
-    // 3. Daily trend for cost per plate
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const trend = days.map((d, i) => {
-      // Dummy variation based on the actual blended cost for MVP
-      const baseCost = platesSum > 0 ? (costSum / platesSum) : 45;
-      return {
-        day: d,
-        costPerPlate: baseCost > 0 ? parseFloat((baseCost + (Math.random() * 10 - 5)).toFixed(1)) : 0
-      };
+    // 3. Daily trend for cost per plate — computed from the real, date-stamped
+    // production and issuance rows already fetched above, bucketed by their
+    // actual `date` field (both tables have a date column, per
+    // production.list / issuances.list). No synthetic/randomized data.
+    const plinesByDate = {};
+    filteredProd.forEach(p => {
+      const day = p.date ? String(p.date).slice(0, 10) : null;
+      if (!day) return;
+      plinesByDate[day] = (plinesByDate[day] || 0) + (Number(p.plates) || 0);
     });
+
+    const costByDate = {};
+    filteredIss.forEach(i => {
+      const day = i.date ? String(i.date).slice(0, 10) : null;
+      if (!day || !Array.isArray(i.items)) return;
+      let dayCost = 0;
+      i.items.forEach(item => {
+        const price = Number(item.unit_price);
+        if (!price) return;
+        dayCost += Number(item.qty) * price;
+      });
+      costByDate[day] = (costByDate[day] || 0) + dayCost;
+    });
+
+    const allDates = [...new Set([...Object.keys(plinesByDate), ...Object.keys(costByDate)])].sort();
+    const trend = allDates
+      .filter((day) => plinesByDate[day] > 0)
+      .map((day) => ({
+        day,
+        costPerPlate: parseFloat(((costByDate[day] || 0) / plinesByDate[day]).toFixed(1))
+      }))
+      .slice(-7); // most recent 7 days with data
 
     return {
       yieldData: yieldArray,
       totalPlates: platesSum,
       totalIssuedCost: costSum,
-      dailyTrend: trend
+      dailyTrend: trend,
+      itemsMissingPrice
     };
   }, [productionData, issuanceData, filters]);
 
@@ -118,6 +150,11 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdm
           <p style={{ margin: "4px 0 0", fontSize: 12, color: blendedCost > 50 ? COLORS.danger : COLORS.success, fontWeight: 600 }}>
             {blendedCost > 50 ? "High Waste Alert" : "Consistent with targets"}
           </p>
+          {itemsMissingPrice > 0 && (
+            <p style={{ margin: "4px 0 0", fontSize: 11, color: COLORS.muted }}>
+              Cost data incomplete for {itemsMissingPrice} issued item{itemsMissingPrice === 1 ? "" : "s"} with no recorded unit price (excluded from this average).
+            </p>
+          )}
         </Card>
 
         <Card style={{ padding: 20 }}>
@@ -153,23 +190,29 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdm
         </Card>
 
         <Card style={{ padding: 20 }}>
-          <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Cost Per Plate Trend (Weekly)</h3>
+          <h3 style={{ margin: "0 0 20px", fontSize: 16, color: COLORS.text }}>Cost Per Plate Trend (Recent Days)</h3>
           <div style={{ width: "100%", height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-              <AreaChart data={dailyTrend} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS.coral} stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor={COLORS.coral} stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} domain={['dataMin - 5', 'dataMax + 5']} />
-                <Tooltip />
-                <Area type="monotone" dataKey="costPerPlate" stroke={COLORS.coral} strokeWidth={3} fillOpacity={1} fill="url(#colorCost)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {dailyTrend.length > 1 ? (
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                <AreaChart data={dailyTrend} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={COLORS.coral} stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor={COLORS.coral} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} domain={['dataMin - 5', 'dataMax + 5']} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="costPerPlate" stroke={COLORS.coral} strokeWidth={3} fillOpacity={1} fill="url(#colorCost)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: COLORS.muted, textAlign: "center", padding: "0 16px", fontSize: 13 }}>
+                Not enough date-range data yet to show a real daily trend (need production/issuance records across multiple days).
+              </div>
+            )}
           </div>
         </Card>
 

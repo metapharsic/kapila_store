@@ -27,11 +27,6 @@ export default function SidebarOmniSearch({
   const [loading, setLoading] = useState(false);
   const [serverResults, setServerResults] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [agentTelemetry, setAgentTelemetry] = useState({
-    state: "STANDBY",
-    activeAgents: 4,
-    lastLatencyMs: 0
-  });
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -103,28 +98,19 @@ export default function SidebarOmniSearch({
     if (clean.length < 2) {
       setServerResults([]);
       setLoading(false);
-      setAgentTelemetry(prev => ({ ...prev, state: "STANDBY" }));
       return;
     }
 
     setLoading(true);
-    setAgentTelemetry(prev => ({ ...prev, state: "SCANNING" }));
-    const startTime = performance.now();
 
     try {
       const res = await api.search.global(clean);
-      const elapsed = Math.round(performance.now() - startTime);
 
       if (res && res.success) {
         setServerResults(res.data || []);
-        setAgentTelemetry({
-          state: "OPTIMAL",
-          activeAgents: 4,
-          lastLatencyMs: elapsed
-        });
       }
     } catch {
-      setAgentTelemetry(prev => ({ ...prev, state: "OFFLINE_FALLBACK" }));
+      // search failed; serverResults left as-is
     } finally {
       setLoading(false);
     }
@@ -468,8 +454,8 @@ export default function SidebarOmniSearch({
                 fontSize: 10,
                 padding: "1px 6px",
                 borderRadius: 4,
-                backgroundColor: agentTelemetry.state === "OPTIMAL" ? "rgba(16, 185, 129, 0.2)" : "rgba(232, 168, 56, 0.2)",
-                color: agentTelemetry.state === "OPTIMAL" ? "#34d399" : "#fbbf24",
+                backgroundColor: "rgba(232, 168, 56, 0.2)",
+                color: "#fbbf24",
                 fontWeight: 600
               }}>
                 {loading ? "Scanning..." : `${flatList.length} items`}
@@ -477,7 +463,7 @@ export default function SidebarOmniSearch({
             </div>
 
             <span style={{ fontSize: 10, color: "var(--sidebar-category, #71717a)" }}>
-              {agentTelemetry.lastLatencyMs ? `${agentTelemetry.lastLatencyMs}ms` : "Live 2-letter index"}
+              Live 2-letter index
             </span>
           </div>
 
