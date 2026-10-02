@@ -340,52 +340,6 @@ async function runMultiAgentIndentPipeline() {
   });
   wsDash.getRow(6).height = 28;
 
-  // Multi-Agent Swarm Status Table
-  wsDash.getCell("B9").value = "MULTI-AGENT SWARM OPERATIONAL STATUS & DIAGNOSTIC TELEMETRY";
-  wsDash.getCell("B9").font = { name: "Calibri", size: 11, bold: true, color: { argb: PALETTE.navyDark } };
-  wsDash.mergeCells("B9:F9");
-
-  const agentHeaders = ["Agent Designation", "Assigned Operational Role", "Status", "Telemetry Details"];
-  const agentCols = ["B", "C", "D", "E"];
-  wsDash.mergeCells("E10:F10");
-  
-  ["B", "C", "D", "E"].forEach((c, idx) => {
-    const cell = wsDash.getCell(`${c}10`);
-    cell.value = agentHeaders[idx];
-    cell.font = { name: "Calibri", size: 10, bold: true, color: { argb: PALETTE.white } };
-    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: PALETTE.navyHeader } };
-    cell.alignment = { vertical: "middle", horizontal: idx === 2 ? "center" : "left" };
-    cell.border = BORDER_THIN;
-  });
-  wsDash.getRow(10).height = 25;
-
-  const agentList = [
-    { name: "Agent 1: Deep Reader", role: "Catalog & SKU Ingestion", status: "ONLINE (100%)", details: "Scanned all 366 active items, units, and categories." },
-    { name: "Agent 2: Pattern Diagnostician", role: "Demand & Surge Modeling", status: "ONLINE (100%)", details: "Extracted weekday vs weekend multipliers across 9 departments." },
-    { name: "Agent 3: Automation Modeler", role: "ROP & Algorithmic Equations", status: "ONLINE (100%)", details: "Derived net indent equations: Max(0, (Demand+Safety) - Stock)." },
-    { name: "Agent 4: Workbook Architect", role: "Excel Engine Compilation", status: "ACTIVE", details: "Constructing 5 enterprise sheets with active formulas." },
-    { name: "Agent 5: QA & Integrity Auditor", role: "Data Integrity & Formula Audit", status: "ACTIVE", details: "Ensuring zero missing references or zero-division errors." },
-  ];
-
-  agentList.forEach((ag, i) => {
-    const rNum = 11 + i;
-    wsDash.mergeCells(`E${rNum}:F${rNum}`);
-    wsDash.getCell(`B${rNum}`).value = ag.name;
-    wsDash.getCell(`C${rNum}`).value = ag.role;
-    const statCell = wsDash.getCell(`D${rNum}`);
-    statCell.value = ag.status;
-    statCell.font = { bold: true, color: { argb: PALETTE.greenSuccess } };
-    statCell.alignment = { horizontal: "center" };
-    wsDash.getCell(`E${rNum}`).value = ag.details;
-
-    ["B", "C", "D", "E", "F"].forEach(c => {
-      const cell = wsDash.getCell(`${c}${rNum}`);
-      cell.border = BORDER_THIN;
-      if (i % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: PALETTE.zebraBg } };
-    });
-    wsDash.getRow(rNum).height = 22;
-  });
-
   // Step-by-Step Automation Roadmap
   const rMapStart = 18;
   wsDash.getCell(`B${rMapStart}`).value = "HOW TO MOVE FORWARD TO FULL INDENT AUTOMATION (3-PHASE ROADMAP)";

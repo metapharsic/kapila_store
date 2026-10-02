@@ -1,6 +1,7 @@
 const ExcelJS = require("exceljs");
 const db = require("../db");
 const { safeMergeCells } = require("./inventoryReportService");
+const { embedLogoInWorksheet } = require("../assets/logoBase64");
 
 const PALETTE = {
   navyDark: "0F172A",
@@ -134,6 +135,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
   const sheet = workbook.addWorksheet(`Requisition #${indent.id}`, {
     views: [{ showGridLines: true }],
   });
+  embedLogoInWorksheet(workbook, sheet, { col: 6.8, row: 0.1, width: 110, height: 30 });
 
   sheet.columns = [
     { key: "colA", width: 6 },  // S.No

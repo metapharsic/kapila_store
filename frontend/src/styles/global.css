@@ -175,3 +175,53 @@ input, select, textarea, button {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Hotel Kapila Ambient Watermark & Report Print Styles --- */
+.kapila-app-watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  max-width: 75vw;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.038;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kapila-app-watermark img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: grayscale(10%) contrast(110%);
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Print Watermark across all pages */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 440px;
+    height: 440px;
+    background-image: url("/kapila-logo.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.065 !important;
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+

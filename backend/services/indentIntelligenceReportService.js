@@ -43,6 +43,7 @@ const {
   autoFitColumns,
   safeMergeCells,
 } = require("./inventoryReportService");
+const { embedLogoInWorksheet } = require("../assets/logoBase64");
 
 // Admin-configurable thresholds, stored in report_settings (same pattern as
 // price_spike_pct / dormancy_days in reportController.js's
@@ -446,6 +447,7 @@ function buildIndentIntelligenceWorkbook(data) {
 
   // ── Summary sheet ──────────────────────────────────────────────────────
   const summaryWs = workbook.addWorksheet("Summary", { views: [{ state: "frozen", ySplit: 4 }] });
+  embedLogoInWorksheet(workbook, summaryWs, { col: 2.5, row: 0.1, width: 120, height: 32 });
   writeTitleBlock(summaryWs, "A1:D1", "HOTEL KAPILA - INDENT & PURCHASE INTELLIGENCE REPORT", `Date: ${data.date}`);
   const summaryRows = [
     ["Total indents raised", data.indents.total, "", ""],

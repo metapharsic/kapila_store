@@ -1,5 +1,6 @@
 const ExcelJS = require("exceljs");
 const db = require("../db");
+const { embedLogoInWorksheet } = require("../assets/logoBase64");
 
 /**
  * Enterprise Color Palette
@@ -361,6 +362,7 @@ class InventoryReportService {
       properties: { tabColor: { argb: PALETTE.accentGold } },
       views: [{ showGridLines: true }],
     });
+    embedLogoInWorksheet(workbook, ws, { col: 5.5, row: 0.1, width: 120, height: 34 });
 
     formatTitleBanner(ws, "Executive Inventory Health & KPI Dashboard", "", data.todayStr);
 

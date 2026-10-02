@@ -632,9 +632,23 @@ function Inner() {
             flex: 1,
             overflowY: "auto",
             padding: isMobile ? "12px 16px" : "20px 24px",
-            backgroundColor: COLORS.bg
+            backgroundColor: COLORS.bg,
+            position: "relative"
           }}>
-            {screens[screen]}
+            {/* Ambient Hotel Kapila Brand Watermark */}
+            <div
+              className="kapila-app-watermark"
+              aria-hidden="true"
+              style={{
+                left: showSidebar && !isMobile ? `calc(50% + ${SIDEBAR_WIDTH / 2}px)` : "50%",
+              }}
+            >
+              <img src={kapilaLogo} alt="" />
+            </div>
+
+            <div style={{ position: "relative", zIndex: 1 }}>
+              {screens[screen]}
+            </div>
           </main>
         </div>
       </div>

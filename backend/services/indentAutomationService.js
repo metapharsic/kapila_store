@@ -1,6 +1,7 @@
 const ExcelJS = require("exceljs");
 const db = require("../db");
 const { safeMergeCells } = require("./inventoryReportService");
+const { embedLogoInWorksheet } = require("../assets/logoBase64");
 const path = require("path");
 const fs = require("fs");
 
@@ -231,6 +232,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
     properties: { tabColor: { argb: PALETTE.goldAccent } },
     views: [{ showGridLines: true }],
   });
+  embedLogoInWorksheet(workbook, wsDash, { col: 4.5, row: 0.1, width: 120, height: 32 });
 
   wsDash.columns = [
     { width: 5 },

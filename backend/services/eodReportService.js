@@ -29,6 +29,7 @@ const {
   autoFitColumns,
   safeMergeCells,
 } = require("./inventoryReportService");
+const { embedLogoInWorksheet } = require("../assets/logoBase64");
 
 const VALID_GRANULARITIES = ["overall", "department", "category", "supplier"];
 
@@ -455,6 +456,7 @@ function buildEodWorkbook(eodData) {
     const ws = workbook.addWorksheet("EOD Report", {
       views: [{ state: "frozen", ySplit: 4 }],
     });
+    embedLogoInWorksheet(workbook, ws, { col: 4.5, row: 0.1, width: 120, height: 32 });
     writeEodSheet(
       ws,
       "HOTEL KAPILA - END OF DAY STOCK REPORT",
@@ -466,6 +468,7 @@ function buildEodWorkbook(eodData) {
 
   // Granular mode: a Summary tab, then one tab per group.
   const summaryWs = workbook.addWorksheet("Summary");
+  embedLogoInWorksheet(workbook, summaryWs, { col: 4.5, row: 0.1, width: 120, height: 32 });
   safeMergeCells(summaryWs, "A1:F1");
   const title = summaryWs.getCell("A1");
   title.value = `HOTEL KAPILA - END OF DAY STOCK REPORT (by ${eodData.granularity.toUpperCase()})`;
