@@ -227,6 +227,12 @@ async function update(req, res, next) {
 }
 
 // DELETE /api/departments/:id
+// Blocks deletion whenever any dependent data references this department,
+// either by FK (user_departments) or by stored name string (indents,
+// issuances, production, leftovers, stock_ledger, indent_subcategories,
+// indent_templates) - a hard-delete is only allowed when all of these are
+// empty, so we never silently orphan references or rely on an ON DELETE
+// CASCADE to quietly wipe out unrelated rows (e.g. user_departments).
 async function remove(req, res, next) {
   try {
     const { id } = req.params;
@@ -236,16 +242,45 @@ async function remove(req, res, next) {
       return res.status(404).json({ success: false, error: "Department not found." });
     }
 
-    // Check if linked to indents
-    const hasIndents = await db("indents").whereRaw("LOWER(dept) = LOWER(?)", [existing.name]).first();
-    if (hasIndents) {
-      return res.status(400).json({ success: false, error: "Cannot delete department. It is linked to existing Indents." });
-    }
+    const byName = (table, col = "dept") =>
+      db(table).whereRaw(`LOWER(${col}) = LOWER(?)`, [existing.name]).first();
 
-    // Check if linked to issuances
-    const hasIssuances = await db("issuances").whereRaw("LOWER(dept) = LOWER(?)", [existing.name]).first();
-    if (hasIssuances) {
-      return res.status(400).json({ success: false, error: "Cannot delete department. It is linked to existing Issuances." });
+    const [
+      hasIndents,
+      hasIssuances,
+      hasProduction,
+      hasLeftovers,
+      hasLedgerMovements,
+      hasSubcategories,
+      hasTemplateItems,
+      hasAssignedUsers,
+    ] = await Promise.all([
+      byName("indents"),
+      byName("issuances"),
+      byName("production"),
+      byName("leftovers"),
+      byName("stock_ledger", "department"),
+      byName("indent_subcategories", "department_name"),
+      byName("indent_templates", "template_name"),
+      db("user_departments").where("department_id", id).first(),
+    ]);
+
+    const blockers = [];
+    if (hasIndents) blockers.push("Indents");
+    if (hasIssuances) blockers.push("Issuances");
+    if (hasProduction) blockers.push("Production records");
+    if (hasLeftovers) blockers.push("Leftover records");
+    if (hasLedgerMovements) blockers.push("Stock Ledger movements");
+    if (hasSubcategories) blockers.push("Indent Subcategories/Items");
+    if (hasTemplateItems) blockers.push("Department Item Templates");
+    if (hasAssignedUsers) blockers.push("Assigned Users");
+
+    if (blockers.length) {
+      return res.status(400).json({
+        success: false,
+        error: `Cannot delete department. It is linked to existing ${blockers.join(", ")}.`,
+        blockers,
+      });
     }
 
     await db("departments").where("id", id).del();
@@ -272,6 +307,56 @@ async function getDepartmentItemCounts(req, res, next) {
     });
 
     res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/departments/summary
+// Single lightweight endpoint for the frontend's header stat cards, so it
+// doesn't need to fan out into N+1 calls. Computed entirely from real rows:
+//   - total_departments: count of rows in `departments`
+//   - total_items: count of indent_subcategory_items across all departments
+//     (same join used by list()/getDepartmentItemCounts())
+//   - total_consumption_value_30d: sum of stock_ledger.total_value for
+//     OUTWARD_ISSUE movements in the trailing 30 days (same technique as
+//     eodReportService's granular "department" mode: stock_ledger already
+//     carries `department` as a plain column, so it's a straight GROUP BY).
+async function getSummary(req, res, next) {
+  try {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sinceStr = since.toISOString().slice(0, 19).replace("T", " ");
+
+    const [deptCountRow, itemCountRow, consumptionRows] = await Promise.all([
+      db("departments").count("id as count").first(),
+      db("indent_subcategories as s")
+        .join("indent_subcategory_items as i", "s.id", "i.subcategory_id")
+        .count("i.id as count")
+        .first(),
+      db("stock_ledger")
+        .where("transaction_type", "OUTWARD_ISSUE")
+        .where("created_at", ">=", sinceStr)
+        .groupBy("department")
+        .select("department")
+        .sum("total_value as value"),
+    ]);
+
+    const perDepartment = consumptionRows.map((r) => ({
+      department: (r.department || "Unassigned").trim() || "Unassigned",
+      consumption_value_30d: parseFloat(r.value) || 0,
+    }));
+
+    const totalConsumption = perDepartment.reduce((sum, r) => sum + r.consumption_value_30d, 0);
+
+    res.json({
+      success: true,
+      data: {
+        total_departments: parseInt(deptCountRow.count, 10) || 0,
+        total_items: parseInt(itemCountRow.count, 10) || 0,
+        total_consumption_value_30d: Math.round(totalConsumption * 100) / 100,
+        by_department: perDepartment,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -373,5 +458,5 @@ async function addItemToDepartmentTemplate(req, res, next) {
   }
 }
 
-module.exports = { list, getChefConfig, create, update, remove, getDepartmentItems, getDepartmentItemCounts, addItemToDepartmentTemplate };
+module.exports = { list, getChefConfig, create, update, remove, getDepartmentItems, getDepartmentItemCounts, getSummary, addItemToDepartmentTemplate };
 

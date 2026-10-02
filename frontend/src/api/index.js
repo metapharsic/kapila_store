@@ -183,6 +183,7 @@ export const departments = {
   list:            (params) => api.get("/departments", params),
   chefConfig:      ()       => api.get("/departments/chef-config"),
   items:           ()       => api.get("/departments/items"),
+  itemCounts:      ()       => api.get("/departments/item-counts"),
   addTemplateItem: (body)   => api.post("/departments/template-item", body),
   create:          (body)   => api.post("/departments", body),
   update:          (id, body) => api.patch(`/departments/${id}`, body),
@@ -262,8 +263,13 @@ export const permissions = {
 };
 
 export const auditLogs = {
-  list: (params) => api.get("/audit-logs", params),
+  list:     (params)  => api.get("/audit-logs", params),
+  stats:    ()        => api.get("/audit-logs/stats"),
+  distinct: ()        => api.get("/audit-logs/distinct"),
+  detail:   (id)      => api.get(`/audit-logs/${id}`),
+  exportCsv:(params)  => api.get("/audit-logs/export", params, { responseType: "blob" }),
 };
+
 
 export const chefStats = {
   overview: (params) => api.get("/chef-stats", params),
