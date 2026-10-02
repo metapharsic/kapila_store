@@ -21,11 +21,12 @@ import { today } from "../../utils/dates";
 const emptyItem = { item_code: "", name: "", qty_ordered: "", qty_received: "", qty_accepted: "", qty_rejected: "0", unit: UNITS[0], unit_price: "", landed_cost: "", batch_no: "", expiry_date: "", discrepancy_reason: "" };
 
 export default function GoodsReceiptScreen() {
-  const { stocks, refreshStockNames, grnPreFill, setGrnPreFill } = useAppContext();
+  const { stocks, refreshStockNames, grnPreFill, setGrnPreFill, setCurrentScreen } = useAppContext();
   const [view, setView]         = useState("list"); // "list" | "create" | "detail"
   const [detail, setDetail]     = useState(null);
   const [supplierList, setSupplierList] = useState([]);
   const [poList, setPoList]     = useState([]);
+  const [pendingDcCount, setPendingDcCount] = useState(0);
   const [msg, setMsg]           = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
@@ -39,6 +40,13 @@ export default function GoodsReceiptScreen() {
   const load = (overrides = {}) => fetch({ limit: LIMIT, sort: "date", order: "desc", ...overrides });
 
   useEffect(() => { load(); }, []);
+
+  // Fetch pending Inbound DCs awaiting 3-way match
+  useEffect(() => {
+    api.inboundDc.list({ status: "PENDING_INVOICE" })
+      .then((r) => setPendingDcCount(r.data?.length || r.total || 0))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     api.suppliers.list({ limit: 200, sort: "name", order: "asc" })
@@ -535,6 +543,40 @@ export default function GoodsReceiptScreen() {
     <Section title="Goods Receipt Notes" sub="Track all goods received from suppliers — auto-batches stock">
       {/* Swarm Telemetry */}
       <P2PAgentStatusBar activeModule="grn" />
+
+      {pendingDcCount > 0 && (
+        <div style={{
+          background: "linear-gradient(90deg, rgba(232, 168, 56, 0.12) 0%, rgba(232, 168, 56, 0.04) 100%)",
+          border: "1px solid rgba(232, 168, 56, 0.35)",
+          borderRadius: 8,
+          padding: "12px 16px",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 20 }}>🚚</span>
+            <div>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: COLORS.accent }}>
+                {pendingDcCount} Dawn Delivery Challan{pendingDcCount > 1 ? "s" : ""} (INWARD_DC_PROVISIONAL) Awaiting 3-Way Match
+              </p>
+              <p style={{ margin: "2px 0 0", fontSize: 11.5, color: COLORS.muted }}>
+                Morning perishables/milk/gas credited to live stock. Reconcile against vendor tax invoices to generate formal GRNs with zero inventory double-counting.
+              </p>
+            </div>
+          </div>
+          <Btn
+            small
+            onClick={() => setCurrentScreen("inbound_dc")}
+            style={{ background: COLORS.accent, color: "#161922", fontWeight: 700, fontSize: 12 }}
+          >
+            Review Inbound DCs & 3-Way Match →
+          </Btn>
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
         <SearchBar onSearch={(v) => load({ page: 1, q: v })} placeholder="Search GRN#, supplier, invoice…" />

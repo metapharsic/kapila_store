@@ -5,6 +5,7 @@ import {
   ChevronRight, AlertCircle, CheckCircle2, Layers
 } from "lucide-react";
 import * as api from "../api";
+import { useAppContext } from "../context/AppContext";
 
 /**
  * Multi-Agent OmniSearch: 2-Letter Item & Page Search Engine for Every Sidebar.
@@ -20,6 +21,7 @@ export default function SidebarOmniSearch({
   isMobile = false,
   onCloseMobile
 }) {
+  const { modularExtensions = {}, toggleModularExtension } = useAppContext() || {};
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -158,11 +160,48 @@ export default function SidebarOmniSearch({
   const matchedPages = useMemo(() => {
     const clean = query.trim().toLowerCase();
     if (clean.length < 2) return [];
-    return allPages.filter((page) =>
+    const baseMatches = allPages.filter((page) =>
       page.label.toLowerCase().includes(clean) ||
       page.categoryTitle.toLowerCase().includes(clean)
     );
-  }, [allPages, query]);
+
+    // Dynamic Modular Extensions discovery: if dormant module is queried, offer 1-click enablement
+    if (!modularExtensions.maintenance && (clean.includes("cmms") || clean.includes("maint") || clean.includes("asset") || clean.includes("work order"))) {
+      baseMatches.push({
+        id: "enable_maintenance",
+        label: "⚡ Enable Commercial Kitchen CMMS",
+        categoryTitle: "Modular Extensions",
+        icon: <Wrench size={14} color="#e8a838" />,
+        module: "page",
+        screen_id: "maintenance",
+        sublabel: "Dormant module · Click to activate & open",
+        badge: "Dormant ⚡",
+        action: () => {
+          toggleModularExtension?.("maintenance", true);
+          onNavigate?.("maintenance");
+        }
+      });
+    }
+
+    if (!modularExtensions.staff_audit && (clean.includes("staff") || clean.includes("hrms") || clean.includes("shift") || clean.includes("roster") || clean.includes("night") || clean.includes("audit"))) {
+      baseMatches.push({
+        id: "enable_staff_audit",
+        label: "⚡ Enable Staff HRMS & Night Audit",
+        categoryTitle: "Modular Extensions",
+        icon: <Layers size={14} color="#e8a838" />,
+        module: "page",
+        screen_id: "staff_audit",
+        sublabel: "Dormant module · Click to activate & open",
+        badge: "Dormant ⚡",
+        action: () => {
+          toggleModularExtension?.("staff_audit", true);
+          onNavigate?.("staff_audit");
+        }
+      });
+    }
+
+    return baseMatches;
+  }, [allPages, query, modularExtensions, toggleModularExtension, onNavigate]);
 
   // Combined and categorized items
   const { categorizedResults, flatList } = useMemo(() => {
@@ -236,6 +275,13 @@ export default function SidebarOmniSearch({
   // Selection dispatcher
   const handleSelectItem = (item) => {
     setIsOpen(false);
+    if (item.action) {
+      item.action();
+      if (isMobile && onCloseMobile) {
+        onCloseMobile();
+      }
+      return;
+    }
     if (onNavigate) {
       onNavigate(item.screen_id || item.id, item);
     }

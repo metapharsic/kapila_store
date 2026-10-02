@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { COLORS, UNITS, STOCK_CATEGORIES } from "../../styles/colors";
 import {
   PackagePlus, X, MapPin, Building2, Calendar, Clock,
-  DollarSign, Layers, Tag, FileText, AlertCircle, Sparkles, CheckCircle, Info
+  DollarSign, Layers, Tag, FileText, AlertCircle, Sparkles, CheckCircle, Info,
+  Maximize2, Minimize2
 } from "lucide-react";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
@@ -68,6 +69,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
   const [err, setErr] = useState("");
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [fieldSyncState, setFieldSyncState] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const handleSelectLIFOBatch = (batch) => {
     setFieldSyncState(true);
@@ -217,8 +219,8 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
       </style>
       <div
         style={{
-          width: "100%",
-          maxWidth: 900,
+          width: "90vw",
+          maxWidth: expanded ? 1100 : 700,
           maxHeight: "90vh",
           background: "var(--bg-modal)",
           border: "1px solid var(--color-gold-glow)",
@@ -264,23 +266,42 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
               Enterprise catalog entry. Please ensure supplier batches and storage locations are precise.
             </p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "var(--border-color)",
-              border: "1px solid var(--border-color)",
-              borderRadius: 6,
-              padding: 6,
-              cursor: "pointer",
-              color: "var(--text-muted)",
-            }}
-          >
-            <X size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              title={expanded ? "Switch to compact size" : "Switch to expanded size"}
+              style={{
+                background: "var(--border-color)",
+                border: "1px solid var(--border-color)",
+                borderRadius: 6,
+                padding: 6,
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: "var(--border-color)",
+                border: "1px solid var(--border-color)",
+                borderRadius: 6,
+                padding: 6,
+                cursor: "pointer",
+                color: "var(--text-muted)",
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Modal Content - 2 Column Layout */}
-        <div style={{ padding: "24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div style={{ padding: "24px", display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 24 }}>
           
           {/* Multi-Agent System Status Bar */}
           <div style={{ gridColumn: "1 / -1", marginBottom: -6 }}>
@@ -317,7 +338,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                   placeholder="e.g. Premium Basmati Rice"
                   autoFocus
                 />
-                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 0.8fr)", gap: 12 }}>
                   <Input
                     label="SKU / Item Code (Optional)"
                     value={form.item_code}
@@ -346,7 +367,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                     </div>
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
                   <div>
                     <label style={{ fontSize: 11.5, color: "var(--text-muted)", display: "block", marginBottom: 4, fontWeight: 500 }}>Classification Category</label>
                     <select
@@ -391,7 +412,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                   </select>
                   <div style={{ fontSize: 10.5, color: "var(--text-muted)", marginTop: 4 }}>Impacts environmental monitoring and audit routes.</div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
                   <Input label="Rack #" value={form.rack_number} onChange={(e) => set("rack_number", e.target.value)} placeholder="e.g. A-01" />
                   <Input label="Shelf #" value={form.shelf_number} onChange={(e) => set("shelf_number", e.target.value)} placeholder="e.g. 1" />
                   <Input label="Bin (Opt)" value={form.bin_number} onChange={(e) => set("bin_number", e.target.value)} placeholder="e.g. 4" />
@@ -414,7 +435,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                 <Building2 size={15} /> Commercials & Batch Inwarding
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
                   <Input label="Initial Quantity Inward" type="number" min="0" step="0.01" value={form.qty} onChange={(e) => set("qty", e.target.value)} placeholder="0.00" />
                   <div>
                     <Input label={`Unit Cost (₹) per ${form.unit}`} type="number" min="0" step="0.01" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="0.00" />
@@ -472,7 +493,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                   )}
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
                   <Input label="Invoice Reference #" value={form.invoice_no} onChange={(e) => set("invoice_no", e.target.value)} placeholder="INV-202601" />
                   <Input label="Batch Number" value={form.batch_no} onChange={(e) => set("batch_no", e.target.value)} placeholder="Auto-generated" />
                 </div>
@@ -485,7 +506,7 @@ export default function AddItemDrawer({ open, onClose, onSaved }) {
                 <Sparkles size={15} /> Stock Controls & Tracking
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
                   <Input label="Receipt Date" type="date" value={form.date} onChange={(e) => set("date", e.target.value)} />
                   <Input label="Expiry Date" type="date" value={form.expiry_date} onChange={(e) => set("expiry_date", e.target.value)} />
                 </div>

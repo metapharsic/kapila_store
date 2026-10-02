@@ -30,7 +30,6 @@ import { useAppContext } from "../../context/AppContext";
 import { today } from "../../utils/dates";
 import * as api from "../../api";
 
-import TransferAgentStatusBar from "./components/TransferAgentStatusBar";
 import TransferChallanModal from "./components/TransferChallanModal";
 import AcknowledgeTransferModal from "./components/AcknowledgeTransferModal";
 import InterDeptCostMatrix from "./components/InterDeptCostMatrix";
@@ -291,7 +290,6 @@ export default function TransfersScreen() {
         title={`Stock Transfer — ${detail.transfer_number}`}
         sub={`${detail.from_location} ➔ ${detail.to_location} · Dispatched on ${detail.date}`}
       >
-        <TransferAgentStatusBar telemetry={summary?.agents_telemetry} />
 
         <div style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
           <span
@@ -487,7 +485,6 @@ export default function TransfersScreen() {
   if (view === "create") {
     return (
       <Section title="Initiate Stock Transfer" sub="Multi-Agent non-overdraft logistics dispatcher">
-        <TransferAgentStatusBar telemetry={summary?.agents_telemetry} />
 
         <Card style={{ maxWidth: 900 }}>
           {msg && <p style={{ color: msg.color, fontSize: 12, marginBottom: 14 }}>{msg.text}</p>}
@@ -789,7 +786,6 @@ export default function TransfersScreen() {
   // ────────────────────────────────────────────────────────────
   return (
     <Section title="Stock Transfers" sub="Multi-Agent inter-departmental logistics & double-entry tracking">
-      <TransferAgentStatusBar telemetry={summary?.agents_telemetry} />
 
       {/* KPI Stats Cards */}
       <div

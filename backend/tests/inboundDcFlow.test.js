@@ -191,6 +191,11 @@ describe('Inbound DC, 3-Way Match & Returnable Assets End-to-End Suite', () => {
       const dcInDb = await db('inbound_dcs').where('id', createdDc.id).first();
       expect(dcInDb.status).toBe('GRN_COMPLETED');
       expect(String(dcInDb.converted_grn_id)).toBe(String(matchResult.grn_id));
+
+      // Verify 3-way match tolerance and price drift response
+      expect(matchResult.price_drift_alerts).toBeDefined();
+      expect(Array.isArray(matchResult.price_drift_alerts)).toBe(true);
+      expect(matchResult.tolerance_exceeded).toBe(false); // 66.50 vs 65 is +2.3%, well within 10%
     });
   });
 

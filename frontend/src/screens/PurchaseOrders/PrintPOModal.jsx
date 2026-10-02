@@ -207,11 +207,12 @@ export default function PrintPOModal({ open, onClose, po }) {
           </div>
 
           {/* Items Table */}
+          <div style={{ overflowX: "auto", marginBottom: 24 }}>
           <table
             style={{
               width: "100%",
+              minWidth: 520,
               borderCollapse: "collapse",
-              marginBottom: 24,
               fontSize: 12,
             }}
           >
@@ -257,6 +258,7 @@ export default function PrintPOModal({ open, onClose, po }) {
               </tr>
             </tfoot>
           </table>
+          </div>
 
           {/* Terms and Signatures */}
           <div style={{ marginTop: 32, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30 }}>

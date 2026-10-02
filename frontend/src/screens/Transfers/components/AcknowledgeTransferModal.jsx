@@ -181,7 +181,8 @@ export default function AcknowledgeTransferModal({ transfer, onConfirm, onClose 
           </div>
 
           {/* Table */}
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 16 }}>
+          <div style={{ overflowX: "auto", marginBottom: 16 }}>
+          <table style={{ width: "100%", minWidth: 460, borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: COLORS.surface, borderBottom: `1px solid ${COLORS.border}` }}>
                 {["Item", "Dispatched", "Received Qty", "Variance", "Condition"].map((h) => (
@@ -251,6 +252,7 @@ export default function AcknowledgeTransferModal({ transfer, onConfirm, onClose 
               })}
             </tbody>
           </table>
+          </div>
 
           {hasAnyShrinkage && (
             <div

@@ -40,6 +40,47 @@ export function AppProvider({ children }) {
   const [poPreFill, setPoPreFill] = useState(null);
   const [grnPreFill, setGrnPreFill] = useState(null);
 
+  // Modular Extensions State (Commercial Kitchen CMMS & Staff HRMS / Night Audit)
+  // Default: Dormant/Hidden to keep daily store operations streamlined.
+  const [modularExtensions, setModularExtensionsState] = useState(() => {
+    try {
+      const stored = localStorage.getItem("kapila_modular_extensions");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return {
+          maintenance: !!parsed.maintenance,
+          staff_audit: !!parsed.staff_audit,
+        };
+      }
+    } catch {}
+    return { maintenance: false, staff_audit: false };
+  });
+
+  const toggleModularExtension = useCallback((moduleKey, forceVal) => {
+    setModularExtensionsState((prev) => {
+      const nextVal = typeof forceVal === "boolean" ? forceVal : !prev[moduleKey];
+      const updated = { ...prev, [moduleKey]: nextVal };
+      try {
+        localStorage.setItem("kapila_modular_extensions", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const setModularExtensions = useCallback((updates) => {
+    setModularExtensionsState((prev) => {
+      const updated = typeof updates === "function" ? updates(prev) : { ...prev, ...updates };
+      try {
+        localStorage.setItem("kapila_modular_extensions", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const isModuleEnabled = useCallback((moduleKey) => {
+    return !!modularExtensions[moduleKey];
+  }, [modularExtensions]);
+
   return (
     <AppContext.Provider value={{
       stockNames,
@@ -57,7 +98,11 @@ export function AppProvider({ children }) {
       setPoPreFill,
       grnPreFill,
       setGrnPreFill,
-      setNavBlocker
+      setNavBlocker,
+      modularExtensions,
+      toggleModularExtension,
+      setModularExtensions,
+      isModuleEnabled
     }}>
       {children}
     </AppContext.Provider>

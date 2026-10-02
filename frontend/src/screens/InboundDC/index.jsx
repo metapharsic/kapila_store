@@ -746,6 +746,33 @@ export default function InboundDCScreen() {
               </div>
               Early morning supplies (5:00 AM Vegetables, Fresh Dairy Milk, Bread, LPG Cylinders) arriving without an official tax invoice are received here under vendor Delivery Challan.
               Items are <strong>immediately credited to active inventory</strong> as <code style={{ background: "#1e293b", padding: "2px 6px", borderRadius: 4 }}>INWARD_DC_PROVISIONAL</code> so kitchen stations can instantly issue and cook without operational delay.
+              <div style={{ marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIntakeForm(prev => ({
+                      ...prev,
+                      remarks: "05:00 AM Morning Dawn Delivery intake (Fresh milk, produce, bakery, LPG) — provisional stock credited immediately for morning station draws.",
+                      received_by: "Storekeeper (Dawn Shift)"
+                    }));
+                  }}
+                  style={{
+                    background: "rgba(232, 168, 56, 0.2)",
+                    border: "1px solid #e8a838",
+                    color: "#fde68a",
+                    borderRadius: 6,
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6
+                  }}
+                >
+                  🌅 Load 05:00 AM Dawn Delivery Preset
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1269,19 +1296,26 @@ export default function InboundDCScreen() {
                                 }}>
                                   EXACT
                                 </span>
-                              ) : rateDiffPct > 5 ? (
+                              ) : rateDiffPct > 10 ? (
                                 <span style={{
-                                  background: "#7f1d1d40", color: "#f87171",
+                                  background: "#7f1d1d60", color: "#fca5a5", border: "1px solid #ef444480",
                                   padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700
                                 }}>
-                                  +{rateDiffPct.toFixed(1)}%
+                                  ⚠️ &gt;10% (+{rateDiffPct.toFixed(1)}%)
+                                </span>
+                              ) : rateDiffPct > 5 ? (
+                                <span style={{
+                                  background: "#78350f40", color: "#fbbf24",
+                                  padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700
+                                }}>
+                                  +{rateDiffPct.toFixed(1)}% (Within 10%)
                                 </span>
                               ) : (
                                 <span style={{
                                   background: "#78350f40", color: "#fbbf24",
                                   padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700
                                 }}>
-                                  ±{rateDiffPct.toFixed(1)}%
+                                  ±{rateDiffPct.toFixed(1)}% (Within 10%)
                                 </span>
                               )}
                             </td>

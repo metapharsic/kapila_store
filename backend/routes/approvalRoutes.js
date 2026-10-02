@@ -6,6 +6,8 @@ const { requirePermission } = require("../middleware/authorize");
 router.get("/pending", ctrl.listPending);
 router.post("/:id/approve", ctrl.approveRequest);
 router.post("/:id/reject", ctrl.rejectRequest);
+router.post("/:id/delegate", ctrl.delegateRequest);
+router.post("/bulk-action", ctrl.bulkAction);
 
 router.get("/rules", ctrl.listRules);
 router.post("/rules", requirePermission("settings.manage"), ctrl.createRule);

@@ -503,8 +503,8 @@ export default function IndentHistoryModal({ isOpen, onClose }) {
 
                       {/* Expandable Items List */}
                       {isExpanded && (
-                        <div style={{ marginTop: 12, borderTop: "1px dashed #e2e8f0", paddingTop: 10 }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <div style={{ marginTop: 12, borderTop: "1px dashed #e2e8f0", paddingTop: 10, overflowX: "auto" }}>
+                          <table style={{ width: "100%", minWidth: 420, borderCollapse: "collapse" }}>
                             <thead>
                               <tr>
                                 <th style={{ padding: "4px 8px", fontSize: 10, background: "transparent", borderBottom: "1px solid #e2e8f0", color: "#64748b" }}>#</th>

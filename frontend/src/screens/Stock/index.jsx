@@ -81,7 +81,7 @@ export default function StockScreen() {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [chartItem, setChartItem] = useState("");
 
-  const [groupByItem, setGroupByItem] = useState(false);
+  const [groupByItem, setGroupByItem] = useState(true);
 
   const loadLedger = async (params = {}) => {
     setLedgerLoading(true);
@@ -195,7 +195,8 @@ export default function StockScreen() {
 
   const load = async (overrides = {}) => {
     const merged = { ...filters, ...overrides };
-    const currentLimit = overrides.limit || (groupByItem ? 1000 : LIMIT);
+    const isGrouped = overrides.groupByItem !== undefined ? overrides.groupByItem : groupByItem;
+    const currentLimit = overrides.limit || (isGrouped ? 1000 : LIMIT);
     const res = await fetch({ limit: currentLimit, sort: "created_at", order: "desc", ...merged });
     if (res && res.stats) {
       setStats(res.stats);
@@ -604,7 +605,7 @@ export default function StockScreen() {
                 <Btn variant="ghost" small onClick={() => {
                   const nextVal = !groupByItem;
                   setGroupByItem(nextVal);
-                  load({ page: 1, limit: nextVal ? 1000 : LIMIT });
+                  load({ page: 1, limit: nextVal ? 1000 : LIMIT, groupByItem: nextVal });
                 }} style={{ fontSize: 12, padding: "6px 12px" }}>
                   {groupByItem ? "View All Batches" : "Group by Item"}
                 </Btn>
@@ -742,7 +743,7 @@ export default function StockScreen() {
                 error={error}
                 page={page}
                 total={total}
-                limit={LIMIT}
+                limit={groupByItem ? 1000 : LIMIT}
                 onPage={(p) => load({ page: p })}
                 groupByItem={groupByItem}
                 readOnly={!canEditStock}

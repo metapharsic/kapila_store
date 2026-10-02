@@ -38,6 +38,7 @@ export const indents = {
   createSubcategoryItem:(subcatId, body) => api.post(`/indents/subcategories/${subcatId}/items`, body),
   chefSubmit:      (body) => api.post("/indents/chef-submit", body),
   processFulfillment:(id, body) => api.post(`/indents/${id}/process`, body),
+  chefRadar:       (params) => api.get("/indents/chef-radar", params),
   recommendations: (params) => api.get("/indents/recommendations", params),
   smartAutofill:   (body)   => api.post("/indents/smart-autofill", body),
   voiceParse:      (text)   => api.post("/indents/voice-parse", { text }),
@@ -146,12 +147,18 @@ export const transfers = {
 };
 
 export const reorderPoints = {
-  list:   (params) => api.get("/reorder-points", params),
-  alerts: ()       => api.get("/reorder-points/alerts"),
-  predictive: ()   => api.get("/reorder-points/predictive"),
-  create: (body)   => api.post("/reorder-points", body),
-  update: (id, body) => api.patch(`/reorder-points/${id}`, body),
-  remove: (id)     => api.delete(`/reorder-points/${id}`),
+  list:          (params) => api.get("/reorder-points", params),
+  alerts:        ()       => api.get("/reorder-points/alerts"),
+  predictive:    ()       => api.get("/reorder-points/predictive"),
+  telemetry:     ()       => api.get("/reorder-points/agent-telemetry"),
+  batchUpdate:   (rules)  => api.post("/reorder-points/batch-update", { rules }),
+  batchDraftPOs: (item_ids) => api.post("/reorder-points/batch-draft-pos", { item_ids }),
+  recalibrate:   (item_codes) => api.post("/reorder-points/recalibrate", { item_codes }),
+  exportExcel:   ()       => api.download("/reorder-points/export-excel", null, "Hotel_Kapila_Reorder_Points_Matrix.xlsx"),
+  exportCsv:     ()       => api.download("/reorder-points/export-csv", null, "Hotel_Kapila_Reorder_Points_Matrix.csv"),
+  create:        (body)   => api.post("/reorder-points", body),
+  update:        (id, body) => api.patch(`/reorder-points/${id}`, body),
+  remove:        (id)     => api.delete(`/reorder-points/${id}`),
 };
 
 export const notifications = {
@@ -163,6 +170,8 @@ export const approvals = {
   pending: () => api.get("/approvals/pending"),
   approve: (id, notes) => api.post(`/approvals/${id}/approve`, { notes }),
   reject:  (id, notes) => api.post(`/approvals/${id}/reject`, { notes }),
+  bulkAction: (ids, action, reason) => api.post("/approvals/bulk-action", { ids, action, reason }),
+  delegate: (id, toUserId) => api.post(`/approvals/${id}/delegate`, { toUserId }),
   rules:   () => api.get("/approvals/rules"),
   createRule: (body) => api.post("/approvals/rules", body),
   updateRule: (id, body) => api.patch(`/approvals/rules/${id}`, body),

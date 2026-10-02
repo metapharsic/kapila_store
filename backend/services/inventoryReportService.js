@@ -1237,4 +1237,15 @@ class InventoryReportService {
   }
 }
 
-module.exports = new InventoryReportService();
+const inventoryReportServiceInstance = new InventoryReportService();
+
+// Export the style helpers as standalone named exports too, so other report
+// services (e.g. eodReportService) can reuse the same enterprise look without
+// duplicating the palette/border/auto-fit logic.
+module.exports = inventoryReportServiceInstance;
+module.exports.PALETTE = PALETTE;
+module.exports.BORDER_BOX = BORDER_BOX;
+module.exports.autoFitColumns = autoFitColumns;
+module.exports.formatTitleBanner = formatTitleBanner;
+module.exports.styleHeaderRow = styleHeaderRow;
+module.exports.applyCellFormat = applyCellFormat;

@@ -13,6 +13,7 @@ router.get("/templates", requireAnyPermission(["indents.view", "indents.create"]
 router.get("/templates/:name", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getTemplateByName);
 router.get("/automated-pattern-excel", requireAnyPermission(["indents.view", "stock.export", "dashboard.export"]), ctrl.exportAutomatedIndentExcel);
 router.get("/automated-pattern-preview", requireAnyPermission(["indents.view", "dashboard.view"]), ctrl.getAutomatedIndentPreview);
+router.get("/chef-radar", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getChefRadar);
 router.get("/recommendations", requirePermission("indents.view"), ctrl.getRecommendations);
 router.get("/:id/export-excel", requireAnyPermission(["indents.view", "stock.export", "dashboard.export"]), ctrl.exportSingleIndentExcel);
 router.post("/subcategories", requirePermission("indents.create"), ctrl.createSubcategory);

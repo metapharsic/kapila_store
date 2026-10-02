@@ -77,6 +77,7 @@ Write-Host "  [Agent 3: Security]    " -ForegroundColor Cyan -NoNewline; Write-H
 Write-Host "  [Agent 4: UI/UX Engine]" -ForegroundColor Cyan -NoNewline; Write-Host "Terminal Change Dashboard & Diffstat" -ForegroundColor White
 Write-Host "  [Agent 5: Core Sync]   " -ForegroundColor Cyan -NoNewline; Write-Host "Staging, Commit & Upstream Push" -ForegroundColor White
 Write-Host "  [Agent 6: DevOps & QA] " -ForegroundColor Cyan -NoNewline; Write-Host "Verification & Remote Validation" -ForegroundColor White
+Write-Host "  [Agent 7: Patcher]     " -ForegroundColor Cyan -NoNewline; Write-Host "Auto-Generate Production Patch Bundle" -ForegroundColor White
 Write-Host "  ------------------------------------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
@@ -370,7 +371,7 @@ if ($totalChanges -gt 0) {
     Write-Success "Commit created: $Message"
 }
 
-# 6. Push to GitHub (Agent 6: DevOps)
+# 6. Push to GitHub (Agent 6: DevOps / QA)
 Write-Step "Agent 6" "Pushing branch '$Branch' to remote '$Remote'..."
 Write-Host "  Executing: git push -u $Remote $Branch" -ForegroundColor DarkGray
 
@@ -409,6 +410,41 @@ if ($existingRemote -match 'github\.com[:/]([^/]+)/([^/\.]+)') {
     Write-Host ""
     Write-Host "  View your changes live on GitHub:" -ForegroundColor Green
     Write-Host "  $webUrl" -ForegroundColor Cyan
+}
+
+# 7. Auto-Generate Patch Bundle (Agent 7: Patcher)
+Write-Host ""
+Write-Step "Agent 7" "Generating production patch bundle..."
+
+$patchDir = Join-Path $repoRoot "patches"
+if (-not (Test-Path $patchDir)) {
+    New-Item -ItemType Directory -Path $patchDir -Force | Out-Null
+    Write-Success "Created patches\ directory."
+}
+
+$patchTs    = (Get-Date).ToString("yyyyMMdd_HHmmss")
+$patchSHA   = (git rev-parse --short HEAD 2>$null)
+$patchFile  = Join-Path $patchDir "kapila_patch_${patchTs}_${patchSHA}.patch"
+
+# Reliable range: all commits included in this push, using if/else for PS5.1 compat
+$pushDepth = if ($unpushedCommits -and $unpushedCommits.Count -gt 0) { $unpushedCommits.Count } else { 1 }
+$patchRange = "HEAD~${pushDepth}..HEAD"
+
+git format-patch $patchRange --stdout 2>$null | Out-File -FilePath $patchFile -Encoding utf8
+if ($LASTEXITCODE -eq 0 -and (Test-Path $patchFile) -and (Get-Item $patchFile).Length -gt 0) {
+    $patchSizeKB = [Math]::Round((Get-Item $patchFile).Length / 1KB, 1)
+    Write-Success "Patch bundle created! ($patchSizeKB KB)"
+    Write-Host ""
+    Write-Host "  Production Patch File:" -ForegroundColor Yellow
+    Write-Host "  $patchFile" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  To apply on production:" -ForegroundColor Yellow
+    Write-Host "    1. Copy the .patch file to the production machine's patches\ folder." -ForegroundColor White
+    Write-Host "    2. Run: Apply Patch.bat" -ForegroundColor Cyan
+    Write-Host "    - or - powershell -File scripts\git_patch.ps1 -Mode apply" -ForegroundColor DarkGray
+} else {
+    Write-Warn "Could not auto-generate patch (range may be empty). Run 'Apply Patch.bat' to create one manually."
+    if (Test-Path $patchFile) { Remove-Item $patchFile -Force -ErrorAction SilentlyContinue }
 }
 
 Write-Host ""

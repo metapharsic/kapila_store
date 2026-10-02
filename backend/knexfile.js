@@ -6,6 +6,7 @@ module.exports = {
     connection: process.env.DATABASE_URL,
     migrations: { directory: "./db/migrations" },
     seeds: { directory: "./db/seeds" },
+    pool: { min: 2, max: 20 },
   },
   test: {
     client: "pg",
@@ -17,6 +18,6 @@ module.exports = {
     client: "pg",
     connection: { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } },
     migrations: { directory: "./db/migrations" },
-    pool: { min: 2, max: 10 },
+    pool: { min: 2, max: 20 },
   },
 };

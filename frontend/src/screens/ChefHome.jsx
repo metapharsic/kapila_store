@@ -8,6 +8,7 @@ import {
   ShieldCheck, LogOut, ArrowRight, Sparkles, TrendingUp, AlertTriangle,
   Smartphone, Tablet, Monitor, Cpu
 } from 'lucide-react';
+import ChefRequisitionWorkspace from '../components/chef/ChefRequisitionWorkspace';
 
 const MODULE_CARDS = [
   {
@@ -154,6 +155,7 @@ export default function ChefHome() {
   }, []);
 
   useEffect(() => {
+    if (!isAdmin) return; // Cost/yield KPIs are admin-only; skip the fetch for non-admins.
     const d = new Date();
     const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
     const today = d.toISOString().slice(0, 10);
@@ -173,7 +175,7 @@ export default function ChefHome() {
         }
       })
       .catch(console.error);
-  }, []);
+  }, [isAdmin]);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -182,11 +184,12 @@ export default function ChefHome() {
     return 'Good evening';
   };
 
+  const [showWorkspace, setShowWorkspace] = useState(false);
+  const [workspaceDept, setWorkspaceDept] = useState('TIFFINS');
+
   const handleOpenDeptIndent = (deptName) => {
-    if (setIndentPreFill) {
-      setIndentPreFill({ dept: deptName, tab: 'manual' });
-    }
-    setCurrentScreen('indent');
+    setWorkspaceDept(deptName);
+    setShowWorkspace(true);
   };
 
   return (
@@ -242,6 +245,28 @@ export default function ChefHome() {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
             KitchenOps: <strong style={{ color: '#ffffff' }}>Active</strong>
           </div>
+
+          <button
+            onClick={() => setShowWorkspace(prev => !prev)}
+            style={{
+              background: showWorkspace ? 'rgba(232, 168, 56, 0.2)' : 'rgba(30, 41, 59, 0.8)',
+              border: `1.5px solid ${showWorkspace ? '#e8a838' : 'rgba(255, 255, 255, 0.15)'}`,
+              color: showWorkspace ? '#e8a838' : '#ffffff',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              transition: 'all 0.15s ease',
+              touchAction: 'manipulation'
+            }}
+          >
+            <ClipboardList size={15} />
+            <span>{showWorkspace ? 'Requisition: OPEN' : 'Touch Requisition'}</span>
+          </button>
 
           <button
             onClick={logout}
@@ -316,7 +341,8 @@ export default function ChefHome() {
           </p>
         </div>
 
-        {/* Quick Stats Strip */}
+        {/* Quick Stats Strip (Cost/Yield KPIs — Admin only) */}
+        {isAdmin && (
         <div style={{
           width: '100%',
           background: 'rgba(15, 23, 42, 0.8)',
@@ -365,6 +391,72 @@ export default function ChefHome() {
               {(stats?.anomalies || 0) > 0 ? <AlertTriangle size={12} /> : <ShieldCheck size={12} />}
               {(stats?.anomalies || 0) > 0 ? 'Requires Waste Review' : 'Zero Quality Breaches'}
             </div>
+          </div>
+        </div>
+        )}
+
+        {/* Chef Touch Requisition Cockpit & Station Radar Banner */}
+        <div style={{
+          width: '100%',
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%)',
+          border: '1.5px solid rgba(232, 168, 56, 0.35)',
+          borderRadius: 16,
+          padding: isMobile ? '16px' : '20px 24px',
+          marginBottom: 24,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 14,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 20px rgba(232, 168, 56, 0.1)',
+          boxSizing: 'border-box'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+              background: 'rgba(232, 168, 56, 0.15)',
+              color: '#e8a838',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <UtensilsCrossed size={24} />
+            </div>
+            <div>
+              <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>Chef Keen Requisition Cockpit & Station Radar</span>
+                <span style={{ fontSize: 10, background: '#10b981', color: '#080c14', padding: '2px 8px', borderRadius: 10, fontWeight: 800 }}>TOUCHPAD ACTIVE</span>
+              </div>
+              <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0' }}>
+                See what is required very keenly: Central Store live balances, critical shortages, daily staples & single-indent disposables. Flexible windowing lets you dock anywhere.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              onClick={() => setShowWorkspace(true)}
+              style={{
+                background: 'linear-gradient(135deg, #e8a838 0%, #ca8a04 100%)',
+                color: '#080c14',
+                border: 'none',
+                borderRadius: 10,
+                padding: '10px 18px',
+                fontWeight: 800,
+                fontSize: 13,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                boxShadow: '0 4px 16px rgba(232, 168, 56, 0.35)',
+                touchAction: 'manipulation'
+              }}
+            >
+              <ClipboardList size={16} /> Open Touch Requisition
+            </button>
           </div>
         </div>
 
@@ -646,6 +738,14 @@ export default function ChefHome() {
         </div>
 
       </main>
+
+      {/* Flexible Chef Touch Requisition Workspace */}
+      {showWorkspace && (
+        <ChefRequisitionWorkspace
+          defaultDept={workspaceDept}
+          onClose={() => setShowWorkspace(false)}
+        />
+      )}
     </div>
   );
 }

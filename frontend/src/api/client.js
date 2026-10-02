@@ -17,7 +17,7 @@ async function parseJson(res) {
 }
 
 let refreshPromise = null;
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
   if (refreshPromise) return refreshPromise;
   refreshPromise = (async () => {
     try {
@@ -66,8 +66,68 @@ async function request(method, path, body, params, didRetry = false) {
   }
 
   const json = await parseJson(res);
-  if (!json.success) throw new Error(json.error || "Request failed");
+  if (!json.success) {
+    const err = new Error(json.error || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return json;
+}
+
+
+// Authenticated GET for components that need a raw JSON fetch (e.g. Reports screen widgets
+// firing several parallel requests). Uses the shared in-memory access token and the same
+// single-flight refresh + retry-once logic as the main api client.
+export async function authedGet(url, didRetry = false) {
+  const res = await fetch(url, {
+    credentials: "include",
+    headers: {
+      ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}),
+      "x-api-key": import.meta.env.VITE_API_KEY || import.meta.env.VITE_ANTHROPIC_API_KEY || "",
+    },
+  });
+
+  if (res.status === 401 && !didRetry) {
+    try {
+      await refreshAccessToken();
+      return authedGet(url, true);
+    } catch {
+      clearAccessToken();
+      notifyUnauthorized();
+    }
+  }
+
+  return parseJson(res);
+}
+
+// Authenticated raw-response fetch for endpoints that return a binary body (e.g. an
+// Excel workbook) where the caller needs to read response headers (X-EOD-Whatsapp-Sent)
+// AND the blob itself, which the JSON-parsing helpers above can't do. Uses the same
+// in-memory token + single-flight refresh/retry-once logic as authedGet, but returns the
+// raw Response so the caller inspects res.ok / res.status / res.headers / res.blob().
+export async function authedDownload(url, options = {}, didRetry = false) {
+  const res = await fetch(url, {
+    method: options.method || "GET",
+    credentials: "include",
+    headers: {
+      ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}),
+      "x-api-key": import.meta.env.VITE_API_KEY || import.meta.env.VITE_ANTHROPIC_API_KEY || "",
+      ...(options.headers || {}),
+    },
+    body: options.body,
+  });
+
+  if (res.status === 401 && !didRetry) {
+    try {
+      await refreshAccessToken();
+      return authedDownload(url, options, true);
+    } catch {
+      clearAccessToken();
+      notifyUnauthorized();
+    }
+  }
+
+  return res;
 }
 
 export const api = {

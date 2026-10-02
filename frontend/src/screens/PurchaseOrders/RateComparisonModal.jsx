@@ -352,8 +352,8 @@ export default function RateComparisonModal({
                   </div>
 
                   {/* Matrix Table */}
-                  <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: "hidden" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                  <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 10, overflowX: "auto" }}>
+                    <table style={{ width: "100%", minWidth: 560, borderCollapse: "collapse", fontSize: 12.5 }}>
                       <thead>
                         <tr style={{ background: COLORS.bg, textAlign: "left", color: COLORS.muted, borderBottom: `1px solid ${COLORS.border}` }}>
                           <th style={{ padding: "8px 12px" }}>Rank & Supplier</th>

@@ -882,6 +882,126 @@ async function exportSingleIndentExcel(req, res, next) {
   }
 }
 
+// GET /api/indents/chef-radar?dept=TIFFINS
+async function getChefRadar(req, res, next) {
+  try {
+    const IndentAgentService = require("../services/indentAgentService");
+    const dept = (req.query.dept || "TIFFINS").toUpperCase().trim();
+    const today = new Date().toISOString().slice(0, 10);
+
+    // 1. Fetch subcategories and template items for this department
+    const subcats = await IndentAgentService.getSubcategories(dept);
+    const catalogItems = [];
+    for (const sc of subcats.slice(0, 10)) {
+      const { items } = await IndentAgentService.getSubcategoryItems(sc.id);
+      items.forEach((it) =>
+        catalogItems.push({
+          ...it,
+          subcat_id: sc.id,
+          subcat_code: sc.code,
+          subcat_name: sc.name,
+          subcat_icon: sc.icon,
+        })
+      );
+    }
+
+    // 2. Query Central Store packaging & disposables
+    const disposables = await db("stock")
+      .where((b) => {
+        b.whereILike("category", "%dispos%")
+          .orWhereILike("category", "%pack%")
+          .orWhereILike("name", "%container%")
+          .orWhereILike("name", "%foil%")
+          .orWhereILike("name", "%box%")
+          .orWhereILike("name", "%bag%")
+          .orWhereILike("name", "%paper%")
+          .orWhereILike("name", "%cling%");
+      })
+      .select("item_code", "name", "unit", "price", "remaining as current_stock")
+      .limit(40);
+
+    // 3. Query Critical shortages and low stock items (current stock <= 10 or <= min_alert_qty)
+    const criticalStock = await db("stock")
+      .where((b) => {
+        b.where("remaining", "<=", 10).orWhereRaw("remaining <= COALESCE(min_alert_qty, 5)");
+      })
+      .select("item_code", "name", "unit", "price", "remaining as current_stock", "min_alert_qty")
+      .orderBy("remaining", "asc")
+      .limit(30);
+
+    // 4. Check active indents today for this department
+    const activeIndent = await db("indents")
+      .whereRaw("UPPER(dept) = ?", [dept])
+      .where("date", today)
+      .orderBy("id", "desc")
+      .first();
+
+    let activeItemsCount = 0;
+    let activeItems = [];
+    if (activeIndent) {
+      activeItems = await db("indent_items").where("indent_id", activeIndent.id);
+      activeItemsCount = activeItems.length;
+    }
+
+    // 5. Query daily recipes relevant to this station
+    const stationRecipes = await db("recipes")
+      .whereRaw("UPPER(category) LIKE ? OR UPPER(name) LIKE ?", [`%${dept}%`, `%${dept}%`])
+      .select("id", "name", "category", "description")
+      .limit(20);
+
+    // Telemetry and response
+    res.json({
+      success: true,
+      dept,
+      today,
+      subcategories: subcats,
+      catalog_items: catalogItems,
+      disposables,
+      critical_items: criticalStock,
+      station_recipes: stationRecipes,
+      active_indent: activeIndent
+        ? {
+            id: activeIndent.id,
+            status: activeIndent.status,
+            date: activeIndent.date,
+            items_count: activeItemsCount,
+            items: activeItems,
+            submitted_at: activeIndent.created_at,
+          }
+        : null,
+      agents: {
+        scout: {
+          name: "Agent Requisition Scout",
+          status: "ONLINE",
+          role: "Depletion & Shortage Radar",
+          items_monitored: catalogItems.length + criticalStock.length,
+          critical_shortages_count: criticalStock.filter((s) => parseFloat(s.current_stock) <= 0).length,
+        },
+        recipe: {
+          name: "Agent Recipe Synthesizer",
+          status: "ONLINE",
+          role: "Portion Scaler & Ingredient Exploder",
+          recipes_count: stationRecipes.length,
+        },
+        guardian: {
+          name: "Agent Disposables Guardian",
+          status: "ONLINE",
+          role: "Central Store Disposables & Bit-Pieces",
+          disposables_count: disposables.length,
+        },
+        dispatcher: {
+          name: "Agent Dispatch Verifier",
+          status: "ONLINE",
+          role: "Zero-Reset & 2-Hour TTL Requisition Dispatcher",
+          active_status: activeIndent ? activeIndent.status.toUpperCase() : "READY_FOR_DRAFT",
+        },
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   list, 
   create, 
@@ -905,6 +1025,8 @@ module.exports = {
   processFulfillment,
   getDisposables,
   exportSingleIndentExcel,
+  getChefRadar,
 };
+
 
 

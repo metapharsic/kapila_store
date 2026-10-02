@@ -1,12 +1,32 @@
 import { useState, useEffect } from "react";
 import { COLORS } from "../../styles/colors";
-import { Clipboard, User, Calendar, Plus, Eye, Play, CheckCircle, XCircle, Info, Download, Trash2, ArrowLeft } from "lucide-react";
+import {
+  Clipboard,
+  User,
+  Calendar,
+  Plus,
+  Eye,
+  Play,
+  CheckCircle,
+  XCircle,
+  Info,
+  Download,
+  FileSpreadsheet,
+  Trash2,
+  ArrowLeft
+} from "lucide-react";
 import Btn from "../../components/Btn";
 import Card from "../../components/Card";
 import Section from "../../components/Section";
 import Pagination from "../../components/Pagination";
 import { useAuth } from "../../context/AuthContext";
-import { getAudits, getAudit, cancelAudit } from "./auditApi";
+import {
+  getAudits,
+  getAudit,
+  cancelAudit,
+  exportAuditExcel,
+  exportAuditCsv
+} from "./auditApi";
 import AuditNewModal from "./AuditNewModal";
 import AuditCountScreen from "./AuditCountScreen";
 import AuditReconcileScreen from "./AuditReconcileScreen";
@@ -27,6 +47,7 @@ export default function AuditScreen() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   // Modals state
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
@@ -87,7 +108,7 @@ export default function AuditScreen() {
         const res = await getAudit(audit.id);
         if (res.success) {
           const items = res.data.items || [];
-          const allCounted = items.length > 0 && items.every(it => it.physical_qty !== null);
+          const allCounted = items.length > 0 && items.every((it) => it.physical_qty !== null);
           setSelectedAuditId(audit.id);
           if (allCounted) {
             setSubView("reconcile");
@@ -131,65 +152,56 @@ export default function AuditScreen() {
     }
   };
 
-  const exportReportToCSV = (auditData) => {
-    if (!auditData || !auditData.items) return;
-    const headers = ["Item Code", "Item Name", "Unit", "DB Qty (Snapshot)", "Physical Qty (Counted)", "Variance", "Reason", "Action Taken", "DB Adjusted"];
-    const rows = auditData.items.map(it => {
-      const dbVal = parseFloat(it.db_qty);
-      const physVal = parseFloat(it.physical_qty || 0);
-      const diff = physVal - dbVal;
-      const discrepancyReason = it.discrepancy_reason || "";
-      const action = it.action || "None";
-      const adjusted = it.db_adjusted ? "Yes" : "No";
+  const handleExcelExport = async (auditItem, e) => {
+    if (e) e.stopPropagation();
+    try {
+      setDownloading(true);
+      await exportAuditExcel(auditItem.id, auditItem.reference);
+    } catch (err) {
+      alert("Failed to export Excel report: " + err.message);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
-      return [
-        `"${it.item_code}"`,
-        `"${it.item_name}"`,
-        `"${it.unit}"`,
-        dbVal.toFixed(2),
-        physVal.toFixed(2),
-        diff.toFixed(2),
-        `"${discrepancyReason.replace(/"/g, '""')}"`,
-        `"${action}"`,
-        `"${adjusted}"`
-      ].join(",");
-    });
-
-    const blob = new Blob([headers.join(",") + "\n" + rows.join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `audit_report_${auditData.reference}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportReportToCSV = async (auditData) => {
+    if (!auditData) return;
+    try {
+      setDownloading(true);
+      await exportAuditCsv(auditData.id, auditData.reference);
+    } catch (err) {
+      alert("Failed to export CSV: " + err.message);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   // --- SUBVIEW: READ-ONLY REPORT VIEW ---
   if (subView === "report" && detailAudit) {
-    const matched = detailAudit.items.filter(it => Math.abs(parseFloat(it.difference || 0)) < 0.0001).length;
-    const adjusted = detailAudit.items.filter(it => it.db_adjusted).length;
-    const flagged = detailAudit.items.filter(it => it.action === "recount" || it.action === "investigate").length;
+    const matched = detailAudit.items.filter((it) => Math.abs(parseFloat(it.difference || 0)) < 0.0001).length;
+    const adjusted = detailAudit.items.filter((it) => it.db_adjusted).length;
+    const flagged = detailAudit.items.filter((it) => it.action === "recount" || it.action === "investigate").length;
 
     return (
-      <Section title={`Audit Report: ${detailAudit.reference}`} sub="Historical inventory reconciliation record">
+      <Section title={`Audit Report: ${detailAudit.reference}`} sub="Historical inventory reconciliation & double-entry record">
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           
           {/* Metadata Cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 20, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, alignItems: "start" }}>
             
             <Card style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <div>
                   <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", display: "block" }}>Auditor</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.text }}>{detailAudit.auditor_name}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>{detailAudit.auditor_name}</span>
                 </div>
                 <div>
                   <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", display: "block" }}>Session Reference</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.text }}>{detailAudit.reference}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.accent, fontFamily: "monospace" }}>{detailAudit.reference}</span>
                 </div>
                 <div>
                   <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", display: "block" }}>Department Scope</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.text }}>{detailAudit.department_id ? detailAudit.department_name : "All Departments (Global)"}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.text }}>{detailAudit.department_id ? detailAudit.department_name : "Central Store (Global)"}</span>
                 </div>
                 <div>
                   <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", display: "block" }}>Date Created</span>
@@ -206,11 +218,11 @@ export default function AuditScreen() {
             </Card>
 
             <Card style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>Resolution Summary</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.accent, textTransform: "uppercase", marginBottom: 4 }}>Resolution Summary</span>
               {[
                 { label: "Status", value: detailAudit.status.toUpperCase(), color: detailAudit.status === "completed" ? COLORS.success : COLORS.muted },
                 { label: "Matched Items", value: matched, color: COLORS.success },
-                { label: "Adjusted in DB", value: adjusted, color: COLORS.brand },
+                { label: "Adjusted in Ledger", value: adjusted, color: COLORS.accent },
                 { label: "Flagged Recount/Investigate", value: flagged, color: COLORS.warning }
               ].map((row) => (
                 <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -224,11 +236,52 @@ export default function AuditScreen() {
 
           {/* Items Report Table */}
           <Card style={{ padding: 0, overflow: "hidden" }}>
-            <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Reconciliation Checklist</span>
-              <Btn small variant="ghost" onClick={() => exportReportToCSV(detailAudit)} icon={<Download size={14} />}>
-                Export to CSV
-              </Btn>
+            <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.accent, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Reconciliation & Ledger Impact Checklist
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => handleExcelExport(detailAudit)}
+                  disabled={downloading}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    borderRadius: 6,
+                    border: `1px solid ${COLORS.border}`,
+                    background: "rgba(255,255,255,0.06)",
+                    color: COLORS.text,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  <FileSpreadsheet size={14} color="#10b981" />
+                  <span>Download Excel</span>
+                </button>
+                <button
+                  onClick={() => exportReportToCSV(detailAudit)}
+                  disabled={downloading}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    borderRadius: 6,
+                    border: `1px solid ${COLORS.border}`,
+                    background: "rgba(255,255,255,0.06)",
+                    color: COLORS.text,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  <Download size={14} />
+                  <span>Export CSV</span>
+                </button>
+              </div>
             </div>
             
             <div className="resp-table-wrap">
@@ -453,15 +506,37 @@ export default function AuditScreen() {
                                 )}
                               </>
                             ) : (
-                              <Btn 
-                                small
-                                variant="ghost"
-                                onClick={(e) => { e.stopPropagation(); handleAuditClick(a); }}
-                                icon={<Eye size={12} />}
-                                style={{ border: `1px solid ${COLORS.border}` }}
-                              >
-                                View Report
-                              </Btn>
+                              <>
+                                <Btn 
+                                  small
+                                  variant="ghost"
+                                  onClick={(e) => { e.stopPropagation(); handleAuditClick(a); }}
+                                  icon={<Eye size={12} />}
+                                  style={{ border: `1px solid ${COLORS.border}` }}
+                                >
+                                  View
+                                </Btn>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleExcelExport(a, e)}
+                                  title="Download Excel Variance Report"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    padding: "4px 8px",
+                                    borderRadius: 6,
+                                    border: `1px solid ${COLORS.border}`,
+                                    background: "rgba(255,255,255,0.04)",
+                                    color: COLORS.text,
+                                    fontSize: 11,
+                                    cursor: "pointer"
+                                  }}
+                                >
+                                  <FileSpreadsheet size={12} color="#10b981" />
+                                  <span>Excel</span>
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>

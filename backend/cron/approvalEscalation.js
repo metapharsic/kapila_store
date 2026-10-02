@@ -29,7 +29,7 @@ async function escalateStaleApprovals() {
       severity: "critical",
       metadata: { module: request.module, resource_id: request.resource_id, request_id: request.id },
     });
-    await db("approval_requests").where({ id: request.id }).update({ escalated_at: db.fn.now() });
+    await db("approval_requests").where({ id: request.id }).update({ escalated_at: db.fn.now(), sla_breached: true });
   }
 
   if (stale.length) {

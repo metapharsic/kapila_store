@@ -202,15 +202,15 @@ export function StockTable({
     );
   };
 
-  // Group items by name for the "Group by Item" view
+  // Group items by item_code (or name) for the "Group by Item" view
   const groupedItems = (() => {
     const map = {};
     items.forEach((b) => {
-      const key = (b.name || "").toLowerCase();
+      const key = (b.item_code || b.name || "").toLowerCase().trim();
       if (!map[key]) {
         map[key] = {
           id: b.id,
-          name: b.name,
+          name: b.name || b.item_code,
           item_code: b.item_code,
           unit: b.unit,
           category: b.category,
@@ -218,12 +218,19 @@ export function StockTable({
           storage_zone: b.storage_zone,
           supplier: b.supplier,
           remaining: 0,
+          totalQty: 0,
           totalCost: 0,
           batchCount: 0,
           batches: [],
         };
       }
+      if (!map[key].name && b.name) map[key].name = b.name;
+      if (!map[key].item_code && b.item_code) map[key].item_code = b.item_code;
+      if (!map[key].category && b.category) map[key].category = b.category;
+      if (!map[key].rack_location && b.rack_location) map[key].rack_location = b.rack_location;
+      if (!map[key].storage_zone && b.storage_zone) map[key].storage_zone = b.storage_zone;
       map[key].remaining   += parseFloat(b.remaining || 0);
+      map[key].totalQty    += parseFloat(b.qty || 0);
       map[key].totalCost   += parseFloat(b.price || 0) * parseFloat(b.qty || 0);
       map[key].batchCount  += 1;
       map[key].batches.push(b);
@@ -279,7 +286,7 @@ export function StockTable({
                       return b.min_alert_qty !== null ? b.remaining > b.min_alert_qty : pct >= 25;
                     });
                     const totalVal = item.batches.reduce((sum, b) => sum + (parseFloat(b.remaining || 0) * (parseFloat(b.price) || 0)), 0);
-                    const avgCost = item.batchCount > 0 ? (item.totalCost / item.batchCount) : 0;
+                    const avgCost = item.totalQty > 0 ? (item.totalCost / item.totalQty) : (item.batches[0]?.price ? parseFloat(item.batches[0].price) : 0);
 
                     return (
                       <Fragment key={idx}>
@@ -349,7 +356,7 @@ export function StockTable({
                             )}
                           </td>
                           <td>
-                            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "var(--bg-modal)", fontWeight: 600 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "var(--text-main)", fontWeight: 600 }}>
                               <MapPin size={13} style={{ color: "#d97706", flexShrink: 0 }} />
                               <span>{item.rack_location || "Main Store"}</span>
                             </div>
@@ -755,7 +762,7 @@ export function StockTable({
                                   transition: "color 0.15s ease"
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.color = "#d97706"}
-                                onMouseLeave={(e) => e.currentTarget.style.color = "var(--bg-modal)"}
+                                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-main)"}
                                 title="Click to view full item dossier"
                               >
                                 {item.name}
@@ -779,7 +786,7 @@ export function StockTable({
                         {/* 3. Rack Loading Positioning */}
                         <td>
                           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--bg-modal)", fontSize: 12.5, fontWeight: 600 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--text-main)", fontSize: 12.5, fontWeight: 600 }}>
                               <MapPin size={13} style={{ color: "#d97706", flexShrink: 0 }} />
                               <span>{item.rack_location || "Unassigned Rack"}</span>
                             </div>
@@ -813,7 +820,7 @@ export function StockTable({
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <Building2 size={13} style={{ color: "#2563eb", flexShrink: 0 }} />
-                            <span style={{ fontSize: 12.5, fontWeight: 600, color: item.supplier ? "var(--bg-modal)" : "var(--text-muted)" }}>
+                            <span style={{ fontSize: 12.5, fontWeight: 600, color: item.supplier ? "var(--text-main)" : "var(--text-muted)" }}>
                               {item.supplier || "Direct Vendor"}
                             </span>
                           </div>
@@ -825,7 +832,7 @@ export function StockTable({
                         </td>
 
                         {/* 6. Unit Cost */}
-                        <td style={{ fontSize: 13, color: "var(--bg-modal)", fontWeight: 600 }}>
+                        <td style={{ fontSize: 13, color: "var(--text-main)", fontWeight: 600 }}>
                           {item.price ? `₹${parseFloat(item.price).toFixed(2)} / ${item.unit}` : "—"}
                         </td>
 

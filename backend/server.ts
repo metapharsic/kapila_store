@@ -253,6 +253,21 @@ cron.schedule('0 6 * * *', () => {
   generateKafkaDigest();
 });
 
+// End-of-Day stock report: full per-item breakdown sent to Admin via
+// WhatsApp digest + Excel. Time is configurable via EOD_REPORT_CRON (5-field
+// cron expression); defaults to 23:30 daily.
+const EOD_REPORT_CRON = process.env.EOD_REPORT_CRON || '30 23 * * *';
+cron.schedule(EOD_REPORT_CRON, async () => {
+  console.log('[CRON] Running End-of-Day stock report...');
+  try {
+    const { runEodReport } = require('./services/eodReportService');
+    const { whatsappResult } = await runEodReport();
+    console.log('[CRON] EOD report complete. WhatsApp sent:', whatsappResult?.sent === true);
+  } catch (e: any) {
+    console.error('[CRON] EOD report failed:', e.message);
+  }
+});
+
 // Escalate approvals stuck pending too long (e.g. store manager unreachable) to Admin
 const escalateStaleApprovals = require('./cron/approvalEscalation');
 cron.schedule('*/30 * * * *', () => {

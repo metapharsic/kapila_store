@@ -500,7 +500,34 @@ export default function ReconciliationScreen() {
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: 11, color: COLORS.coral, marginBottom: 16 }}>⚠ This action is irreversible and directly adjusts warehouse stock.</p>
+            <div style={{ maxHeight: 150, overflowY: "auto", border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "8px 12px", marginBottom: 16, background: COLORS.bg }}>
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: COLORS.muted, margin: "0 0 6px" }}>
+                Agent Veritas — Double-Entry Ledger Impact Preview:
+              </p>
+              {validRows.filter(r => Math.abs(variance(r) || 0) > 0.0001).length === 0 ? (
+                <p style={{ fontSize: 11, color: COLORS.muted, margin: 0 }}>All items match theoretical on-hand balances. Zero ledger adjustments needed.</p>
+              ) : (
+                validRows.filter(r => Math.abs(variance(r) || 0) > 0.0001).map((r, i) => {
+                  const v = variance(r);
+                  const isAdd = v > 0;
+                  return (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, padding: "3px 0", borderBottom: `1px solid ${COLORS.border}22` }}>
+                      <span>
+                        <code style={{ color: isAdd ? COLORS.teal : COLORS.coral, fontSize: 10, fontWeight: 700, marginRight: 6 }}>
+                          {isAdd ? "ADJUSTMENT_ADD" : "ADJUSTMENT_DEDUCT"}
+                        </code>
+                        {r.item?.name}
+                      </span>
+                      <span style={{ fontWeight: 600, color: isAdd ? COLORS.teal : COLORS.coral }}>
+                        {isAdd ? "+" : ""}{v.toFixed(2)} {r.item?.unit} (₹{Math.abs(valImpact(r) || 0).toFixed(2)})
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <p style={{ fontSize: 11, color: COLORS.coral, marginBottom: 16 }}>⚠ This action is irreversible and atomically commits adjustments to the inventory ledger.</p>
             <div style={{ display: "flex", gap: 10 }}>
               <Btn onClick={submit} style={{ flex: 1, background: "#e8a838", color: "#1a1207", fontWeight: 700 }}>✓ Confirm &amp; Apply</Btn>
               <Btn variant="ghost" onClick={() => setShowConfirm(false)} style={{ flex: 1 }}>Cancel</Btn>

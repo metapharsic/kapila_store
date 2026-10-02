@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { COLORS } from "../../../styles/colors";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
 import Card from "../../../components/Card";
+import { ShieldAlert } from "lucide-react";
 import * as api from "../../../api";
 
-export default function ConsumptionAnalytics({ filters, onDepartmentClick }) {
+export default function ConsumptionAnalytics({ filters, onDepartmentClick, isAdmin }) {
   const [productionData, setProductionData] = useState([]);
   const [issuanceData, setIssuanceData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +92,19 @@ export default function ConsumptionAnalytics({ filters, onDepartmentClick }) {
 
   if (loading) {
     return <div style={{ padding: 20, color: COLORS.muted }}>Loading actual consumption data...</div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, color: COLORS.muted, padding: 40 }}>
+        <ShieldAlert size={52} strokeWidth={1} color="#ef4444" />
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#991b1b" }}>Admin Access Required</div>
+        <div style={{ fontSize: 12, textAlign: "center", maxWidth: 340 }}>
+          Consumption cost and yield data is restricted to users with the <strong>Admin</strong> role.<br />
+          Contact your system administrator to request access.
+        </div>
+      </div>
+    );
   }
 
   return (

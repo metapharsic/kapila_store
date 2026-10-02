@@ -191,11 +191,12 @@ export default function PrintGRNModal({ open, onClose, grn }) {
           </div>
 
           {/* Table */}
+          <div style={{ overflowX: "auto", marginBottom: 24 }}>
           <table
             style={{
               width: "100%",
+              minWidth: 640,
               borderCollapse: "collapse",
-              marginBottom: 24,
               fontSize: 11,
             }}
           >
@@ -252,6 +253,7 @@ export default function PrintGRNModal({ open, onClose, grn }) {
               </tr>
             </tfoot>
           </table>
+          </div>
 
           {/* Signatures */}
           <div style={{ marginTop: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>

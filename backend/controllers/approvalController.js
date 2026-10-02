@@ -79,7 +79,35 @@ async function canApprove(userId, request) {
   const smRole = await db("roles").where({ key: "store_manager" }).first();
   const isStoreManager = smRole && roleIds.includes(smRole.id);
   if (request.module === "indents" && isStoreManager) return true;
+  if (request.delegated_to && request.delegated_to === userId) return true;
   return roleIds.includes(rule.role_id);
+}
+
+// Returns the approval_rules row (if any) applicable to a request at its
+// current sequence/amount — used by canApprove, listPending and delegation
+// eligibility checks so they all agree on "who is the approver right now".
+async function getApplicableRule(request) {
+  let amount = 0;
+  if (request.module === "purchase_orders") {
+    const po = await db("purchase_orders").where("id", request.resource_id).first();
+    if (po) amount = parseFloat(po.total_amount || 0);
+  } else if (request.module === "indents") {
+    amount = await calculateIndentAmount(request.resource_id);
+  } else if (request.module === "reconciliations") {
+    const items = await db("stock_adjustments").where("id", request.resource_id).first();
+    amount = parseFloat(items?.adjusted_value || 0);
+  }
+
+  const rule = await db("approval_rules")
+    .where("module", request.module)
+    .where("sequence", request.current_sequence)
+    .andWhere("min_amount", "<=", amount)
+    .andWhere((qb) => {
+      qb.whereNull("max_amount").orWhere("max_amount", ">=", amount);
+    })
+    .first();
+
+  return { rule, amount };
 }
 
 // GET /api/approvals/pending
@@ -119,8 +147,10 @@ async function listPending(req, res, next) {
         })
         .first();
 
-      // If no rule matches, admin, store manager for indents, or user has the role
-      if (!rule || isAdmin || roleIds.includes(rule.role_id) || (reqObj.module === "indents" && isStoreManager)) {
+      const isDelegatedToMe = reqObj.delegated_to && reqObj.delegated_to === userId;
+
+      // If no rule matches, admin, store manager for indents, user has the role, or it was delegated to them
+      if (!rule || isAdmin || roleIds.includes(rule.role_id) || (reqObj.module === "indents" && isStoreManager) || isDelegatedToMe) {
         // Enriched request with resource details
         let resourceDetails = {};
         if (reqObj.module === "purchase_orders") {
@@ -140,8 +170,11 @@ async function listPending(req, res, next) {
           }
         }
 
+        const ageHours = (Date.now() - new Date(reqObj.created_at).getTime()) / 3600000;
+
         filtered.push({
           ...reqObj,
+          age_hours: parseFloat(ageHours.toFixed(2)),
           details: resourceDetails
         });
       }
@@ -255,13 +288,28 @@ async function approveRequest(req, res, next) {
     await db.transaction(async (trx) => {
       if (nextRule) {
         // Multi-stage approval moves to next sequence
-        await trx("approval_requests")
-          .where({ id })
+        const updatedRows = await trx("approval_requests")
+          .where({ id, status: "pending" })
           .update({
             current_sequence: request.current_sequence + 1,
             notes: notes || request.notes,
             updated_at: trx.fn.now()
           });
+        if (!updatedRows) {
+          throw Object.assign(new Error("Request is already processed."), { statusCode: 409 });
+        }
+
+        await trx("audit_logs").insert({
+          actor_user_id: userId,
+          actor_name: req.user.name || req.user.username || null,
+          action: "approval.advance",
+          resource: request.module,
+          resource_id: String(request.resource_id),
+          before: JSON.stringify({ status: "pending", current_sequence: request.current_sequence }),
+          after: JSON.stringify({ status: "pending", current_sequence: request.current_sequence + 1 }),
+          metadata: JSON.stringify({ request_id: id }),
+          created_at: trx.fn.now()
+        });
 
         // Notify next approver role
         await sendNotification({
@@ -274,14 +322,29 @@ async function approveRequest(req, res, next) {
         });
       } else {
         // Fully approved
-        await trx("approval_requests")
-          .where({ id })
+        const updatedRows = await trx("approval_requests")
+          .where({ id, status: "pending" })
           .update({
             status: "approved",
             approved_by: userId,
             notes: notes || request.notes,
             updated_at: trx.fn.now()
           });
+        if (!updatedRows) {
+          throw Object.assign(new Error("Request is already processed."), { statusCode: 409 });
+        }
+
+        await trx("audit_logs").insert({
+          actor_user_id: userId,
+          actor_name: req.user.name || req.user.username || null,
+          action: "approval.approve",
+          resource: request.module,
+          resource_id: String(request.resource_id),
+          before: JSON.stringify({ status: "pending" }),
+          after: JSON.stringify({ status: "approved" }),
+          metadata: JSON.stringify({ request_id: id }),
+          created_at: trx.fn.now()
+        });
 
         // Update target resource status
         if (request.module === "purchase_orders") {
@@ -313,6 +376,9 @@ async function approveRequest(req, res, next) {
 
     res.json({ success: true, message: "Request approved successfully." });
   } catch (err) {
+    if (err.statusCode === 409) {
+      return res.status(409).json({ success: false, error: err.message });
+    }
     next(err);
   }
 }
@@ -333,15 +399,34 @@ async function rejectRequest(req, res, next) {
       return res.status(403).json({ success: false, error: "You are not authorized to reject this request." });
     }
 
+    if (!notes || !String(notes).trim()) {
+      return res.status(400).json({ success: false, error: "A reason is required to reject a request." });
+    }
+
     await db.transaction(async (trx) => {
-      await trx("approval_requests")
-        .where({ id })
+      const updatedRows = await trx("approval_requests")
+        .where({ id, status: "pending" })
         .update({
           status: "rejected",
           rejected_by: userId,
           notes: notes || null,
           updated_at: trx.fn.now()
         });
+      if (!updatedRows) {
+        throw Object.assign(new Error("Request is already processed."), { statusCode: 409 });
+      }
+
+      await trx("audit_logs").insert({
+        actor_user_id: userId,
+        actor_name: req.user.name || req.user.username || null,
+        action: "approval.reject",
+        resource: request.module,
+        resource_id: String(request.resource_id),
+        before: JSON.stringify({ status: "pending" }),
+        after: JSON.stringify({ status: "rejected" }),
+        metadata: JSON.stringify({ request_id: id, reason: notes }),
+        created_at: trx.fn.now()
+      });
 
       // Update target resource status
       if (request.module === "purchase_orders") {
@@ -364,6 +449,265 @@ async function rejectRequest(req, res, next) {
     });
 
     res.json({ success: true, message: "Request rejected successfully." });
+  } catch (err) {
+    if (err.statusCode === 409) {
+      return res.status(409).json({ success: false, error: err.message });
+    }
+    next(err);
+  }
+}
+
+// POST /api/approvals/:id/delegate
+// Lets the current eligible approver hand their pending decision to another
+// user — who must themselves be eligible to approve this request's module
+// at its current sequence (same rule canApprove uses), so delegation can't
+// be used to route around the approval matrix.
+async function delegateRequest(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { toUserId } = req.body;
+    const userId = req.user.id;
+
+    if (!toUserId) {
+      return res.status(400).json({ success: false, error: "toUserId is required." });
+    }
+
+    const request = await db("approval_requests").where({ id }).first();
+    if (!request) return res.status(404).json({ success: false, error: "Approval request not found." });
+    if (request.status !== "pending") return res.status(400).json({ success: false, error: "Request is already processed." });
+
+    const allowed = await canApprove(userId, request);
+    if (!allowed) {
+      return res.status(403).json({ success: false, error: "You are not authorized to delegate this request." });
+    }
+
+    const targetUser = await db("users").where({ id: toUserId }).first();
+    if (!targetUser) return res.status(404).json({ success: false, error: "Target user not found." });
+
+    const targetRoles = await db("user_roles").where("user_id", toUserId).select("role_id");
+    const targetRoleIds = targetRoles.map((r) => r.role_id);
+
+    const adminRole = await db("roles").where({ key: "admin" }).first();
+    const isTargetAdmin = adminRole && targetRoleIds.includes(adminRole.id);
+
+    const smRole = await db("roles").where({ key: "store_manager" }).first();
+    const isTargetStoreManager = smRole && targetRoleIds.includes(smRole.id);
+
+    const { rule } = await getApplicableRule(request);
+    const isTargetEligible = isTargetAdmin
+      || (!rule)
+      || (rule && targetRoleIds.includes(rule.role_id))
+      || (request.module === "indents" && isTargetStoreManager);
+
+    if (!isTargetEligible) {
+      return res.status(400).json({ success: false, error: "Target user does not hold an approval-eligible role for this request." });
+    }
+
+    await db.transaction(async (trx) => {
+      const updatedRows = await trx("approval_requests")
+        .where({ id, status: "pending" })
+        .update({
+          delegated_to: toUserId,
+          delegated_by: userId,
+          delegated_at: trx.fn.now(),
+          updated_at: trx.fn.now()
+        });
+      if (!updatedRows) {
+        throw Object.assign(new Error("Request is already processed."), { statusCode: 409 });
+      }
+
+      await trx("audit_logs").insert({
+        actor_user_id: userId,
+        actor_name: req.user.name || req.user.username || null,
+        action: "approval.delegate",
+        resource: request.module,
+        resource_id: String(request.resource_id),
+        before: JSON.stringify({ delegated_to: request.delegated_to || null }),
+        after: JSON.stringify({ delegated_to: toUserId }),
+        metadata: JSON.stringify({ request_id: id, delegated_by: userId }),
+        created_at: trx.fn.now()
+      });
+
+      await sendNotification({
+        recipient_user_id: toUserId,
+        title: "Approval Delegated To You",
+        message: `${request.module} request (ID: ${request.resource_id}) was delegated to you for approval.`,
+        type: "approval_pending",
+        severity: "info",
+        metadata: { module: request.module, resource_id: request.resource_id, request_id: id }
+      });
+    });
+
+    res.json({ success: true, message: "Request delegated successfully." });
+  } catch (err) {
+    if (err.statusCode === 409) {
+      return res.status(409).json({ success: false, error: err.message });
+    }
+    next(err);
+  }
+}
+
+// POST /api/approvals/bulk-action
+// body: { ids: [...], action: "approve"|"reject", reason? }
+// Applies the single-item approve/reject effect to each id in one
+// transaction, auditing every item, and never partially commits.
+async function bulkAction(req, res, next) {
+  try {
+    const { ids, action, reason } = req.body;
+    const userId = req.user.id;
+
+    if (!Array.isArray(ids) || !ids.length) {
+      return res.status(400).json({ success: false, error: "ids must be a non-empty array." });
+    }
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({ success: false, error: "action must be 'approve' or 'reject'." });
+    }
+    if (action === "reject" && (!reason || !String(reason).trim())) {
+      return res.status(400).json({ success: false, error: "A reason is required to reject requests." });
+    }
+
+    const results = { succeeded: [], failed: [] };
+
+    await db.transaction(async (trx) => {
+      for (const id of ids) {
+        const request = await trx("approval_requests").where({ id }).first();
+        if (!request) {
+          results.failed.push({ id, error: "Not found." });
+          continue;
+        }
+        if (request.status !== "pending") {
+          results.failed.push({ id, error: "Already processed." });
+          continue;
+        }
+
+        const allowed = await canApprove(userId, request);
+        if (!allowed) {
+          results.failed.push({ id, error: "Not authorized." });
+          continue;
+        }
+
+        if (action === "approve") {
+          const { rule: nextRule } = await getApplicableRule({ ...request, current_sequence: request.current_sequence + 1 });
+
+          if (nextRule) {
+            await trx("approval_requests")
+              .where({ id, status: "pending" })
+              .update({
+                current_sequence: request.current_sequence + 1,
+                notes: reason || request.notes,
+                updated_at: trx.fn.now()
+              });
+
+            await sendNotification({
+              recipient_role_id: nextRule.role_id,
+              title: "Approval Needed (Stage " + (request.current_sequence + 1) + ")",
+              message: `Approval request for ${request.module} (ID: ${request.resource_id}) has passed initial stage and requires your approval.`,
+              type: "approval_pending",
+              severity: "info",
+              metadata: { module: request.module, resource_id: request.resource_id, request_id: id }
+            });
+
+            await trx("audit_logs").insert({
+              actor_user_id: userId,
+              actor_name: req.user.name || req.user.username || null,
+              action: "approval.bulk_advance",
+              resource: request.module,
+              resource_id: String(request.resource_id),
+              before: JSON.stringify({ status: "pending", current_sequence: request.current_sequence }),
+              after: JSON.stringify({ status: "pending", current_sequence: request.current_sequence + 1 }),
+              metadata: JSON.stringify({ request_id: id, bulk_ids: ids }),
+              created_at: trx.fn.now()
+            });
+          } else {
+            await trx("approval_requests")
+              .where({ id, status: "pending" })
+              .update({
+                status: "approved",
+                approved_by: userId,
+                notes: reason || request.notes,
+                updated_at: trx.fn.now()
+              });
+
+            if (request.module === "purchase_orders") {
+              await trx("purchase_orders").where("id", request.resource_id).update({ status: "Approved" });
+            } else if (request.module === "indents") {
+              await trx("indents").where("id", request.resource_id).update({ status: "approved" });
+            } else if (request.module === "transfers") {
+              await trx("stock_transfers").where("id", request.resource_id).update({ status: "Approved" });
+            } else if (request.module === "reconciliations") {
+              await trx("stock_adjustments").where("id", request.resource_id).update({ status: "approved" }).catch(() => {});
+            }
+
+            await sendNotification({
+              recipient_user_id: request.created_by,
+              title: "Request Approved",
+              message: `Your ${request.module} request (ID: ${request.resource_id}) has been fully approved.`,
+              type: "approval_action",
+              severity: "success",
+              metadata: { module: request.module, resource_id: request.resource_id }
+            });
+
+            await trx("audit_logs").insert({
+              actor_user_id: userId,
+              actor_name: req.user.name || req.user.username || null,
+              action: "approval.bulk_approve",
+              resource: request.module,
+              resource_id: String(request.resource_id),
+              before: JSON.stringify({ status: "pending" }),
+              after: JSON.stringify({ status: "approved" }),
+              metadata: JSON.stringify({ request_id: id, bulk_ids: ids }),
+              created_at: trx.fn.now()
+            });
+
+            if (request.module === "indents") {
+              setImmediate(() => autoIssueFromIndent(request.resource_id).catch(() => {}));
+            }
+          }
+        } else {
+          await trx("approval_requests")
+            .where({ id, status: "pending" })
+            .update({
+              status: "rejected",
+              rejected_by: userId,
+              notes: reason,
+              updated_at: trx.fn.now()
+            });
+
+          if (request.module === "purchase_orders") {
+            await trx("purchase_orders").where("id", request.resource_id).update({ status: "Rejected" });
+          } else if (request.module === "indents") {
+            await trx("indents").where("id", request.resource_id).update({ status: "cancelled" });
+          } else if (request.module === "transfers") {
+            await trx("stock_transfers").where("id", request.resource_id).update({ status: "Rejected" });
+          }
+
+          await sendNotification({
+            recipient_user_id: request.created_by,
+            title: "Request Rejected",
+            message: `Your ${request.module} request (ID: ${request.resource_id}) has been rejected. Reason: ${reason}`,
+            type: "approval_action",
+            severity: "critical",
+            metadata: { module: request.module, resource_id: request.resource_id }
+          });
+
+          await trx("audit_logs").insert({
+            actor_user_id: userId,
+            actor_name: req.user.name || req.user.username || null,
+            action: "approval.bulk_reject",
+            resource: request.module,
+            resource_id: String(request.resource_id),
+            before: JSON.stringify({ status: "pending" }),
+            after: JSON.stringify({ status: "rejected" }),
+            metadata: JSON.stringify({ request_id: id, reason, bulk_ids: ids }),
+            created_at: trx.fn.now()
+          });
+        }
+
+        results.succeeded.push(id);
+      }
+    });
+
+    res.json({ success: true, data: results });
   } catch (err) {
     next(err);
   }
@@ -576,6 +920,8 @@ module.exports = {
   removeRule,
   approveRequest,
   rejectRequest,
+  delegateRequest,
+  bulkAction,
   createApprovalRequest,
   whatsappWebhook
 };

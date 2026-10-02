@@ -76,6 +76,7 @@ Write-Host "  [Agent 3: Stash Guard] " -ForegroundColor Cyan -NoNewline; Write-H
 Write-Host "  [Agent 4: UI/UX Engine]" -ForegroundColor Cyan -NoNewline; Write-Host "Incoming Commits & Affected Files Dashboard" -ForegroundColor White
 Write-Host "  [Agent 5: Core Sync]   " -ForegroundColor Cyan -NoNewline; Write-Host "Safe Fetch & Non-Destructive Pull" -ForegroundColor White
 Write-Host "  [Agent 6: DevOps & QA] " -ForegroundColor Cyan -NoNewline; Write-Host "Post-Pull Dependency & Migration Alerts" -ForegroundColor White
+Write-Host "  [Agent 7: Patcher]     " -ForegroundColor Cyan -NoNewline; Write-Host "Post-Pull Patch Bundle & Service Restart" -ForegroundColor White
 Write-Host "  ------------------------------------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
@@ -277,6 +278,10 @@ Write-Host ""
 # 5. Execute Pull (Agent 5: Safe Sync)
 Write-Step "Agent 5" "Pulling updates into local branch '$Branch'..."
 
+# Capture current HEAD before pull so we can show rollback command
+$BEFORE_HASH = (git rev-parse HEAD 2>$null)
+$BEFORE_SHORT = (git rev-parse --short HEAD 2>$null)
+
 $pullCmd = @("pull", $Remote, $Branch)
 if ($Rebase) {
     $pullCmd += "--rebase"
@@ -287,6 +292,7 @@ if ($Rebase) {
 
 & git @pullCmd
 $pullExitCode = $LASTEXITCODE
+
 
 if ($pullExitCode -ne 0) {
     Write-Err "Pull encountered conflicts or failed to merge."
@@ -329,7 +335,30 @@ if ($depsChanged) {
     Write-Host "    package.json or package-lock.json was updated in this pull." -ForegroundColor Yellow
     Write-Host "    Recommended action:" -ForegroundColor White
     Write-Host "      cd frontend && npm install" -ForegroundColor Cyan
-    Write-Host "      cd backend && npm install" -ForegroundColor Cyan
+    Write-Host "      cd backend  && npm install" -ForegroundColor Cyan
+    Write-Host ""
+    if (-not $NoPrompt -and -not [Console]::IsInputRedirected) {
+        $runNpm = Read-Host "  Run npm install in frontend and backend now? [Y/n] (default Y)"
+        if (-not $runNpm -or $runNpm -match "^[Yy]") {
+            Write-Step "Agent 6" "Running npm install in frontend..."
+            $frontendDir = Join-Path $repoRoot "frontend"
+            if (Test-Path $frontendDir) {
+                Push-Location $frontendDir
+                npm install
+                Pop-Location
+                Write-Success "Frontend npm install complete."
+            } else { Write-Warn "frontend\ directory not found, skipping." }
+
+            Write-Step "Agent 6" "Running npm install in backend..."
+            $backendDir = Join-Path $repoRoot "backend"
+            if (Test-Path $backendDir) {
+                Push-Location $backendDir
+                npm install
+                Pop-Location
+                Write-Success "Backend npm install complete."
+            } else { Write-Warn "backend\ directory not found, skipping." }
+        }
+    }
 }
 
 if ($migrationsChanged) {
@@ -338,20 +367,72 @@ if ($migrationsChanged) {
     Write-Host "    New database schema or migration files were pulled." -ForegroundColor Yellow
     Write-Host "    Recommended action:" -ForegroundColor White
     Write-Host "      cd backend && npx knex migrate:latest" -ForegroundColor Cyan
+    Write-Host ""
+    if (-not $NoPrompt -and -not [Console]::IsInputRedirected) {
+        $runMig = Read-Host "  Run 'npx knex migrate:latest' in backend now? [Y/n] (default Y)"
+        if (-not $runMig -or $runMig -match "^[Yy]") {
+            Write-Step "Agent 6" "Running database migrations..."
+            $backendDir = Join-Path $repoRoot "backend"
+            if (Test-Path $backendDir) {
+                Push-Location $backendDir
+                npx knex migrate:latest
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Success "Database migrations completed successfully."
+                } else {
+                    Write-Warn "Migration command returned errors. Review the output above."
+                }
+                Pop-Location
+            } else { Write-Warn "backend\ directory not found, skipping migration." }
+        }
+    }
 }
 
 if ($envChanged) {
     $actionsNeeded = $true
     Write-Warn "ENVIRONMENT TEMPLATE (.env.example) UPDATED!"
     Write-Host "    Review any new configuration variables required for Kapila IMS." -ForegroundColor Yellow
+    Write-Host "    Compare .env.example to your active .env files and add missing keys." -ForegroundColor White
 }
 
 if (-not $actionsNeeded) {
     Write-Success "All files merged smoothly. No dependency or database migrations required."
 }
 
+# Rollback reference
 Write-Host ""
-$currentCommit = (git rev-parse --short HEAD 2>$null)
-Write-Success "Local repository is now at commit: $currentCommit"
+$currentShort = (git rev-parse --short HEAD 2>$null)
+Write-Success "Local repository is now at commit: $currentShort"
 Write-Host ""
+Write-Host "  ROLLBACK (if pull introduced issues):" -ForegroundColor DarkGray
+Write-Host "    git reset --hard <previous-SHA>" -ForegroundColor Yellow
+if ($BEFORE_HASH) {
+    Write-Host "    e.g. git reset --hard $BEFORE_HASH" -ForegroundColor Yellow
+}
+
+# Agent 7: Service Restart Offer
+Write-Host ""
+Write-Step "Agent 7" "Checking service restart options..."
+$restartScript = Join-Path $repoRoot "Stop Kapila.bat"
+$startScript   = Join-Path $repoRoot "Start Kapila.bat"
+if ((Test-Path $restartScript) -and (Test-Path $startScript)) {
+    Write-Host ""
+    if (-not $NoPrompt -and -not [Console]::IsInputRedirected) {
+        $restartAnswer = Read-Host "  Restart Kapila services now to apply pulled changes? [Y/n] (default N)"
+        if ($restartAnswer -match "^[Yy]") {
+            Write-Step "Agent 7" "Stopping Kapila services..."
+            Start-Process -FilePath $restartScript -Wait -WindowStyle Normal
+            Start-Sleep -Seconds 2
+            Write-Step "Agent 7" "Starting Kapila services..."
+            Start-Process -FilePath $startScript -WindowStyle Normal
+            Write-Success "Kapila services restarted with latest pulled code."
+        } else {
+            Write-Host "  Services not restarted. Run 'Start Kapila.bat' manually when ready." -ForegroundColor Gray
+        }
+    }
+} else {
+    Write-Host "  (Start Kapila.bat / Stop Kapila.bat not found — restart manually if needed)" -ForegroundColor DarkGray
+}
+
+Write-Host ""
+Write-Host "All agent operations completed." -ForegroundColor DarkGray
 Wait-Prompt "Press Enter to finish"

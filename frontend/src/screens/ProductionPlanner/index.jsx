@@ -17,7 +17,27 @@ import { useAuth } from "../../context/AuthContext";
 import { today } from "../../utils/dates";
 import ProductionAgentStatusBar from "../../components/agents/ProductionAgentStatusBar";
 
-const CATEGORIES = ["Starter", "Main Course", "Dessert", "Beverage"];
+const CANONICAL_CATEGORIES = [
+  "All",
+  "Biryani",
+  "Burger Sandwich",
+  "Chaat",
+  "Chinese Starters Dry",
+  "Faluda Softy Dessert",
+  "Filled Dosa",
+  "Fried Rice Noodles",
+  "Garlic Bread Fries",
+  "Idly/Vada/Dosa Breakfast",
+  "Meals Thali",
+  "Mocktails",
+  "Momos",
+  "Non-Veg Curry Gravy",
+  "Pasta",
+  "Pizza",
+  "Roti/Naan/Paratha"
+];
+
+const CATEGORIES = CANONICAL_CATEGORIES.filter(c => c !== "All");
 
 const blankIngredient = () => ({
   item_name: "",
@@ -47,6 +67,8 @@ export default function ProductionPlannerScreen() {
   const { roles } = useAuth();
   const isChef = roles.some((r) => r.key === "chef");
   const [activeTab, setActiveTab] = useState("library"); // "library", "planning", "outcomes", "analytics"
+  const [recipeCategoryFilter, setRecipeCategoryFilter] = useState("All");
+  const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
   
   // Recipe Library states
   const [recipesList, setRecipesList] = useState([]);
@@ -124,6 +146,26 @@ export default function ProductionPlannerScreen() {
     setSuccessMsg(msg);
     setTimeout(() => setSuccessMsg(""), 3000);
   };
+
+  const filteredRecipesList = useMemo(() => {
+    return recipesList.filter((r) => {
+      const cat = r.category || "Main Course";
+      let matchesCat = recipeCategoryFilter === "All";
+      if (!matchesCat) {
+        if (recipeCategoryFilter === "Faluda Softy Dessert") {
+          matchesCat = cat === "Faluda Softy Dessert" || cat === "Thick Milk Shakes";
+        } else if (recipeCategoryFilter === "Chinese Starters Dry") {
+          matchesCat = cat === "Chinese Starters Dry" || cat === "Soup";
+        } else if (recipeCategoryFilter === "Non-Veg Curry Gravy") {
+          matchesCat = cat === "Non-Veg Curry Gravy" || cat === "Veg Curry Gravy";
+        } else {
+          matchesCat = cat.toLowerCase() === recipeCategoryFilter.toLowerCase();
+        }
+      }
+      const matchesSearch = !recipeSearchQuery || r.name.toLowerCase().includes(recipeSearchQuery.toLowerCase());
+      return matchesCat && matchesSearch;
+    });
+  }, [recipesList, recipeCategoryFilter, recipeSearchQuery]);
 
   // Recipe Modal actions
   const openCreateRecipe = () => {
@@ -332,6 +374,7 @@ export default function ProductionPlannerScreen() {
     if (!recipe) return;
     const dept = plan.dept || selectedDept;
     const draft = {
+      timestamp: Date.now(),
       plannedRecipes: [{ recipe, plates: plan.planned_plates }],
       selectedItems: {},
       quantities: {},
@@ -353,7 +396,7 @@ export default function ProductionPlannerScreen() {
       })
       .filter(Boolean);
     if (!plannedRecipes.length) return;
-    const draft = { plannedRecipes, selectedItems: {}, quantities: {} };
+    const draft = { timestamp: Date.now(), plannedRecipes, selectedItems: {}, quantities: {} };
     localStorage.setItem(`kapila_smart_indent_draft_${dept}`, JSON.stringify(draft));
     setIndentSmartPreFill({ dept, date: scheduleFilterDate });
     setCurrentScreen("indent");
@@ -563,13 +606,102 @@ export default function ProductionPlannerScreen() {
             </Btn>
             
             <Card style={{ padding: 12 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: COLORS.muted, marginBottom: 12 }}>Recipe Library ({recipesList.length})</p>
-              
-              {recipesList.length === 0 ? (
-                <p style={{ color: COLORS.muted, padding: "20px 0", textAlign: "center", fontSize: 13 }}>No recipes saved yet.</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: COLORS.muted, margin: 0 }}>
+                  Recipe Library ({filteredRecipesList.length} dish{filteredRecipesList.length === 1 ? "" : "es"})
+                </p>
+                {recipeCategoryFilter !== "All" && (
+                  <button
+                    onClick={() => setRecipeCategoryFilter("All")}
+                    style={{ background: "none", border: "none", color: COLORS.accent, fontSize: 11, cursor: "pointer", fontWeight: 600 }}
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+
+              {/* 17 Canonical Recipe Categories Pills */}
+              <div style={{
+                display: "flex",
+                gap: 6,
+                overflowX: "auto",
+                paddingBottom: 8,
+                marginBottom: 10,
+                scrollbarWidth: "thin"
+              }}>
+                {CANONICAL_CATEGORIES.map((cat) => {
+                  const isActive = recipeCategoryFilter === cat;
+                  const count = cat === "All"
+                    ? recipesList.length
+                    : recipesList.filter(r => {
+                        const c = r.category || "";
+                        if (cat === "Faluda Softy Dessert") return c === "Faluda Softy Dessert" || c === "Thick Milk Shakes";
+                        if (cat === "Chinese Starters Dry") return c === "Chinese Starters Dry" || c === "Soup";
+                        if (cat === "Non-Veg Curry Gravy") return c === "Non-Veg Curry Gravy" || c === "Veg Curry Gravy";
+                        return c.toLowerCase() === cat.toLowerCase();
+                      }).length;
+
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setRecipeCategoryFilter(cat)}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: 6,
+                        border: `1px solid ${isActive ? COLORS.accent : COLORS.border}`,
+                        background: isActive ? "rgba(232, 168, 56, 0.2)" : COLORS.bg,
+                        color: isActive ? COLORS.accent : COLORS.text,
+                        fontSize: 11,
+                        fontWeight: isActive ? 700 : 500,
+                        whiteSpace: "nowrap",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4
+                      }}
+                    >
+                      <span>{cat}</span>
+                      <span style={{
+                        fontSize: 9.5,
+                        background: isActive ? COLORS.accent : "rgba(148, 163, 184, 0.2)",
+                        color: isActive ? "#161922" : COLORS.muted,
+                        padding: "1px 4px",
+                        borderRadius: 4,
+                        fontWeight: 700
+                      }}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Search input */}
+              <input
+                type="text"
+                placeholder="Search 232+ kitchen recipes..."
+                value={recipeSearchQuery}
+                onChange={(e) => setRecipeSearchQuery(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "7px 10px",
+                  fontSize: 12,
+                  background: COLORS.bg,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 6,
+                  color: COLORS.text,
+                  marginBottom: 10
+                }}
+              />
+
+              {filteredRecipesList.length === 0 ? (
+                <p style={{ color: COLORS.muted, padding: "20px 0", textAlign: "center", fontSize: 13 }}>
+                  No recipes found matching "{recipeCategoryFilter}".
+                </p>
               ) : (
                 <div className="recipe-list">
-                  {recipesList.map((r) => (
+                  {filteredRecipesList.map((r) => (
                     <div 
                       key={r.id}
                       onClick={() => setSelectedRecipe(r)}
@@ -682,10 +814,24 @@ export default function ProductionPlannerScreen() {
                       if (rec) setPlanningRecipe(rec);
                     }}
                   >
-                    <option value="" disabled>-- Select Recipe --</option>
-                    {recipesList.map((r) => (
-                      <option key={r.id} value={r.id}>{r.name} ({r.category})</option>
-                    ))}
+                    <option value="" disabled>-- Select Recipe ({recipesList.length} total) --</option>
+                    {CANONICAL_CATEGORIES.filter(c => c !== "All").map((cat) => {
+                      const catRecipes = recipesList.filter(r => {
+                        const c = r.category || "";
+                        if (cat === "Faluda Softy Dessert") return c === "Faluda Softy Dessert" || c === "Thick Milk Shakes";
+                        if (cat === "Chinese Starters Dry") return c === "Chinese Starters Dry" || c === "Soup";
+                        if (cat === "Non-Veg Curry Gravy") return c === "Non-Veg Curry Gravy" || c === "Veg Curry Gravy";
+                        return c.toLowerCase() === cat.toLowerCase();
+                      });
+                      if (catRecipes.length === 0) return null;
+                      return (
+                        <optgroup key={cat} label={`${cat} (${catRecipes.length})`}>
+                          {catRecipes.map((r) => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
                   </Select>
                   <p style={{ color: COLORS.muted, fontSize: 12, margin: 0 }}>
                     Or browse recipes in the <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab("library"); }} style={{ color: COLORS.brand, textDecoration: "underline" }}>Recipe Library</a>.

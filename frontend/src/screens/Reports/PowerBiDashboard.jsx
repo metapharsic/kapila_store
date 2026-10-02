@@ -1,175 +1,369 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback, useReducer } from "react";
 import { useAppContext } from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
 import { COLORS } from "../../styles/colors";
-import { BarChart2, ShoppingBag, ArrowUpRight, TrendingUp, Filter, Download, FileSpreadsheet } from "lucide-react";
-import { useBreakpoint } from "../../styles/responsive";
+import { authedGet, authedDownload } from "../../api/client";
+import {
+  BarChart2, Package, Building2, ClipboardList,
+  Grid, Shield, ShoppingBag, TrendingUp, ArrowUpRight,
+  FileSpreadsheet, RefreshCw, Sparkles, CalendarCheck,
+  CheckCircle2, XCircle
+} from "lucide-react";
 
-import SpendAnalytics from "./components/SpendAnalytics";
-import ConsumptionAnalytics from "./components/ConsumptionAnalytics";
-import VarianceAnalytics from "./components/VarianceAnalytics";
-import ExportReportModal from "../../components/ExportReportModal";
+import AgentStatusBar          from "./components/AgentStatusBar";
+import CrossModuleIntelligence from "./components/CrossModuleIntelligence";
+import ItemIntelligence        from "./components/ItemIntelligence";
+import VendorProfile360        from "./components/VendorProfile360";
+import IndentTrace             from "./components/IndentTrace";
+import CategoryDishLens        from "./components/CategoryDishLens";
+import AdminControlPanel       from "./components/AdminControlPanel";
+import SpendAnalytics          from "./components/SpendAnalytics";
+import ConsumptionAnalytics     from "./components/ConsumptionAnalytics";
+import VarianceAnalytics       from "./components/VarianceAnalytics";
+import ExportReportModal       from "../../components/ExportReportModal";
+
+// ── Initial 9-agent state ──────────────────────────────────────────────────────
+const INITIAL_AGENTS = {
+  sentinel: { status: "idle" },
+  scout:    { status: "idle" },
+  tracer:   { status: "idle" },
+  ledger:   { status: "idle" },
+  pogrn:    { status: "idle" },
+  indent:   { status: "idle" },
+  analyst:  { status: "idle" },
+  veritas:  { status: "idle" },
+  composer: { status: "idle" },
+};
+
+function agentReducer(state, action) {
+  // action = { agentId, update: { status, count, ms, error } }
+  return { ...state, [action.agentId]: { ...state[action.agentId], ...action.update } };
+}
+
+// ── Tab definitions ────────────────────────────────────────────────────────────
+const TABS = [
+  { id: "intel",    label: "Intelligence Hub",   icon: <Sparkles size={14} />,      adminOnly: false },
+  { id: "item",     label: "Item Intelligence",  icon: <Package size={14} />,       adminOnly: false },
+  { id: "vendor",   label: "Vendor 360°",         icon: <Building2 size={14} />,     adminOnly: false },
+  { id: "indent",   label: "Indent Trace",        icon: <ClipboardList size={14} />, adminOnly: false },
+  { id: "category", label: "Category Lens",       icon: <Grid size={14} />,          adminOnly: false },
+  { id: "admin",    label: "Admin Console",       icon: <Shield size={14} />,        adminOnly: true  },
+  { id: "spend",    label: "Procurement & Spend", icon: <ShoppingBag size={14} />,   adminOnly: false },
+  { id: "yield",    label: "Consumption Yield",   icon: <TrendingUp size={14} />,    adminOnly: false },
+  { id: "variance", label: "Variance & Anomaly",  icon: <ArrowUpRight size={14} />,  adminOnly: false },
+];
 
 export default function PowerBiDashboard() {
-  const { stocks } = useAppContext();
-  const { isMobile } = useBreakpoint();
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  
-  // Cross-filtering States
-  const [activeLens, setActiveLens] = useState("procurement");
-  const [globalSupplier, setGlobalSupplier] = useState("");
+  const { stocks, currentUser } = useAppContext();
+  const { hasPermission } = useAuth();
+  const isAdmin = !!(
+    currentUser?.isAdmin ||
+    currentUser?.roles?.some?.(r => ["admin"].includes(r.key || r))
+  );
+  const canRunEod = hasPermission?.("reports.eod_run");
+
+  const [activeTab, setActiveTab]         = useState("intel");
+  const [agents, dispatch]                = useReducer(agentReducer, INITIAL_AGENTS);
+  const [dimensions, setDimensions]       = useState(null);
+  const [dimLoading, setDimLoading]       = useState(false);
+  const [isExportOpen, setIsExportOpen]   = useState(false);
+
+  // EOD report run state
+  const [eodRunning, setEodRunning]       = useState(false);
+  const [eodResult, setEodResult]         = useState(null); // { ok, whatsappSent, message }
+
+  // Deep-linking navigation states across tabs
+  const [deepItemCode, setDeepItemCode]     = useState(null);
+  const [deepSupplierId, setDeepSupplierId] = useState(null);
+
+  // Legacy BI Studio filters
+  const [globalSupplier, setGlobalSupplier]     = useState("");
   const [globalDepartment, setGlobalDepartment] = useState("");
-  const [dateRange, setDateRange] = useState("ytd"); // 'mtd', 'ytd', 'custom'
+  const [dateRange, setDateRange]               = useState("ytd");
 
-  // Extract dimensions for Slicers
-  const uniqueSuppliers = useMemo(() => Array.from(new Set(stocks.map(s => s.supplier).filter(Boolean))), [stocks]);
-  
-  // For MVP, using hardcoded departments to match the spec
-  const departments = ["TIFFINS", "STAFF", "SI-MEALS", "NORTH INDIAN", "CHAT & SOFTY", "CHINESE & DOSA", "MOCKTAILS & CONTINENTAL", "RESTAURANT", "ROOM SERVICE"];
+  // Update agent state from child components (no DOM mutation)
+  const updateAgent = useCallback((agentId, update) => {
+    dispatch({ agentId, update });
+  }, []);
 
-  const renderActiveLens = () => {
-    const filters = { globalSupplier, globalDepartment, dateRange };
-    switch (activeLens) {
-      case "procurement":
-        return <SpendAnalytics filters={filters} onSupplierClick={setGlobalSupplier} />;
+  // Pre-load admin dimensions (items, vendors, indents) once
+  useEffect(() => {
+    setDimLoading(true);
+    updateAgent("scout", { status: "running" });
+    authedGet("/api/reports/admin-dimensions")
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          setDimensions(res.data);
+          updateAgent("scout", { status: "done", count: (res.data.items?.length || 0) + (res.data.vendors?.length || 0) });
+        } else {
+          updateAgent("scout", { status: "error", error: res.error });
+        }
+      })
+      .catch(e => updateAgent("scout", { status: "error", error: e.message }))
+      .finally(() => setDimLoading(false));
+  }, []);
+
+  // Reset agent states when tab changes
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    dispatch({ agentId: "tracer",  update: { status: "idle" } });
+    dispatch({ agentId: "ledger",  update: { status: "idle" } });
+    dispatch({ agentId: "pogrn",   update: { status: "idle" } });
+    dispatch({ agentId: "indent",  update: { status: "idle" } });
+    dispatch({ agentId: "analyst", update: { status: "idle" } });
+    dispatch({ agentId: "veritas", update: { status: "idle" } });
+    dispatch({ agentId: "composer",update: { status: "idle" } });
+    dispatch({ agentId: "sentinel",update: { status: isAdmin ? "done" : "idle" } });
+  };
+
+  const handleNavigateItem = (itemCode) => {
+    setDeepItemCode(itemCode);
+    handleTabChange("item");
+  };
+
+  const handleNavigateVendor = (supplierId) => {
+    setDeepSupplierId(supplierId);
+    handleTabChange("vendor");
+  };
+
+  // Run the End-of-Day report: hits POST /api/reports/eod/run, which streams back an
+  // Excel workbook and sets X-EOD-Whatsapp-Sent to say whether the WhatsApp digest fired.
+  const handleRunEodReport = async () => {
+    setEodRunning(true);
+    setEodResult(null);
+    try {
+      const res = await authedDownload("/api/reports/eod/run", { method: "POST" });
+      if (!res.ok) {
+        let errMsg = `Failed to run EOD report (HTTP ${res.status})`;
+        try {
+          const text = await res.text();
+          try {
+            const json = JSON.parse(text);
+            errMsg = json.error || json.message || errMsg;
+          } catch {
+            // not JSON — ignore, keep default message
+          }
+        } catch {
+          // ignore
+        }
+        if (res.status === 403) errMsg = "Permission denied: you don't have access to run the EOD report.";
+        setEodResult({ ok: false, message: errMsg });
+        return;
+      }
+
+      const whatsappSent = res.headers.get("X-EOD-Whatsapp-Sent") === "true";
+      const blob = await res.blob();
+      const today = new Date().toISOString().slice(0, 10);
+      const filename = `EOD_Report_${today}.xlsx`;
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+
+      setEodResult({
+        ok: true,
+        whatsappSent,
+        message: whatsappSent
+          ? "Excel downloaded. WhatsApp digest: SENT"
+          : "Excel downloaded. WhatsApp digest: NOT SENT (check WhatsApp credentials in backend .env)",
+      });
+    } catch (e) {
+      setEodResult({ ok: false, message: e.message || "Failed to run EOD report." });
+    } finally {
+      setEodRunning(false);
+    }
+  };
+
+  const visibleTabs = TABS.filter(t => !t.adminOnly || isAdmin);
+
+  const renderContent = () => {
+    const legacyFilters = { globalSupplier, globalDepartment, dateRange };
+    switch (activeTab) {
+      case "intel":
+        return (
+          <CrossModuleIntelligence
+            onAgentUpdate={updateAgent}
+            onNavigateItem={handleNavigateItem}
+            onNavigateVendor={handleNavigateVendor}
+          />
+        );
+      case "item":
+        return (
+          <ItemIntelligence
+            onAgentUpdate={updateAgent}
+            initialItemCode={deepItemCode}
+          />
+        );
+      case "vendor":
+        return (
+          <VendorProfile360
+            dimensions={dimensions}
+            onAgentUpdate={updateAgent}
+            initialSupplierId={deepSupplierId}
+          />
+        );
+      case "indent":
+        return <IndentTrace dimensions={dimensions} onAgentUpdate={updateAgent} />;
+      case "category":
+        return <CategoryDishLens dimensions={dimensions} onAgentUpdate={updateAgent} />;
+      case "admin":
+        return <AdminControlPanel isAdmin={isAdmin} agents={agents} />;
+      case "spend":
+        return <SpendAnalytics filters={legacyFilters} onSupplierClick={setGlobalSupplier} />;
       case "yield":
-        return <ConsumptionAnalytics filters={filters} onDepartmentClick={setGlobalDepartment} />;
+        return <ConsumptionAnalytics filters={legacyFilters} onDepartmentClick={setGlobalDepartment} isAdmin={isAdmin} />;
       case "variance":
-        return <VarianceAnalytics filters={filters} />;
+        return <VarianceAnalytics filters={legacyFilters} />;
       default:
-        return <SpendAnalytics filters={filters} />;
+        return null;
     }
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: COLORS.bg }}>
-      
-      {/* HEADER */}
-      <div style={{ padding: "16px 24px", backgroundColor: "#fff", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+      <div style={{
+        padding: "14px 20px",
+        background: "#fff",
+        borderBottom: `1px solid ${COLORS.border}`,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
+        flexWrap: "wrap",
+      }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 20, color: COLORS.text, display: "flex", alignItems: "center", gap: 8 }}>
-            <BarChart2 size={24} style={{ color: COLORS.brand }} /> 
-            Enterprise BI Studio
+          <h1 style={{ margin: 0, fontSize: 18, color: COLORS.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <BarChart2 size={22} style={{ color: COLORS.brand }} />
+            Intelligence Reporting Studio
+            {isAdmin && (
+              <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 4, background: "#fef9c3", color: "#854d0e", marginLeft: 6 }}>
+                ADMIN PRIVILEGED
+              </span>
+            )}
           </h1>
-          <p style={{ margin: 0, fontSize: 12, color: COLORS.muted }}>Interactive cross-filtering reporting module</p>
+          <p style={{ margin: "2px 0 0", fontSize: 11, color: COLORS.muted }}>
+            9-Agent Neural Pipeline · Anomaly Detection · Data Integrity & Lineage Trace
+          </p>
         </div>
-        <button 
-          onClick={() => setIsExportModalOpen(true)}
-          style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: 8, 
-            padding: "9px 18px", 
-            backgroundColor: "#0F172A", 
-            color: "#FFFFFF", 
-            border: "none", 
-            borderRadius: 8, 
-            cursor: "pointer", 
-            fontSize: 13, 
-            fontWeight: 600,
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-          }}
-        >
-          <FileSpreadsheet size={16} color="#FBBF24" /> Export Complete Inventory (Excel)
-        </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {canRunEod && (
+            <button
+              onClick={handleRunEodReport}
+              disabled={eodRunning}
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 16px",
+                background: eodRunning ? "#92400e" : "#854d0e", color: "#fff", border: "none",
+                borderRadius: 8, cursor: eodRunning ? "wait" : "pointer", fontSize: 12, fontWeight: 700,
+                opacity: eodRunning ? 0.8 : 1,
+              }}
+              title="Generate the End-of-Day Excel report and send the WhatsApp digest"
+            >
+              {eodRunning
+                ? <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} />
+                : <CalendarCheck size={14} color="#FBBF24" />}
+              {eodRunning ? "Running EOD Report…" : "Run End-of-Day Report"}
+            </button>
+          )}
+          <button
+            onClick={() => setIsExportOpen(true)}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "#0F172A", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
+          >
+            <FileSpreadsheet size={14} color="#FBBF24" /> Export Excel
+          </button>
+        </div>
       </div>
 
-      <ExportReportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
+      {eodResult && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+          padding: "10px 20px",
+          background: eodResult.ok ? (eodResult.whatsappSent ? "#ecfdf5" : "#fff7ed") : "#fef2f2",
+          borderBottom: `1px solid ${eodResult.ok ? (eodResult.whatsappSent ? "#a7f3d0" : "#fed7aa") : "#fecaca"}`,
+          fontSize: 12,
+          color: eodResult.ok ? (eodResult.whatsappSent ? "#065f46" : "#9a3412") : "#991b1b",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {eodResult.ok
+              ? <CheckCircle2 size={14} />
+              : <XCircle size={14} />}
+            {eodResult.message}
+          </div>
+          <button
+            onClick={() => setEodResult(null)}
+            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "inherit", fontWeight: 700 }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
-      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-        
-        {/* SLICER PANEL (LEFT SIDEBAR) */}
-        {!isMobile && (
-          <div style={{ width: 260, backgroundColor: "#fff", borderRight: `1px solid ${COLORS.border}`, padding: 20, overflowY: "auto" }}>
-            <h3 style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", color: COLORS.muted, marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
-              <Filter size={14} /> Global Slicers
-            </h3>
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
 
-            {/* Time Slicer */}
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginBottom: 8, display: "block" }}>Time Period</label>
-              <select 
-                value={dateRange} 
-                onChange={e => setDateRange(e.target.value)}
-                style={{ width: "100%", padding: 8, borderRadius: 6, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
-              >
-                <option value="mtd">Month to Date (MTD)</option>
-                <option value="ytd">Year to Date (YTD)</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
+      {/* ── AGENT STATUS BAR ───────────────────────────────────────────────── */}
+      <div style={{ padding: "10px 20px 0", background: "#fff", borderBottom: `1px solid ${COLORS.border}` }}>
+        <AgentStatusBar agents={agents} compact={false} />
+      </div>
 
-            {/* Supplier Slicer */}
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginBottom: 8, display: "block" }}>Supplier Pivot</label>
-              <select 
-                value={globalSupplier} 
-                onChange={e => setGlobalSupplier(e.target.value)}
-                style={{ width: "100%", padding: 8, borderRadius: 6, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
-              >
-                <option value="">All Suppliers</option>
-                {uniqueSuppliers.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-              {globalSupplier && (
-                <button onClick={() => setGlobalSupplier("")} style={{ fontSize: 11, color: COLORS.danger, background: "none", border: "none", cursor: "pointer", padding: "4px 0", marginTop: 4 }}>Clear Supplier Filter</button>
-              )}
-            </div>
+      {/* ── TAB BAR ────────────────────────────────────────────────────────── */}
+      <div style={{
+        display: "flex",
+        padding: "0 20px",
+        background: "#fff",
+        borderBottom: `1px solid ${COLORS.border}`,
+        gap: 2,
+        overflowX: "auto",
+      }}>
+        {visibleTabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => handleTabChange(tab.id)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "10px 14px",
+              border: "none",
+              borderBottom: activeTab === tab.id ? `3px solid ${COLORS.brand}` : "3px solid transparent",
+              background: "transparent",
+              fontSize: 12,
+              fontWeight: activeTab === tab.id ? 700 : 500,
+              color: activeTab === tab.id ? COLORS.text : COLORS.muted,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all 0.2s",
+            }}
+          >
+            {tab.icon} {tab.label}
+            {tab.adminOnly && (
+              <Shield size={10} color="#f59e0b" />
+            )}
+          </button>
+        ))}
+      </div>
 
-            {/* Department Slicer */}
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginBottom: 8, display: "block" }}>Department Pivot</label>
-              <select 
-                value={globalDepartment} 
-                onChange={e => setGlobalDepartment(e.target.value)}
-                style={{ width: "100%", padding: 8, borderRadius: 6, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
-              >
-                <option value="">All Departments</option>
-                {departments.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-              {globalDepartment && (
-                <button onClick={() => setGlobalDepartment("")} style={{ fontSize: 11, color: COLORS.danger, background: "none", border: "none", cursor: "pointer", padding: "4px 0", marginTop: 4 }}>Clear Department Filter</button>
-              )}
-            </div>
+      {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, padding: 20, overflowY: "auto", display: "flex", flexDirection: "column", minHeight: 0 }}>
+        {dimLoading && activeTab !== "spend" && activeTab !== "yield" && activeTab !== "variance" && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+            background: "#fef9c3", border: "1px solid #fde68a", borderRadius: 8, marginBottom: 14, fontSize: 12, color: "#854d0e"
+          }}>
+            <RefreshCw size={13} style={{ animation: "spin 1s linear infinite" }} />
+            Agent Scout is indexing enterprise dimensions (items, vendors, indents, recipes)…
           </div>
         )}
-
-        {/* MAIN DASHBOARD AREA */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-          
-          {/* Dashboard Tabs */}
-          <div style={{ display: "flex", padding: "16px 24px", borderBottom: `1px solid ${COLORS.border}`, backgroundColor: "#fff", gap: 8, overflowX: "auto" }}>
-            {[
-              { id: "procurement", label: "Procurement & Spend", icon: <ShoppingBag size={14} /> },
-              { id: "yield", label: "Consumption Yield", icon: <TrendingUp size={14} /> },
-              { id: "variance", label: "Variance & Anomalies", icon: <ArrowUpRight size={14} /> },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveLens(tab.id)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "8px 16px",
-                  borderRadius: 6,
-                  border: "none",
-                  fontSize: 13,
-                  fontWeight: activeLens === tab.id ? 600 : 500,
-                  color: activeLens === tab.id ? "#fff" : COLORS.muted,
-                  backgroundColor: activeLens === tab.id ? COLORS.brand : "transparent",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                {tab.icon} {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Render Active Dashboard content */}
-          <div style={{ flex: 1, padding: 24, overflowY: "auto" }}>
-            {renderActiveLens()}
-          </div>
-
-        </div>
+        {renderContent()}
       </div>
+
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   );
 }

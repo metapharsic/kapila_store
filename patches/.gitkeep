@@ -1,0 +1,4 @@
+# Kapila Patch Directory
+# Auto-generated .patch files from git_push.ps1 live here.
+# Each file represents one production-ready patch bundle.
+# Apply using: Apply Patch.bat  (or scripts\git_patch.ps1 -Mode Apply)

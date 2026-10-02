@@ -238,6 +238,8 @@ async function matchInvoiceAndGenerateGRN(dcId, matchPayload, user) {
       })
       .returning("*");
 
+    const priceDriftAlerts = [];
+
     // 2. Reconcile each line item
     for (const item of dcItems) {
       const matchLine = lineMap[item.id] || {};
@@ -252,16 +254,72 @@ async function matchInvoiceAndGenerateGRN(dcId, matchPayload, user) {
 
       const hasDiscrepancy = Math.abs(finalQty - parseFloat(item.qty)) > 0.001 || Math.abs(finalPrice - parseFloat(item.estimated_unit_price)) > 0.01;
 
-      // Update inbound_dc_items with verified invoice data
+      // 10% tolerance variance check against estimated/PO price
+      const estPrice = parseFloat(item.estimated_unit_price) || 0;
+      let lineVariancePct = 0;
+      let exceeds10PctTolerance = false;
+      if (estPrice > 0) {
+        lineVariancePct = Math.round(((finalPrice - estPrice) / estPrice) * 1000) / 10;
+        exceeds10PctTolerance = Math.abs(lineVariancePct) > 10;
+      }
+
+      let matchStatus = "MATCHED";
+      if (exceeds10PctTolerance) {
+        matchStatus = "EXCEEDS_10PCT_TOLERANCE";
+      } else if (hasDiscrepancy) {
+        matchStatus = "DISCREPANCY";
+      }
+
+      // Update inbound_dc_items with verified invoice data & tolerance status
       await trx("inbound_dc_items")
         .where("id", item.id)
         .update({
           matched_invoice_qty: finalQty,
           matched_invoice_price: finalPrice,
           matched_invoice_total: finalLineTotal,
-          match_status: hasDiscrepancy ? "DISCREPANCY" : "MATCHED",
+          match_status: matchStatus,
           updated_at: trx.fn.now()
         });
+
+      // Supplier price drift tracking: capture quote history & compute drift
+      try {
+        const priorQuote = await trx("supplier_rate_quotes")
+          .where({ item_code: item.item_code, supplier_name: dc.supplier_name })
+          .orderBy("created_at", "desc")
+          .first();
+
+        const previousRate = priorQuote ? parseFloat(priorQuote.quoted_rate) : estPrice;
+        let driftPct = 0;
+        if (previousRate > 0) {
+          driftPct = Math.round(((finalPrice - previousRate) / previousRate) * 1000) / 10;
+        }
+
+        await trx("supplier_rate_quotes").insert({
+          item_code: item.item_code,
+          item_name: item.item_name,
+          unit: item.unit,
+          supplier_name: dc.supplier_name,
+          supplier_id: dc.supplier_id || null,
+          quoted_rate: finalPrice,
+          notes: `3-Way Match GRN (Invoice #${invoice_no.trim()} via DC #${dc.dc_number}) [Drift: ${driftPct >= 0 ? "+" : ""}${driftPct}%]`,
+          quoted_by: user?.id || null,
+          created_at: trx.fn.now(),
+          updated_at: trx.fn.now()
+        });
+
+        if (Math.abs(driftPct) >= 10) {
+          priceDriftAlerts.push({
+            item_code: item.item_code,
+            item_name: item.item_name,
+            previous_rate: previousRate,
+            final_price: finalPrice,
+            drift_pct: driftPct,
+            supplier: dc.supplier_name
+          });
+        }
+      } catch (quoteErr) {
+        console.warn("[InboundDC] Supplier quote drift capture error:", quoteErr.message);
+      }
 
       // Insert into goods_receipt_items
       await trx("goods_receipt_items").insert({
@@ -332,7 +390,9 @@ async function matchInvoiceAndGenerateGRN(dcId, matchPayload, user) {
       grn_id: grn.id,
       grn_number: grn.grn_number,
       status: updatedDC.status,
-      variance: Math.round((numericInvoiceTotal - calculatedLineTotal) * 100) / 100
+      variance: Math.round((numericInvoiceTotal - calculatedLineTotal) * 100) / 100,
+      price_drift_alerts: priceDriftAlerts,
+      tolerance_exceeded: priceDriftAlerts.length > 0
     };
   });
 }

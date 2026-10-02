@@ -64,6 +64,14 @@ const getTransactionBadge = (type) => {
         fg: "#34d399",
         border: "rgba(52, 211, 153, 0.3)"
       };
+    case "INWARD_DC_PROVISIONAL":
+      return {
+        label: "DC Provisional",
+        icon: <ArrowDownRight size={12} />,
+        bg: "rgba(245, 158, 11, 0.15)",
+        fg: "#f59e0b",
+        border: "rgba(245, 158, 11, 0.3)"
+      };
     case "OUTWARD_ISSUE":
       return {
         label: "Dept Issue",

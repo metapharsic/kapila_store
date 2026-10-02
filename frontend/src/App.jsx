@@ -46,6 +46,8 @@ import StoreManagerStockPurchase from "./screens/StoreManagerStockPurchase";
 import ChefHome from "./screens/ChefHome";
 import PowerBiDashboard from "./screens/Reports/PowerBiDashboard";
 import NotificationPanel from "./components/NotificationPanel";
+import ModularExtensionsModal from "./components/extensions/ModularExtensionsModal";
+import DormantScreenNotice from "./components/extensions/DormantScreenNotice";
 
 const NAV_CATEGORIES = [
   {
@@ -147,8 +149,9 @@ const SCREEN_PERMISSIONS = Object.fromEntries([
 const SIDEBAR_WIDTH = 230;
 
 function Inner() {
-  const { currentScreen: screen, setCurrentScreen: setScreen, refreshStockNames, refreshReorderAlerts, reorderAlerts = [] } = useAppContext();
+  const { currentScreen: screen, setCurrentScreen: setScreen, refreshStockNames, refreshReorderAlerts, reorderAlerts = [], modularExtensions = {}, toggleModularExtension } = useAppContext();
   const { user, roles, loading, isAuthenticated, hasPermission, hasAnyPermission, logout } = useAuth();
+  const [showExtensionsModal, setShowExtensionsModal] = useState(false);
 
   const screenHasPermission = (screenId) => {
     const perm = SCREEN_PERMISSIONS[screenId];
@@ -167,12 +170,23 @@ function Inner() {
     return hasPermission(item.permission);
   };
 
+  const isModularExtensionVisible = (item) => {
+    if (item.id === "maintenance" && !modularExtensions.maintenance) return false;
+    if (item.id === "staff_audit" && !modularExtensions.staff_audit) return false;
+    return true;
+  };
+
+  const dormantExtensionsCount = ["maintenance", "staff_audit"].filter((k) => !modularExtensions[k]).length;
+
   const isStoreManager = roles.some((role) => role.key === "store_manager");
   const isChef         = roles.some((role) => role.key === "chef");
 
   const activeNavSource = isStoreManager ? STORE_MANAGER_NAV_CATEGORIES : NAV_CATEGORIES;
   const visibleNavCategories = activeNavSource
-    .map((cat) => ({ ...cat, items: cat.items.filter(itemHasPermission) }))
+    .map((cat) => ({ 
+      ...cat, 
+      items: cat.items.filter((item) => itemHasPermission(item) && isModularExtensionVisible(item)) 
+    }))
     .filter((cat) => cat.items.length > 0);
   const visibleNavItems = visibleNavCategories.flatMap((cat) => cat.items);
 
@@ -263,10 +277,18 @@ function Inner() {
     store_manager_indent: <ProtectedScreen permission="indents.view"><IndentScreen /></ProtectedScreen>,
     
     chef_home: <ProtectedScreen permission={["recipes.view", "indents.view", "chef_stats.view"]}><ChefHome /></ProtectedScreen>,
-    maintenance: <ProtectedScreen permission="maintenance.view"><MaintenanceScreen /></ProtectedScreen>,
+    maintenance: !modularExtensions.maintenance ? (
+      <DormantScreenNotice moduleKey="maintenance" onEnable={() => toggleModularExtension("maintenance", true)} />
+    ) : (
+      <ProtectedScreen permission="maintenance.view"><MaintenanceScreen /></ProtectedScreen>
+    ),
     gate_utilities: <ProtectedScreen permission={["security.view", "utility.view"]}><GateAndUtilitiesScreen /></ProtectedScreen>,
     returnable_assets: <ProtectedScreen permission="security.view"><ReturnableAssetTracker /></ProtectedScreen>,
-    staff_audit: <ProtectedScreen permission={["staff.view", "night_audit.view"]}><StaffAndNightAuditScreen /></ProtectedScreen>,
+    staff_audit: !modularExtensions.staff_audit ? (
+      <DormantScreenNotice moduleKey="staff_audit" onEnable={() => toggleModularExtension("staff_audit", true)} />
+    ) : (
+      <ProtectedScreen permission={["staff.view", "night_audit.view"]}><StaffAndNightAuditScreen /></ProtectedScreen>
+    ),
     system_config: <ProtectedScreen permission="users.view"><SystemConfigScreen /></ProtectedScreen>,
   };
 
@@ -465,6 +487,49 @@ function Inner() {
             )))}
           </nav>
 
+          {/* ═══ Modular Extensions Indicator & Quick-Toggle Button ═══ */}
+          <div 
+            onClick={() => setShowExtensionsModal(true)}
+            style={{
+              margin: "6px 10px 8px",
+              padding: "8px 10px",
+              borderRadius: 8,
+              background: dormantExtensionsCount > 0 
+                ? "linear-gradient(90deg, rgba(232, 168, 56, 0.12) 0%, rgba(232, 168, 56, 0.04) 100%)" 
+                : "rgba(16, 185, 129, 0.08)",
+              border: `1px solid ${dormantExtensionsCount > 0 ? "rgba(232, 168, 56, 0.35)" : "rgba(16, 185, 129, 0.25)"}`,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              transition: "all 0.15s ease",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.15)"
+            }}
+            title="Configure Commercial Kitchen CMMS & Staff HRMS / Night Audit"
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 7, overflow: "hidden" }}>
+              <span style={{ fontSize: 13, color: dormantExtensionsCount > 0 ? COLORS.accent : "#10b981" }}>⚡</span>
+              <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-sidebar)", whiteSpace: "nowrap" }}>
+                  Modular Extensions
+                </span>
+                <span style={{ fontSize: 9.5, color: "var(--sidebar-category)", whiteSpace: "nowrap" }}>
+                  {dormantExtensionsCount > 0 ? `${dormantExtensionsCount} Dormant (CMMS / HR)` : "All Active ✓"}
+                </span>
+              </div>
+            </div>
+            <span style={{
+              fontSize: 9,
+              fontWeight: 700,
+              padding: "1px 6px",
+              borderRadius: 8,
+              background: dormantExtensionsCount > 0 ? "rgba(232, 168, 56, 0.2)" : "rgba(16, 185, 129, 0.2)",
+              color: dormantExtensionsCount > 0 ? COLORS.accent : "#10b981"
+            }}>
+              {dormantExtensionsCount > 0 ? "ENABLE" : "ON"}
+            </span>
+          </div>
+
           {/* Footer */}
           <div style={{
             padding: "12px 16px",
@@ -510,7 +575,42 @@ function Inner() {
                   {activeNavItem?.label || "Dashboard"}
                 </span>
               </div>
-              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+                {/* Header Modular Extensions Indicator Button */}
+                <button
+                  onClick={() => setShowExtensionsModal(true)}
+                  title="Configure Modular Extensions (CMMS & Staff HRMS)"
+                  style={{
+                    background: dormantExtensionsCount > 0 ? "rgba(232, 168, 56, 0.12)" : "rgba(255, 255, 255, 0.04)",
+                    border: `1px solid ${dormantExtensionsCount > 0 ? "rgba(232, 168, 56, 0.4)" : COLORS.border}`,
+                    borderRadius: 20,
+                    padding: "4px 10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    color: dormantExtensionsCount > 0 ? COLORS.accent : COLORS.muted,
+                    transition: "all 0.15s"
+                  }}
+                >
+                  <span>⚡</span>
+                  <span style={{ display: isMobile ? "none" : "inline" }}>Extensions</span>
+                  {dormantExtensionsCount > 0 && (
+                    <span style={{
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      background: COLORS.accent,
+                      color: "#161922",
+                      padding: "0 6px",
+                      borderRadius: 10
+                    }}>
+                      {dormantExtensionsCount} Dormant
+                    </span>
+                  )}
+                </button>
+
                 <NotificationPanel user={user} />
                 <button onClick={logout} title="Logout" aria-label="Logout" style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.surface, border: `1px solid ${COLORS.border}`, display: "grid", placeItems: "center", cursor: "pointer" }}>
                   <LogOut size={15} color={COLORS.muted} />
@@ -538,6 +638,12 @@ function Inner() {
           </main>
         </div>
       </div>
+
+      {/* Modular Extensions Interactive Modal */}
+      <ModularExtensionsModal
+        isOpen={showExtensionsModal}
+        onClose={() => setShowExtensionsModal(false)}
+      />
     </>
   );
 }
