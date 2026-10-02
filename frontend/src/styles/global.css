@@ -176,7 +176,32 @@ input, select, textarea, button {
   }
 }
 
-/* --- Hotel Kapila Ambient Watermark & Report Print Styles --- */
+/* --- Hotel Kapila Ambient Watermark — Global, All Pages --- */
+
+/* ① Global body-level watermark — covers every page unconditionally */
+body::after {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  max-width: 72vw;
+  height: 520px;
+  max-height: 72vw;
+  background-image: url("/kapila-logo.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  /* logo is white — invert to dark grey so it reads on light AND dark backgrounds */
+  opacity: 0.055;
+  filter: invert(1) opacity(0.55);
+  z-index: 9999;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ② .kapila-app-watermark — retained for specific overrides / manual placement */
 .kapila-app-watermark {
   position: fixed;
   top: 50%;
@@ -186,8 +211,8 @@ input, select, textarea, button {
   max-width: 75vw;
   pointer-events: none;
   user-select: none;
-  opacity: 0.038;
-  z-index: 0;
+  opacity: 0;        /* hidden — body::after handles it globally */
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -197,17 +222,16 @@ input, select, textarea, button {
   width: 100%;
   height: auto;
   object-fit: contain;
-  filter: grayscale(10%) contrast(110%);
 }
 
+/* ③ Print — ensure watermark appears on every printed/PDF page */
 @media print {
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  
-  /* Print Watermark across all pages */
-  body::before {
+
+  body::after {
     content: "";
     position: fixed;
     top: 50%;
@@ -219,8 +243,9 @@ input, select, textarea, button {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: 0.065 !important;
-    z-index: -1;
+    opacity: 0.08 !important;
+    filter: invert(1) opacity(0.55) !important;
+    z-index: 99999;
     pointer-events: none;
   }
 }

@@ -429,14 +429,15 @@ export default function LoginScreen() {
           {/* Header & Logo */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 18 }}>
             <div style={{
-              background: "rgba(255, 255, 255, 0.04)",
-              padding: "6px 14px",
+              background: "#1E293B",
+              padding: "8px 20px",
               borderRadius: 12,
-              border: "1px solid rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(232,168,56,0.25)",
               marginBottom: 8,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.4)"
             }}>
               <img src={kapilaLogo} alt="Kapila IMS" style={{ height: 38, objectFit: "contain" }} />
             </div>

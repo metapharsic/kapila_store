@@ -372,12 +372,13 @@ function Inner() {
                 if (isMobile) setIsSidebarOpen(false);
               }}
               style={{
-              backgroundColor: "var(--bg-card)", borderRadius: 8,
+              backgroundColor: "#1E293B", borderRadius: 8,
               padding: "8px 14px",
               display: "flex", alignItems: "center", justifyContent: "center",
               width: "100%",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
-              cursor: "pointer"
+              boxShadow: "0 1px 4px rgba(0,0,0,0.35)",
+              cursor: "pointer",
+              border: "1px solid rgba(232,168,56,0.2)"
             }}>
               <img
                 src={kapilaLogo}
