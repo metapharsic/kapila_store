@@ -1,5 +1,6 @@
 const ExcelJS = require("exceljs");
 const db = require("../db");
+const { safeMergeCells } = require("./inventoryReportService");
 const path = require("path");
 const fs = require("fs");
 
@@ -242,7 +243,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
   ];
 
   // Header Title
-  wsDash.mergeCells("B2:F2");
+  safeMergeCells(wsDash, "B2:F2");
   const titleCell = wsDash.getCell("B2");
   titleCell.value = "HOTEL KAPILA — ENTERPRISE INDENT AUTOMATION & FORECASTING ENGINE";
   titleCell.font = { name: "Calibri", size: 16, bold: true, color: { argb: PALETTE.white } };
@@ -250,7 +251,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
   titleCell.alignment = { vertical: "middle", horizontal: "center" };
   wsDash.getRow(2).height = 40;
 
-  wsDash.mergeCells("B3:F3");
+  safeMergeCells(wsDash, "B3:F3");
   const subCell = wsDash.getCell("B3");
   subCell.value = `Live Database Pipeline — Generated on ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} by ${metadata.userName || "System"}`;
   subCell.font = { name: "Calibri", size: 10, italic: true, color: { argb: PALETTE.goldAccent } };
@@ -298,7 +299,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
   // Multi-Agent Swarm Status Table
   wsDash.getCell("B9").value = "MULTI-AGENT SWARM OPERATIONAL STATUS & LIVE WIRING TELEMETRY";
   wsDash.getCell("B9").font = { name: "Calibri", size: 11, bold: true, color: { argb: PALETTE.navyDark } };
-  wsDash.mergeCells("B9:F9");
+  safeMergeCells(wsDash, "B9:F9");
 
   const agentHeaders = ["Agent Designation", "Operational Function", "Live Engine Status", "Telemetry Details"];
   ["B", "C", "D", "E"].forEach((c, idx) => {
@@ -309,7 +310,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
     cell.alignment = { vertical: "middle", horizontal: idx === 2 ? "center" : "left" };
     cell.border = BORDER_THIN;
   });
-  wsDash.mergeCells("E10:F10");
+  safeMergeCells(wsDash, "E10:F10");
   wsDash.getRow(10).height = 25;
 
   const agentList = [
@@ -322,7 +323,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
 
   agentList.forEach((ag, i) => {
     const rNum = 11 + i;
-    wsDash.mergeCells(`E${rNum}:F${rNum}`);
+    safeMergeCells(wsDash, `E${rNum}:F${rNum}`);
     wsDash.getCell(`B${rNum}`).value = ag.name;
     wsDash.getCell(`C${rNum}`).value = ag.role;
     const statCell = wsDash.getCell(`D${rNum}`);
@@ -363,7 +364,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
     { width: 35 },
   ];
 
-  wsDepts.mergeCells("B2:M2");
+  safeMergeCells(wsDepts, "B2:M2");
   const deptTitle = wsDepts.getCell("B2");
   deptTitle.value = "DEPARTMENTAL DAILY DEMAND PROFILE & WEEKDAY SURGE CURVE";
   deptTitle.font = { name: "Calibri", size: 14, bold: true, color: { argb: PALETTE.white } };
@@ -443,7 +444,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
     { width: 18 }, // Auto-Indent Today (Qty)
   ];
 
-  wsItems.mergeCells("A2:T2");
+  safeMergeCells(wsItems, "A2:T2");
   const itemTitle = wsItems.getCell("A2");
   itemTitle.value = `KEEN ITEM-BY-ITEM INVENTORY & AUTOMATED INDENT ENGINE (${enrichedItems.length} SKUs)`;
   itemTitle.font = { name: "Calibri", size: 14, bold: true, color: { argb: PALETTE.white } };
@@ -532,7 +533,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
     { width: 16 }, // Qty per 500 Plates
   ];
 
-  wsRecipes.mergeCells("A2:J2");
+  safeMergeCells(wsRecipes, "A2:J2");
   const recTitle = wsRecipes.getCell("A2");
   recTitle.value = `COMPLETE RECIPE-TO-INGREDIENT PORTION EXPLOSION (${allRecipeData.length} Mappings)`;
   recTitle.font = { name: "Calibri", size: 14, bold: true, color: { argb: PALETTE.white } };
@@ -599,7 +600,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
     { width: 24 },
   ];
 
-  wsSim.mergeCells("B2:G2");
+  safeMergeCells(wsSim, "B2:G2");
   const simTitle = wsSim.getCell("B2");
   simTitle.value = "INTERACTIVE INDENT AUTOMATION SIMULATOR";
   simTitle.font = { name: "Calibri", size: 14, bold: true, color: { argb: PALETTE.white } };
@@ -632,7 +633,7 @@ async function generateWorkbook(options = {}, metadata = {}) {
 
   wsSim.getCell("B9").value = "REAL-TIME AUTOMATED INDENT RECOMMENDATIONS (DYNAMIC FORMULA ENGINE)";
   wsSim.getCell("B9").font = { bold: true, color: { argb: PALETTE.navyDark } };
-  wsSim.mergeCells("B9:G9");
+  safeMergeCells(wsSim, "B9:G9");
 
   const simHeaders = ["Item Name", "Department", "Unit", "Live Stock (Units)", "Projected Daily Burn", "Auto-Recommended Indent Qty"];
   const simCols = ["B", "C", "D", "E", "F", "G"];

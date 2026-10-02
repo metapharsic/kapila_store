@@ -46,7 +46,7 @@ export default function CategoryDishLens({ dimensions, onAgentUpdate }) {
       if (dateFrom)   params.set("dateFrom", dateFrom);
       if (dateTo)     params.set("dateTo", dateTo);
 
-      const res = await authedGet(`/api/reports/category-lens?${params}`).then(r => r.json());
+      const res = await authedGet(`/api/reports/category-lens?${params}`);
       const elapsed = Date.now() - t0;
 
       if (!res.success) throw new Error(res.error || "Failed");

@@ -105,14 +105,32 @@ export default function RaiseIndentItemModal({
         items: existingItems
       }));
 
+      // Multi-thread background dispatch to Store Manager if item is out of stock
+      if (currentStock <= 0) {
+        setTimeout(async () => {
+          try {
+            await api.indents.notifyStockout({
+              itemName: item.name,
+              itemCode: item.item_code || '',
+              dept,
+              requestedQty: parsedQty,
+              unit
+            });
+            console.log(`[Multi-Thread Worker] Store Manager notified for stockout: ${item.name}`);
+          } catch (e) {
+            console.warn('[Multi-Thread Worker] Stockout alert dispatch error:', e);
+          }
+        }, 0);
+      }
+
       if (onItemStaged) {
         onItemStaged(stagedItem, dept);
       }
 
-      setSuccessMsg(`✓ Added ${parsedQty} ${unit} ${item.name} to ${dept} requisition.`);
+      setSuccessMsg(`✓ Added ${parsedQty} ${unit} ${item.name} to ${dept} requisition. ${currentStock <= 0 ? '(Out of stock — Store Manager informed instantly!)' : ''}`);
       setTimeout(() => {
         onClose();
-      }, 900);
+      }, 1100);
     } catch (e) {
       setErrorMsg('Failed to stage item to cache.');
     }
@@ -150,7 +168,23 @@ export default function RaiseIndentItemModal({
 
       const res = await api.indents.chefSubmit(payload);
       if (res && (res.success || res.id || res.data?.id)) {
-        setSuccessMsg(`✓ Instant Indent #${res.id || res.data?.id} submitted successfully to Central Store!`);
+        if (currentStock <= 0) {
+          setTimeout(async () => {
+            try {
+              await api.indents.notifyStockout({
+                itemName: item.name,
+                itemCode: item.item_code || '',
+                dept,
+                requestedQty: parsedQty,
+                unit
+              });
+            } catch (e) {
+              console.warn('Stockout alert failed:', e);
+            }
+          }, 0);
+        }
+
+        setSuccessMsg(`✓ Instant Indent #${res.id || res.data?.id} submitted successfully to Central Store! ${currentStock <= 0 ? '(Out of stock — Store Manager alerted!)' : ''}`);
         setTimeout(() => {
           onClose();
         }, 1500);
@@ -288,19 +322,37 @@ export default function RaiseIndentItemModal({
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <div style={{
-                fontSize: 11,
-                fontWeight: 700,
-                padding: '3px 8px',
-                borderRadius: 6,
-                background: currentStock <= 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                color: currentStock <= 0 ? '#ef4444' : '#10b981',
-                display: 'inline-block'
-              }}>
-                {currentStock <= 0 ? '● STORE STOCKOUT' : `● ${currentStock} ${unit} in Central Store`}
-              </div>
+              {parsedQty > 0 && currentStock <= 0 ? (
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: '4px 8px',
+                  borderRadius: 6,
+                  background: 'rgba(239, 68, 68, 0.22)',
+                  border: '1px solid rgba(239, 68, 68, 0.45)',
+                  color: '#fca5a5',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4
+                }}>
+                  <AlertTriangle size={12} style={{ color: '#ef4444' }} />
+                  <span>Out of stock! Store Manager informed instantly.</span>
+                </div>
+              ) : currentStock > 0 ? (
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: '#10b981',
+                  display: 'inline-block'
+                }}>
+                  ● Available in Store
+                </div>
+              ) : null}
               <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
-                Rate: ₹{unitPrice.toFixed(2)} / {unit}
+                Unit: {unit}
               </div>
             </div>
           </div>

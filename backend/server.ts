@@ -286,6 +286,17 @@ cron.schedule('*/30 * * * *', () => {
   escalateStalePOs().catch((e: any) => console.error('[CRON] Stale PO escalation failed:', e.message));
 });
 
+// Real-time WhatsApp alert for indents still pending (not yet approved) past
+// a minute-level threshold — distinct from the 30min stale/approval escalation
+// crons above, which only fire on already-approved or generic approval SLAs.
+// Ad-hoc indents get half the threshold and an urgent prefix. Runs every 5min
+// so "so many minutes" alerts actually land at minute granularity.
+const alertPendingIndents = require('./cron/indentPendingAlert');
+const INDENT_ALERT_CRON = process.env.INDENT_ALERT_CRON || '*/5 * * * *';
+cron.schedule(INDENT_ALERT_CRON, () => {
+  alertPendingIndents().catch((e: any) => console.error('[CRON] Indent pending alert failed:', e.message));
+});
+
 // Alert Admin if Kafka has been unreachable — auto-PO drafting depends on it
 // as the sync bus, and a downed broker used to fail completely silently.
 let kafkaWasDown = false;

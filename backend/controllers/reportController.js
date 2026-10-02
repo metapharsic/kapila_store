@@ -1,5 +1,6 @@
 const inventoryReportService = require("../services/inventoryReportService");
 const eodReportService = require("../services/eodReportService");
+const indentIntelligenceReportService = require("../services/indentIntelligenceReportService");
 const { auditLog } = require("../services/auditService");
 const db = require("../db");
 
@@ -1044,14 +1045,24 @@ async function runEodReport(req, res, next) {
   try {
     const date = req.body?.date || req.query?.date || new Date().toISOString().slice(0, 10);
 
-    const { eodData, whatsappResult } = await eodReportService.runEodReport(date);
+    const granularity = req.query?.granularity || req.body?.granularity || "overall";
+    if (!eodReportService.VALID_GRANULARITIES.includes(granularity)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid granularity '${granularity}'. Must be one of: ${eodReportService.VALID_GRANULARITIES.join(", ")}`,
+      });
+    }
+
+    const { eodData, whatsappResult } = await eodReportService.runEodReport(date, granularity);
     const workbook = eodReportService.buildEodWorkbook(eodData);
-    const filename = `Kapila_EOD_Report_${date}.xlsx`;
+    const filename = granularity === "overall"
+      ? `Kapila_EOD_Report_${date}.xlsx`
+      : `Kapila_EOD_Report_${date}_by_${granularity}.xlsx`;
 
     await auditLog(req, {
       action: "report.eod_run",
       resource: "eod_report",
-      metadata: { date, totals: eodData.totals, whatsapp_sent: whatsappResult?.sent === true },
+      metadata: { date, granularity, totals: eodData.totals, whatsapp_sent: whatsappResult?.sent === true },
     });
 
     // Return both: the Excel as the response body (download), plus the
@@ -1072,6 +1083,49 @@ async function runEodReport(req, res, next) {
   }
 }
 
+// ── Indent & Purchase Intelligence report: indents/POs/GRNs/anomalies/
+// approval-times/hourly-distribution for the day, sent via WhatsApp digest
+// to admin + store manager, and streamed back as an Excel workbook.
+// POST /api/reports/indent-intelligence/run — admin/manager/store_manager
+// gated (requirePermission in the route, same pattern as eod/run).
+async function runIndentIntelligenceReport(req, res, next) {
+  try {
+    const date = req.body?.date || req.query?.date || new Date().toISOString().slice(0, 10);
+
+    const { data, whatsappResult } = await indentIntelligenceReportService.runIndentIntelligenceReport(date);
+    const workbook = indentIntelligenceReportService.buildIndentIntelligenceWorkbook(data);
+    const filename = `Kapila_Indent_Intelligence_Report_${date}.xlsx`;
+
+    await auditLog(req, {
+      action: "report.indent_intelligence_run",
+      resource: "indent_intelligence_report",
+      metadata: {
+        date,
+        totals: {
+          indents: data.indents.total,
+          pos: data.purchases.total_pos,
+          grns: data.grn.total_count,
+          beyond_expectation: data.beyondExpectation.items.length,
+        },
+        whatsapp_sent: whatsappResult?.sent === true,
+      },
+    });
+
+    res.setHeader("X-Indent-Intelligence-Whatsapp-Sent", String(whatsappResult?.sent === true));
+    res.setHeader("X-Indent-Intelligence-Total-Indents", String(data.indents.total));
+    res.setHeader("X-Indent-Intelligence-Beyond-Expectation-Count", String(data.beyondExpectation.items.length));
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error("Indent Intelligence report run failed:", err);
+    if (!res.headersSent) res.status(500).json({ success: false, error: err.message });
+    else next(err);
+  }
+}
+
 module.exports = {
   exportInventoryExcel,
   previewInventoryMetadata,
@@ -1086,4 +1140,5 @@ module.exports = {
   updateReportSettings,
   getValuationTrend,
   runEodReport,
+  runIndentIntelligenceReport,
 };

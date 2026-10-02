@@ -104,7 +104,7 @@ export default function IndentTrace({ dimensions, onAgentUpdate }) {
     onAgentUpdate?.("composer", { status: "running" });
 
     try {
-      const res = await authedGet(`/api/reports/indent-trace/${indent.id}`).then(r => r.json());
+      const res = await authedGet(`/api/reports/indent-trace/${indent.id}`);
       const elapsed = Date.now() - t0;
 
       if (!res.success) throw new Error(res.error || "Failed");

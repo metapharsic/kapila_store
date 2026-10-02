@@ -344,23 +344,19 @@ class IndentAgentService {
       creator_user_id: user?.id || null,
     });
 
-    // Send immediate in-app approval notification to Store Manager
-    const storeManagerRole = await db("roles").where({ key: "store_manager" }).first();
-    if (storeManagerRole) {
-      const { sendNotification } = require("../controllers/notificationController");
-      await sendNotification({
-        recipient_role_id: storeManagerRole.id,
-        title: `Chef Requisition: ${canonicalDept} (#${result.indent.id})`,
-        message: `${submittedBy || user?.name || "Executive Chef"} raised a ${priority.toLowerCase()} requisition with ${validatedLineItems.length} items (est. ₹${totalEstimatedValue.toLocaleString("en-IN")}) awaiting Store Approval & Issuance.${remarks ? ` Station Notes: "${remarks.trim()}"` : ""}`,
-        type: "approval_pending",
-        severity: priority === "URGENT" || priority === "EMERGENCY" ? "critical" : "info",
-        metadata: {
-          module: "indents",
-          resource_id: result.indent.id,
-          request_id: result.approvalRequestId,
-        },
-      });
-    }
+    // Automatically intimate Admin & Store Manager immediately with item count and total price value
+    const { notifyIndentRaised } = require("./automaticAlertService");
+    await notifyIndentRaised({
+      indent: result.indent,
+      items: validatedLineItems,
+      totalValue: totalEstimatedValue,
+      itemCount: validatedLineItems.length,
+      user,
+      dept: canonicalDept,
+      shift,
+      priority,
+      remarks,
+    }).catch((err) => console.warn("[IndentAgentService] notifyIndentRaised warning:", err.message));
 
     const latencyMs = Date.now() - startTime;
 
@@ -676,6 +672,19 @@ class IndentAgentService {
           metadata: { module: "indents", resource_id: indentId, issue_slip: issueSlipNumber },
         });
       }
+
+      // Automatically intimate Admin & Store Manager immediately with item count and total price value
+      const { notifyIssuanceCompleted } = require("./automaticAlertService");
+      await notifyIssuanceCompleted({
+        issuance: { id: issuanceId, dept: indent.dept, indent_id: indentId, reference_doc_no: issueSlipNumber },
+        items,
+        totalIssuedValue: parseFloat(totalIssuedValue.toFixed(2)),
+        itemCount: items.length,
+        user,
+        dept: indent.dept,
+        indentId,
+        issueSlipNumber,
+      }).catch((err) => console.warn("[StoreFulfillmentAgent] notifyIssuanceCompleted warning:", err.message));
 
       return {
         success: true,

@@ -7,7 +7,7 @@ import {
   BarChart2, Package, Building2, ClipboardList,
   Grid, Shield, ShoppingBag, TrendingUp, ArrowUpRight,
   FileSpreadsheet, RefreshCw, Sparkles, CalendarCheck,
-  CheckCircle2, XCircle
+  CheckCircle2, XCircle, ChevronDown
 } from "lucide-react";
 
 import AgentStatusBar          from "./components/AgentStatusBar";
@@ -40,6 +40,14 @@ function agentReducer(state, action) {
   return { ...state, [action.agentId]: { ...state[action.agentId], ...action.update } };
 }
 
+// ── EOD report granularity options ────────────────────────────────────────────
+const EOD_GRANULARITY_OPTIONS = [
+  { value: "overall",    label: "Overall" },
+  { value: "department", label: "By Department" },
+  { value: "category",   label: "By Category" },
+  { value: "supplier",   label: "By Supplier" },
+];
+
 // ── Tab definitions ────────────────────────────────────────────────────────────
 const TABS = [
   { id: "intel",    label: "Intelligence Hub",   icon: <Sparkles size={14} />,      adminOnly: false },
@@ -61,6 +69,7 @@ export default function PowerBiDashboard() {
     currentUser?.roles?.some?.(r => ["admin"].includes(r.key || r))
   );
   const canRunEod = hasPermission?.("reports.eod_run");
+  const canRunIndentIntel = hasPermission?.("reports.indent_intelligence_run");
 
   const [activeTab, setActiveTab]         = useState("intel");
   const [agents, dispatch]                = useReducer(agentReducer, INITIAL_AGENTS);
@@ -71,6 +80,11 @@ export default function PowerBiDashboard() {
   // EOD report run state
   const [eodRunning, setEodRunning]       = useState(false);
   const [eodResult, setEodResult]         = useState(null); // { ok, whatsappSent, message }
+  const [eodGranularity, setEodGranularity] = useState("overall");
+
+  // Indent & Purchase Intelligence report run state
+  const [indentIntelRunning, setIndentIntelRunning] = useState(false);
+  const [indentIntelResult, setIndentIntelResult]   = useState(null); // { ok, whatsappSent, message }
 
   // Deep-linking navigation states across tabs
   const [deepItemCode, setDeepItemCode]     = useState(null);
@@ -91,7 +105,6 @@ export default function PowerBiDashboard() {
     setDimLoading(true);
     updateAgent("scout", { status: "running" });
     authedGet("/api/reports/admin-dimensions")
-      .then(r => r.json())
       .then(res => {
         if (res.success) {
           setDimensions(res.data);
@@ -133,7 +146,7 @@ export default function PowerBiDashboard() {
     setEodRunning(true);
     setEodResult(null);
     try {
-      const res = await authedDownload("/api/reports/eod/run", { method: "POST" });
+      const res = await authedDownload(`/api/reports/eod/run?granularity=${eodGranularity}`, { method: "POST" });
       if (!res.ok) {
         let errMsg = `Failed to run EOD report (HTTP ${res.status})`;
         try {
@@ -155,7 +168,9 @@ export default function PowerBiDashboard() {
       const whatsappSent = res.headers.get("X-EOD-Whatsapp-Sent") === "true";
       const blob = await res.blob();
       const today = new Date().toISOString().slice(0, 10);
-      const filename = `EOD_Report_${today}.xlsx`;
+      const filename = eodGranularity === "overall"
+        ? `EOD_Report_${today}.xlsx`
+        : `EOD_Report_${eodGranularity}_${today}.xlsx`;
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -177,6 +192,62 @@ export default function PowerBiDashboard() {
       setEodResult({ ok: false, message: e.message || "Failed to run EOD report." });
     } finally {
       setEodRunning(false);
+    }
+  };
+
+  // Run the Indent & Purchase Intelligence report: hits POST
+  // /api/reports/indent-intelligence/run, which streams back an Excel workbook
+  // and sets X-Indent-Intelligence-Whatsapp-Sent to say whether the WhatsApp
+  // digest fired. NOTE: header name mirrors the EOD pattern (X-EOD-Whatsapp-Sent);
+  // confirm against backend/controllers/reportController.js once that endpoint lands.
+  const handleRunIndentIntelReport = async () => {
+    setIndentIntelRunning(true);
+    setIndentIntelResult(null);
+    try {
+      const res = await authedDownload("/api/reports/indent-intelligence/run", { method: "POST" });
+      if (!res.ok) {
+        let errMsg = `Failed to run Indent & Purchase Intelligence report (HTTP ${res.status})`;
+        try {
+          const text = await res.text();
+          try {
+            const json = JSON.parse(text);
+            errMsg = json.error || json.message || errMsg;
+          } catch {
+            // not JSON — ignore, keep default message
+          }
+        } catch {
+          // ignore
+        }
+        if (res.status === 403) errMsg = "Permission denied: you don't have access to run the Indent & Purchase Intelligence report.";
+        setIndentIntelResult({ ok: false, message: errMsg });
+        return;
+      }
+
+      const whatsappSent = res.headers.get("X-Indent-Intelligence-Whatsapp-Sent") === "true";
+      const blob = await res.blob();
+      const today = new Date().toISOString().slice(0, 10);
+      const filename = `Indent_Intelligence_Report_${today}.xlsx`;
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+
+      setIndentIntelResult({
+        ok: true,
+        whatsappSent,
+        message: whatsappSent
+          ? "Excel downloaded. WhatsApp digest sent to Admin & Store Manager"
+          : "Excel downloaded. WhatsApp digest NOT sent (check credentials)",
+      });
+    } catch (e) {
+      setIndentIntelResult({ ok: false, message: e.message || "Failed to run Indent & Purchase Intelligence report." });
+    } finally {
+      setIndentIntelRunning(false);
     }
   };
 
@@ -255,21 +326,61 @@ export default function PowerBiDashboard() {
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {canRunEod && (
+            <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <select
+                  value={eodGranularity}
+                  onChange={(e) => setEodGranularity(e.target.value)}
+                  disabled={eodRunning}
+                  title="Choose how the End-of-Day report is grouped"
+                  style={{
+                    appearance: "none", WebkitAppearance: "none", MozAppearance: "none",
+                    padding: "8px 26px 8px 10px", fontSize: 11, fontWeight: 700,
+                    background: "#fef3c7", color: "#854d0e", border: "1px solid #fde68a",
+                    borderRadius: "8px 0 0 8px", borderRight: "none",
+                    cursor: eodRunning ? "wait" : "pointer",
+                  }}
+                >
+                  {EOD_GRANULARITY_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} color="#854d0e" style={{ position: "absolute", right: 8, pointerEvents: "none" }} />
+              </div>
+              <button
+                onClick={handleRunEodReport}
+                disabled={eodRunning}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 16px",
+                  background: eodRunning ? "#92400e" : "#854d0e", color: "#fff", border: "none",
+                  borderRadius: "0 8px 8px 0", cursor: eodRunning ? "wait" : "pointer", fontSize: 12, fontWeight: 700,
+                  opacity: eodRunning ? 0.8 : 1,
+                }}
+                title="Generate the End-of-Day Excel report and send the WhatsApp digest"
+              >
+                {eodRunning
+                  ? <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} />
+                  : <CalendarCheck size={14} color="#FBBF24" />}
+                {eodRunning ? "Running EOD Report…" : "Run End-of-Day Report"}
+              </button>
+            </div>
+          )}
+          {canRunIndentIntel && (
             <button
-              onClick={handleRunEodReport}
-              disabled={eodRunning}
+              onClick={handleRunIndentIntelReport}
+              disabled={indentIntelRunning}
               style={{
                 display: "flex", alignItems: "center", gap: 6, padding: "8px 16px",
-                background: eodRunning ? "#92400e" : "#854d0e", color: "#fff", border: "none",
-                borderRadius: 8, cursor: eodRunning ? "wait" : "pointer", fontSize: 12, fontWeight: 700,
-                opacity: eodRunning ? 0.8 : 1,
+                background: indentIntelRunning ? "#3730a3" : "#4338ca", color: "#fff", border: "none",
+                borderRadius: 8, cursor: indentIntelRunning ? "wait" : "pointer", fontSize: 12, fontWeight: 700,
+                opacity: indentIntelRunning ? 0.8 : 1,
               }}
-              title="Generate the End-of-Day Excel report and send the WhatsApp digest"
+              title="Generate the Indent & Purchase Intelligence Excel report and send the WhatsApp digest"
             >
-              {eodRunning
+              {indentIntelRunning
                 ? <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} />
-                : <CalendarCheck size={14} color="#FBBF24" />}
-              {eodRunning ? "Running EOD Report…" : "Run End-of-Day Report"}
+                : <TrendingUp size={14} color="#A5B4FC" />}
+              {indentIntelRunning ? "Running Indent Report…" : "Run Indent & Purchase Report"}
             </button>
           )}
           <button
@@ -298,6 +409,30 @@ export default function PowerBiDashboard() {
           </div>
           <button
             onClick={() => setEodResult(null)}
+            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "inherit", fontWeight: 700 }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {indentIntelResult && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+          padding: "10px 20px",
+          background: indentIntelResult.ok ? (indentIntelResult.whatsappSent ? "#eef2ff" : "#fff7ed") : "#fef2f2",
+          borderBottom: `1px solid ${indentIntelResult.ok ? (indentIntelResult.whatsappSent ? "#c7d2fe" : "#fed7aa") : "#fecaca"}`,
+          fontSize: 12,
+          color: indentIntelResult.ok ? (indentIntelResult.whatsappSent ? "#3730a3" : "#9a3412") : "#991b1b",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {indentIntelResult.ok
+              ? <CheckCircle2 size={14} />
+              : <XCircle size={14} />}
+            {indentIntelResult.message}
+          </div>
+          <button
+            onClick={() => setIndentIntelResult(null)}
             style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "inherit", fontWeight: 700 }}
           >
             Dismiss

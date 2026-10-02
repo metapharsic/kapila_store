@@ -1,5 +1,6 @@
 const ExcelJS = require("exceljs");
 const db = require("../db");
+const { safeMergeCells } = require("./inventoryReportService");
 
 const PALETTE = {
   navyDark: "0F172A",
@@ -149,7 +150,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
   let r = 1;
 
   // 1. Hotel Brand Title Banner
-  sheet.mergeCells(`A${r}:I${r}`);
+  safeMergeCells(sheet, `A${r}:I${r}`);
   const titleCell = sheet.getCell(`A${r}`);
   titleCell.value = "HOTEL KAPILA — CENTRAL STORES MATERIAL REQUISITION";
   titleCell.font = { name: "Arial", size: 14, bold: true, color: { argb: PALETTE.white } };
@@ -159,7 +160,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
   r++;
 
   // 2. Subtitle / Tracking Banner
-  sheet.mergeCells(`A${r}:I${r}`);
+  safeMergeCells(sheet, `A${r}:I${r}`);
   const subCell = sheet.getCell(`A${r}`);
   subCell.value = `Tracking Slip: #IND-${String(indent.date || "").replace(/-/g, "").slice(0, 6)}-${String(indent.id).padStart(4, "0")}   |   Status: ${(indent.status || "PENDING").toUpperCase()}   |   Generated: ${new Date().toLocaleString("en-IN")}`;
   subCell.font = { name: "Arial", size: 9, bold: true, color: { argb: PALETTE.white } };
@@ -206,7 +207,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
 
   // 4. Station Prep Notes Callout (if present)
   if (indent.remarks && indent.remarks.trim().length > 0) {
-    sheet.mergeCells(`A${r}:I${r}`);
+    safeMergeCells(sheet, `A${r}:I${r}`);
     const noteHeader = sheet.getCell(`A${r}`);
     noteHeader.value = `💬 CHEF STATION PREP NOTES FOR CENTRAL STORES: "${indent.remarks.trim()}"`;
     noteHeader.font = { bold: true, size: 10, color: { argb: "92400E" } };
@@ -224,7 +225,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
 
   // Helper to render section table
   const renderSection = (sectionTitle, sectionItems, badgeColor) => {
-    sheet.mergeCells(`A${r}:I${r}`);
+    safeMergeCells(sheet, `A${r}:I${r}`);
     const secCell = sheet.getCell(`A${r}`);
     secCell.value = `${sectionTitle} (${sectionItems.length} Lines)`;
     secCell.font = { bold: true, size: 11, color: { argb: PALETTE.white } };
@@ -250,7 +251,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
     r++;
 
     if (sectionItems.length === 0) {
-      sheet.mergeCells(`A${r}:I${r}`);
+      safeMergeCells(sheet, `A${r}:I${r}`);
       const emptyCell = sheet.getCell(`A${r}`);
       emptyCell.value = "No items specified in this section for this shift.";
       emptyCell.font = { italic: true, size: 9, color: { argb: PALETTE.grayText } };
@@ -306,7 +307,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
       r++;
     });
 
-    sheet.mergeCells(`A${r}:G${r}`);
+    safeMergeCells(sheet, `A${r}:G${r}`);
     const subLabel = sheet.getCell(`A${r}`);
     subLabel.value = `Subtotal ${sectionTitle}:`;
     subLabel.font = { bold: true, size: 9 };
@@ -332,7 +333,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
 
   const grandTotal = ingredientsTotal + disposablesTotal;
 
-  sheet.mergeCells(`A${r}:G${r}`);
+  safeMergeCells(sheet, `A${r}:G${r}`);
   const grandLabel = sheet.getCell(`A${r}`);
   grandLabel.value = `GRAND TOTAL ESTIMATED VALUATION (${items.length} TOTAL ITEMS):`;
   grandLabel.font = { bold: true, size: 11, color: { argb: PALETTE.white } };
@@ -358,7 +359,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
   ];
 
   sigHeaders.forEach((sig) => {
-    sheet.mergeCells(`${sig.start}${r}:${sig.end}${r}`);
+    safeMergeCells(sheet, `${sig.start}${r}:${sig.end}${r}`);
     const hCell = sheet.getCell(`${sig.start}${r}`);
     hCell.value = sig.title;
     hCell.font = { bold: true, size: 9, color: { argb: PALETTE.white } };
@@ -370,7 +371,7 @@ async function generateIndentRequisitionWorkbook(indentInput, options = {}) {
   r++;
 
   sigHeaders.forEach((sig) => {
-    sheet.mergeCells(`${sig.start}${r}:${sig.end}${r + 2}`);
+    safeMergeCells(sheet, `${sig.start}${r}:${sig.end}${r + 2}`);
     const sCell = sheet.getCell(`${sig.start}${r}`);
     sCell.value = `\n\n\n_______________________\n${sig.sub}`;
     sCell.font = { size: 8, color: { argb: PALETTE.grayText } };

@@ -136,6 +136,20 @@ async function create(req, res, next) {
 
     res.status(201).json({ success: true, data: result });
 
+    // Automatically intimate Admin & Store Manager immediately with item count and total price value
+    const { notifyIndentRaised } = require("../services/automaticAlertService");
+    const totalEstValue = result.itemValues?.reduce((sum, it) => sum + (it.value || 0), 0) || 0;
+    notifyIndentRaised({
+      indent: result,
+      items: result.items,
+      totalValue: totalEstValue,
+      itemCount: result.items?.length || 0,
+      user: req.user,
+      dept: result.dept,
+      shift: result.shift,
+      priority: result.priority,
+      remarks: result.remarks,
+    }).catch((err) => console.warn("[IndentController] notifyIndentRaised warning:", err.message));
 
     const { checkHighValueAlert } = require("../utils/highValueAlert");
     checkHighValueAlert({
@@ -892,11 +906,17 @@ async function getChefRadar(req, res, next) {
     // 1. Fetch subcategories and template items for this department
     const subcats = await IndentAgentService.getSubcategories(dept);
     const catalogItems = [];
-    for (const sc of subcats.slice(0, 10)) {
+    for (const sc of subcats) {
       const { items } = await IndentAgentService.getSubcategoryItems(sc.id);
       items.forEach((it) =>
         catalogItems.push({
           ...it,
+          id: it.id,
+          name: it.item_name || it.name,
+          item_name: it.item_name || it.name,
+          unit: it.unit || "KG",
+          price: it.live_price || it.default_cost || 0,
+          current_stock: typeof it.current_stock === "number" ? it.current_stock : parseFloat(it.current_stock || 0),
           subcat_id: sc.id,
           subcat_code: sc.code,
           subcat_name: sc.name,
@@ -1002,6 +1022,62 @@ async function getChefRadar(req, res, next) {
   }
 }
 
+// POST /api/indents/notify-stockout
+async function notifyStockout(req, res, next) {
+  try {
+    const { itemName, itemCode, dept, requestedQty, unit } = req.body;
+    if (!itemName) {
+      return res.status(400).json({ error: "itemName is required" });
+    }
+
+    const cleanDept = (dept || "KITCHEN").toUpperCase().trim();
+    const qtyText = requestedQty ? `${requestedQty} ${unit || "units"}` : "requisition";
+
+    // 1. Locate store_manager, manager, and admin roles
+    const targetRoles = await db("roles")
+      .whereIn("key", ["store_manager", "manager", "admin"])
+      .select("id", "key");
+
+    const smRole = targetRoles.find((r) => r.key === "store_manager") || targetRoles[0];
+
+    // 2. Insert notification row for Store Manager
+    const notificationPayload = {
+      recipient_role_id: smRole ? smRole.id : null,
+      title: `🚨 Instant Stockout Alert: ${itemName} (${cleanDept})`,
+      message: `Chef entered ${qtyText} of "${itemName}" for department ${cleanDept}, but this item is currently OUT OF STOCK in Central Store. Immediate restock/procurement required.`,
+      type: "low_stock",
+      severity: "critical",
+      is_read: false,
+      metadata: JSON.stringify({
+        item_name: itemName,
+        item_code: itemCode || null,
+        dept: cleanDept,
+        requested_qty: requestedQty || 0,
+        unit: unit || "KG",
+        source: "chef_touch_workspace",
+        timestamp: new Date().toISOString()
+      }),
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+
+    const inserted = await db("notifications").insert(notificationPayload).returning("id");
+    const notificationId = Array.isArray(inserted) && inserted.length > 0 
+      ? (typeof inserted[0] === "object" ? inserted[0].id : inserted[0])
+      : null;
+
+    return res.json({
+      success: true,
+      alerted: true,
+      notificationId,
+      message: "Store Manager informed instantly."
+    });
+  } catch (err) {
+    console.error("notifyStockout error:", err);
+    next(err);
+  }
+}
+
 module.exports = { 
   list, 
   create, 
@@ -1026,6 +1102,7 @@ module.exports = {
   getDisposables,
   exportSingleIndentExcel,
   getChefRadar,
+  notifyStockout,
 };
 
 

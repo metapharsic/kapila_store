@@ -6,9 +6,10 @@ import kapilaLogo from '../assets/kapila-logo.png';
 import { 
   ChefHat, ClipboardList, UtensilsCrossed, BarChart3, 
   ShieldCheck, LogOut, ArrowRight, Sparkles, TrendingUp, AlertTriangle,
-  Smartphone, Tablet, Monitor, Cpu
+  Smartphone, Tablet, Monitor, Cpu, Search
 } from 'lucide-react';
 import ChefRequisitionWorkspace from '../components/chef/ChefRequisitionWorkspace';
+import RaiseIndentItemModal from '../components/chef/RaiseIndentItemModal';
 
 const MODULE_CARDS = [
   {
@@ -186,6 +187,31 @@ export default function ChefHome() {
 
   const [showWorkspace, setShowWorkspace] = useState(false);
   const [workspaceDept, setWorkspaceDept] = useState('TIFFINS');
+  const [indentModalItem, setIndentModalItem] = useState(null);
+  const [quickSearch, setQuickSearch] = useState('');
+  const [quickResults, setQuickResults] = useState([]);
+  const [quickLoading, setQuickLoading] = useState(false);
+
+  useEffect(() => {
+    const q = quickSearch.trim();
+    if (q.length < 2) {
+      setQuickResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setQuickLoading(true);
+      try {
+        const res = await api.stock.list({ q, limit: 8 });
+        const list = res?.data || res || [];
+        setQuickResults(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.error('Quick stock search error:', err);
+      } finally {
+        setQuickLoading(false);
+      }
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [quickSearch]);
 
   const handleOpenDeptIndent = (deptName) => {
     setWorkspaceDept(deptName);
@@ -465,10 +491,10 @@ export default function ChefHome() {
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             marginBottom: 14,
             flexWrap: 'wrap',
-            gap: 8
+            gap: 12
           }}>
             <div>
               <h2 style={{
@@ -492,8 +518,120 @@ export default function ChefHome() {
                 }}>Touch To Open Indent</span>
               </h2>
               <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
-                Select your kitchen department below to load its pre-printed material template immediately
+                Select your kitchen department below to load its pre-printed material template, or search any ingredient below
               </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              {/* Quick Item Search Combobox */}
+              <div style={{ position: 'relative', width: isMobile ? '100%' : '280px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: 'rgba(15, 23, 42, 0.9)',
+                  border: '1.5px solid rgba(232, 168, 56, 0.4)',
+                  borderRadius: 10,
+                  padding: '6px 12px',
+                  gap: 8
+                }}>
+                  <Search size={14} style={{ color: '#e8a838', flexShrink: 0 }} />
+                  <input
+                    type="text"
+                    placeholder="Type 2 letters to search (e.g. 'ba', 'fr', 'pa')..."
+                    value={quickSearch}
+                    onChange={(e) => setQuickSearch(e.target.value)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: 12,
+                      outline: 'none',
+                      width: '100%'
+                    }}
+                  />
+                  {quickLoading && <span style={{ fontSize: 10, color: '#e8a838' }}>...</span>}
+                </div>
+
+                {/* Instant Search Results Dropdown */}
+                {quickResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: 6,
+                    background: '#0f172a',
+                    border: '1.5px solid #e8a838',
+                    borderRadius: 10,
+                    boxShadow: '0 12px 30px rgba(0,0,0,0.8)',
+                    zIndex: 100,
+                    maxHeight: '260px',
+                    overflowY: 'auto'
+                  }}>
+                    {quickResults.map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          setIndentModalItem(item);
+                          setQuickSearch('');
+                          setQuickResults([]);
+                        }}
+                        style={{
+                          padding: '10px 12px',
+                          borderBottom: '1px solid rgba(255,255,255,0.08)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 8,
+                          transition: 'background 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(232, 168, 56, 0.15)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>{item.name}</div>
+                          <div style={{ fontSize: 10.5, color: '#94a3b8' }}>
+                            {item.category} · Stock: <strong style={{ color: '#10b981' }}>{parseFloat(item.remaining || 0)} {item.unit}</strong>
+                          </div>
+                        </div>
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#080c14',
+                          background: '#e8a838',
+                          padding: '3px 8px',
+                          borderRadius: 5,
+                          whiteSpace: 'nowrap'
+                        }}>
+                          + Indent
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Open Full Indent Desk Button */}
+              <button
+                onClick={() => setCurrentScreen('indent')}
+                style={{
+                  background: 'rgba(30, 41, 59, 0.9)',
+                  border: '1px solid rgba(232, 168, 56, 0.4)',
+                  color: '#e8a838',
+                  padding: '7px 14px',
+                  borderRadius: 10,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <ClipboardList size={14} /> Full Indent Desk
+              </button>
             </div>
           </div>
 
@@ -580,16 +718,45 @@ export default function ChefHome() {
                       {dept.desc}
                     </div>
                     <div style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: isHovered ? '#f59e0b' : '#10b981',
-                      marginTop: 3,
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: 4,
                       gap: 4
                     }}>
-                      <span>✓ {dept.itemsCount} items in template</span>
-                      <ArrowRight size={10} />
+                      <span style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: isHovered ? '#f59e0b' : '#10b981',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 3
+                      }}>
+                        <span>✓ {dept.itemsCount} items</span>
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIndentPreFill({ department: dept.name });
+                          setCurrentScreen('indent');
+                        }}
+                        style={{
+                          background: 'rgba(232, 168, 56, 0.15)',
+                          border: '1px solid rgba(232, 168, 56, 0.35)',
+                          color: '#e8a838',
+                          fontSize: 9.5,
+                          fontWeight: 700,
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2
+                        }}
+                        title={`Open Full Indent Desk for ${dept.name}`}
+                      >
+                        Desk ↗
+                      </button>
                     </div>
                   </div>
                 </button>
@@ -744,6 +911,16 @@ export default function ChefHome() {
         <ChefRequisitionWorkspace
           defaultDept={workspaceDept}
           onClose={() => setShowWorkspace(false)}
+        />
+      )}
+
+      {/* Chef Touch Raise Indent Modal for Any Item */}
+      {indentModalItem && (
+        <RaiseIndentItemModal
+          item={indentModalItem}
+          isOpen={Boolean(indentModalItem)}
+          onClose={() => setIndentModalItem(null)}
+          onSuccess={() => setIndentModalItem(null)}
         />
       )}
     </div>

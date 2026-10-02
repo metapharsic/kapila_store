@@ -138,7 +138,7 @@ export default function ItemIntelligence({ onAgentUpdate, initialItemCode }) {
 
       const res = await authedGet(
         `/api/reports/item-history/${encodeURIComponent(item.item_code)}?${params}`
-      ).then(r => r.json());
+      );
 
       const elapsed = Date.now() - t0;
 

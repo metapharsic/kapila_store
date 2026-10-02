@@ -35,7 +35,6 @@ export default function AdminControlPanel({ isAdmin, agents, onGlobalFilterChang
     let active = true;
     setSettingsLoading(true);
     authedGet("/api/reports/settings")
-      .then((r) => r.json())
       .then((res) => {
         if (active && res.success) {
           setReportSettings({
@@ -121,7 +120,7 @@ export default function AdminControlPanel({ isAdmin, agents, onGlobalFilterChang
   const runVeritasAudit = async () => {
     setVeritasLoading(true);
     try {
-      const res = await authedGet("/api/reports/data-quality-audit").then(r => r.json());
+      const res = await authedGet("/api/reports/data-quality-audit");
       if (res.success) {
         setVeritasAudit(res.data);
       }

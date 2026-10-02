@@ -24,6 +24,7 @@ import {
 import { today } from "../../utils/dates";
 import StockSkeletonLoader from "./StockSkeletonLoader";
 import UnitDimensionBadge from "../UnitDimensionBadge";
+import RaiseIndentItemModal from "../chef/RaiseIndentItemModal";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "—";
@@ -96,6 +97,8 @@ const getActionLinkStyle = (variant) => {
       return { ...base, background: "#f0fdf4", color: "#15803d", borderColor: "#bbf7d0" };
     case "print":
       return { ...base, background: "#faf5ff", color: "#7e22ce", borderColor: "#e9d5ff" };
+    case "indent":
+      return { ...base, background: "rgba(232, 168, 56, 0.15)", color: "#b45309", borderColor: "rgba(232, 168, 56, 0.4)" };
     case "delete":
       return { ...base, background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca" };
     default:
@@ -152,6 +155,7 @@ export function StockTable({
 }) {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedCards, setExpandedCards] = useState({});
+  const [indentModalItem, setIndentModalItem] = useState(null);
 
   const toggleCard = (id) => setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
   const toggleExpandItem = (name) => {
@@ -652,6 +656,9 @@ export function StockTable({
                       paddingTop: 6,
                       borderTop: `1px solid ${COLORS.border}44`
                     }}>
+                      <button onClick={() => setIndentModalItem(item.batches ? item.batches[0] : item)} style={getActionLinkStyle("indent")}>
+                        <ClipboardList size={12} /> Raise Indent
+                      </button>
                       <button onClick={() => onView(item.batches ? item.batches[0] : item)} style={getActionLinkStyle("view")}>
                         <Eye size={12} /> View
                       </button>
@@ -908,6 +915,15 @@ export function StockTable({
                                 <Printer size={12} /> Print
                               </button>
 
+                              {/* RAISE INDENT */}
+                              <button
+                                onClick={() => setIndentModalItem(item.batches ? item.batches[0] : item)}
+                                style={getActionLinkStyle("indent")}
+                                title="Chef / Station: Raise Indent Requisition for this Item"
+                              >
+                                <ClipboardList size={12} /> Indent
+                              </button>
+
                               {/* DELETE */}
                               <button
                                 onClick={() => handleDeleteClick(item)}
@@ -928,6 +944,16 @@ export function StockTable({
           </div>
           <Pagination page={page} total={total} limit={limit} onPage={onPage} />
         </div>
+      )}
+
+      {/* Chef Touch Raise Indent Modal */}
+      {indentModalItem && (
+        <RaiseIndentItemModal
+          item={indentModalItem}
+          isOpen={Boolean(indentModalItem)}
+          onClose={() => setIndentModalItem(null)}
+          onSuccess={() => setIndentModalItem(null)}
+        />
       )}
     </>
   );

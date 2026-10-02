@@ -67,7 +67,7 @@ export default function VendorProfile360({ dimensions, onAgentUpdate, initialSup
       if (dateFrom) params.set("dateFrom", dateFrom);
       if (dateTo)   params.set("dateTo", dateTo);
 
-      const res = await authedGet(`/api/reports/vendor-profile/${vendor.id}?${params}`).then(r => r.json());
+      const res = await authedGet(`/api/reports/vendor-profile/${vendor.id}?${params}`);
       const elapsed = Date.now() - t0;
 
       if (!res.success) throw new Error(res.error || "Failed");

@@ -72,13 +72,23 @@ export default function ChefRequisitionWorkspace({
   const [activeDept, setActiveDept] = useState(defaultDept);
   const currentDeptObj = CANONICAL_DEPARTMENTS.find(d => d.name === activeDept) || CANONICAL_DEPARTMENTS[0];
 
+  // Sync activeDept if defaultDept changes from parent callers
+  useEffect(() => {
+    if (defaultDept && defaultDept !== activeDept) {
+      setActiveDept(defaultDept);
+      setActiveTab('catalog'); // Ensure predefined indent items are populated immediately
+    }
+  }, [defaultDept]);
+
   // --- Multi-Agent Telemetry & Data ---
   const [loading, setLoading] = useState(true);
   const [radarData, setRadarData] = useState(null);
-  const [activeTab, setActiveTab] = useState('required'); // 'required' | 'disposables' | 'recipes' | 'catalog'
+  const [activeTab, setActiveTab] = useState('catalog'); // Default: 'catalog' (predefined items)
   const [searchQuery, setSearchQuery] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [configuringItem, setConfiguringItem] = useState(null);
+  const [stockoutAlerts, setStockoutAlerts] = useState({});
 
   // --- Draft Requisition Items Map (item_code / name -> LineItem) ---
   const [draftItems, setDraftItems] = useState([]);
@@ -148,11 +158,47 @@ export default function ChefRequisitionWorkspace({
     fetchRadar();
   }, [fetchRadar]);
 
-  // --- Tactile Item Add / Stepper Handlers ---
+  // --- Tactile Item Add / Stepper Handlers with Multi-Thread Stockout Alert ---
   const handleSetItemQty = (item, qty) => {
     const targetQty = Math.max(0, parseFloat(qty) || 0);
+    const itemName = item.name || item.item_name;
+    const key = item.item_code || itemName;
+    const stockRemaining = parseFloat(item.current_stock ?? item.remaining ?? 0);
+    const isStockout = stockRemaining <= 0;
+
+    // Out of stock alert: Only AFTER chef puts in the number (quantity > 0)
+    if (targetQty > 0 && isStockout) {
+      setStockoutAlerts(prev => ({ ...prev, [key]: true }));
+      setFeedbackMsg({
+        type: 'warning',
+        text: `⚠️ Out of stock! Store Manager informed instantly (${itemName}).`
+      });
+
+      // Multi-thread asynchronous background dispatch to inform Store Manager instantly
+      setTimeout(async () => {
+        try {
+          await api.indents.notifyStockout({
+            itemName,
+            itemCode: item.item_code || '',
+            dept: activeDept,
+            requestedQty: targetQty,
+            unit: item.unit || 'KG'
+          });
+          console.log(`[Multi-Thread Worker] Store Manager alerted for stockout: ${itemName}`);
+        } catch (err) {
+          console.warn('[Multi-Thread Worker] Stockout alert dispatch error:', err);
+        }
+      }, 0);
+    } else if (targetQty <= 0) {
+      setStockoutAlerts(prev => {
+        if (!prev[key]) return prev;
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+
     setDraftItems(prev => {
-      const key = item.item_code || item.name;
       const existingIdx = prev.findIndex(i => (i.item_code || i.name) === key);
 
       if (targetQty <= 0) {
@@ -166,12 +212,12 @@ export default function ChefRequisitionWorkspace({
 
       const lineItem = {
         item_code: item.item_code || '',
-        name: item.name,
+        name: itemName,
         unit: item.unit || 'KG',
         qty: targetQty,
         requestedQty: targetQty,
         unit_price: parseFloat(item.price || item.default_cost || item.live_price || 0),
-        current_stock: parseFloat(item.current_stock ?? item.remaining ?? 0),
+        current_stock: stockRemaining,
         category: item.category || item.subcat_name || 'Kitchen Prep'
       };
 
@@ -186,10 +232,11 @@ export default function ChefRequisitionWorkspace({
   };
 
   const handleStepQty = (item, delta) => {
-    const key = item.item_code || item.name;
+    const itemName = item.name || item.item_name;
+    const key = item.item_code || itemName;
     const existing = draftItems.find(i => (i.item_code || i.name) === key);
     const currentQty = existing ? existing.qty : 0;
-    handleSetItemQty(item, currentQty + delta);
+    handleSetItemQty({ ...item, name: itemName }, currentQty + delta);
   };
 
   const handleResetZero = () => {
@@ -313,15 +360,79 @@ export default function ChefRequisitionWorkspace({
     return draftItems.reduce((sum, it) => sum + (it.qty * it.unit_price), 0);
   }, [draftItems]);
 
-  // Filtered catalog items based on search query
+  // --- Two-Letter Search Engine ---
+  // When at least 2 characters are typed, instant live filtering activates across all tabs and Central Store
+  const isTwoLetterSearch = searchQuery.trim().length >= 2;
+  const searchQ = searchQuery.trim().toLowerCase();
+
+  // Filtered critical items based on 2-letter search query
+  const filteredCritical = useMemo(() => {
+    const list = radarData?.critical_items || [];
+    if (!isTwoLetterSearch) return list;
+    return list.filter(i => {
+      const name = (i.name || '').toLowerCase();
+      const code = (i.item_code || '').toLowerCase();
+      return name.includes(searchQ) || code.includes(searchQ);
+    });
+  }, [radarData?.critical_items, isTwoLetterSearch, searchQ]);
+
+  // Filtered disposables items based on 2-letter search query
+  const filteredDisposables = useMemo(() => {
+    const list = radarData?.disposables || [];
+    if (!isTwoLetterSearch) return list;
+    return list.filter(i => {
+      const name = (i.name || '').toLowerCase();
+      const code = (i.item_code || '').toLowerCase();
+      return name.includes(searchQ) || code.includes(searchQ);
+    });
+  }, [radarData?.disposables, isTwoLetterSearch, searchQ]);
+
+  // Filtered recipes based on 2-letter search query
+  const filteredRecipes = useMemo(() => {
+    const list = radarData?.station_recipes || [];
+    if (!isTwoLetterSearch) return list;
+    return list.filter(r => {
+      const name = (r.name || '').toLowerCase();
+      const cat = (r.category || '').toLowerCase();
+      return name.includes(searchQ) || cat.includes(searchQ);
+    });
+  }, [radarData?.station_recipes, isTwoLetterSearch, searchQ]);
+
+  // Filtered catalog items based on 2-letter search query
   const filteredCatalog = useMemo(() => {
-    if (!radarData?.catalog_items) return [];
-    if (!searchQuery.trim()) return radarData.catalog_items;
-    const q = searchQuery.toLowerCase();
-    return radarData.catalog_items.filter(i => 
-      i.name.toLowerCase().includes(q) || (i.item_code && i.item_code.toLowerCase().includes(q))
-    );
-  }, [radarData, searchQuery]);
+    const list = radarData?.catalog_items || [];
+    if (!isTwoLetterSearch) return list;
+    return list.filter(i => {
+      const name = (i.name || i.item_name || '').toLowerCase();
+      const code = (i.item_code || '').toLowerCase();
+      return name.includes(searchQ) || code.includes(searchQ);
+    });
+  }, [radarData?.catalog_items, isTwoLetterSearch, searchQ]);
+
+  // Central Store live lookup for 2-letter search queries
+  const [centralStoreMatches, setCentralStoreMatches] = useState([]);
+  const [storeSearching, setStoreSearching] = useState(false);
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setCentralStoreMatches([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setStoreSearching(true);
+      try {
+        const res = await api.stock.list({ q, limit: 10 });
+        const list = res?.data || res || [];
+        setCentralStoreMatches(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.error('Central store 2-letter search error:', err);
+      } finally {
+        setStoreSearching(false);
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // If minimized, display a sleek floating thumb badge
   if (dockConfig.isMinimized) {
@@ -685,7 +796,10 @@ export default function ChefRequisitionWorkspace({
           return (
             <button
               key={dept.name}
-              onClick={() => setActiveDept(dept.name)}
+              onClick={() => {
+                setActiveDept(dept.name);
+                setActiveTab('catalog'); // Instantly populate predefined indent for selected dept
+              }}
               style={{
                 background: isSelected ? dept.bg : 'rgba(30, 41, 59, 0.5)',
                 border: `1.5px solid ${isSelected ? dept.color : 'rgba(255, 255, 255, 0.08)'}`,
@@ -756,21 +870,21 @@ export default function ChefRequisitionWorkspace({
       {feedbackMsg && (
         <div style={{
           padding: '8px 14px',
-          background: feedbackMsg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-          borderBottom: `1px solid ${feedbackMsg.type === 'success' ? '#10b981' : '#3b82f6'}`,
-          color: feedbackMsg.type === 'success' ? '#34d399' : '#93c5fd',
+          background: feedbackMsg.type === 'warning' ? 'rgba(239, 68, 68, 0.2)' : feedbackMsg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+          borderBottom: `1px solid ${feedbackMsg.type === 'warning' ? '#ef4444' : feedbackMsg.type === 'success' ? '#10b981' : '#3b82f6'}`,
+          color: feedbackMsg.type === 'warning' ? '#fca5a5' : feedbackMsg.type === 'success' ? '#34d399' : '#93c5fd',
           fontSize: 12,
-          fontWeight: 600,
+          fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
           gap: 6
         }}>
-          <CheckCircle2 size={14} /> {feedbackMsg.text}
+          {feedbackMsg.type === 'warning' ? <AlertTriangle size={14} style={{ color: '#ef4444', flexShrink: 0 }} /> : <CheckCircle2 size={14} />} {feedbackMsg.text}
         </div>
       )}
 
       {/* ============================================================== */}
-      {/* 4. TABS: WHAT IS REQUIRED | DISPOSABLES | RECIPES | CATALOG    */}
+      {/* 4. TABS: PREDEFINED INDENT | CRITICAL | DISPOSABLES | RECIPES   */}
       {/* ============================================================== */}
       <div style={{
         display: 'flex',
@@ -779,10 +893,10 @@ export default function ChefRequisitionWorkspace({
         flexShrink: 0
       }}>
         {[
-          { id: 'required', label: '🚨 What is Required', count: (radarData?.critical_items?.length || 0) },
-          { id: 'disposables', label: '📦 Packaging & Bit-Pieces', count: (radarData?.disposables?.length || 0) },
-          { id: 'recipes', label: '🍲 Recipe Demand', count: (radarData?.station_recipes?.length || 0) },
-          { id: 'catalog', label: '📋 All Station Items', count: (radarData?.catalog_items?.length || 0) }
+          { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || activeDept})`, count: isTwoLetterSearch ? filteredCatalog.length : (radarData?.catalog_items?.length || 0) },
+          { id: 'required', label: '🚨 Critical Radar', count: isTwoLetterSearch ? filteredCritical.length : (radarData?.critical_items?.length || 0) },
+          { id: 'disposables', label: '📦 Packaging & Disposables', count: isTwoLetterSearch ? filteredDisposables.length : (radarData?.disposables?.length || 0) },
+          { id: 'recipes', label: '🍲 Recipe Demand', count: isTwoLetterSearch ? filteredRecipes.length : (radarData?.station_recipes?.length || 0) }
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -821,30 +935,129 @@ export default function ChefRequisitionWorkspace({
         })}
       </div>
 
-      {/* Search Input for Catalog */}
-      {activeTab === 'catalog' && (
-        <div style={{ padding: '8px 14px', background: 'rgba(15, 23, 42, 0.9)', borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: 10, color: '#94a3b8' }} />
-            <input
-              type="text"
-              placeholder="Search station ingredients or SKU..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+      {/* ============================================================== */}
+      {/* 4.5 DEDICATED TWO-LETTER TOUCH SEARCH BAR (ALL TABS)           */}
+      {/* ============================================================== */}
+      <div style={{
+        padding: '8px 14px',
+        background: 'rgba(15, 23, 42, 0.95)',
+        borderBottom: '1.5px solid rgba(232, 168, 56, 0.2)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        flexShrink: 0
+      }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search size={15} style={{ position: 'absolute', left: 10, color: isTwoLetterSearch ? '#e8a838' : '#94a3b8' }} />
+          <input
+            type="text"
+            placeholder="Search items with 2 letters (e.g. 'ba', 'fr', 'pa', 'to', 'ra')..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              background: 'rgba(30, 41, 59, 0.9)',
+              border: `1.5px solid ${isTwoLetterSearch ? '#e8a838' : 'rgba(255, 255, 255, 0.15)'}`,
+              borderRadius: 10,
+              padding: '8px 36px 8px 32px',
+              color: '#ffffff',
+              fontSize: 13,
+              fontWeight: 600,
+              outline: 'none',
+              boxSizing: 'border-box',
+              boxShadow: isTwoLetterSearch ? '0 0 10px rgba(232, 168, 56, 0.2)' : 'none'
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              title="Clear search"
               style={{
-                width: '100%',
-                background: 'rgba(30, 41, 59, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: 8,
-                padding: '8px 12px 8px 32px',
-                color: '#ffffff',
-                fontSize: 13,
-                boxSizing: 'border-box'
+                position: 'absolute',
+                right: 8,
+                background: 'rgba(255, 255, 255, 0.12)',
+                border: 'none',
+                color: '#cbd5e1',
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0
               }}
-            />
-          </div>
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
-      )}
+
+        {/* 2-Letter Search Telemetry Bar & Quick Starter Chips */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: 11,
+          color: '#94a3b8',
+          flexWrap: 'wrap',
+          gap: 6
+        }}>
+          {!searchQuery.trim() ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{ color: '#e8a838', fontWeight: 700 }}>⚡ 2-Letter Search:</span>
+              {['ba', 'fr', 'fl', 'ra', 'gr', 'pa', 'to', 'ch'].map(chip => (
+                <button
+                  key={chip}
+                  onClick={() => setSearchQuery(chip)}
+                  style={{
+                    background: 'rgba(232, 168, 56, 0.12)',
+                    border: '1px solid rgba(232, 168, 56, 0.3)',
+                    color: '#e8a838',
+                    padding: '2px 7px',
+                    borderRadius: 5,
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          ) : searchQuery.trim().length === 1 ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#f59e0b' }}>
+              <span>ℹ️ Type 1 more letter for 2-letter search...</span>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{
+                color: '#10b981',
+                background: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                padding: '1px 7px',
+                borderRadius: 4,
+                fontWeight: 700,
+                fontSize: 10.5
+              }}>
+                ✓ 2-Letter Match: "{searchQuery}"
+              </span>
+              <span>
+                Found <strong style={{ color: '#ffffff' }}>
+                  {activeTab === 'required' ? filteredCritical.length :
+                   activeTab === 'disposables' ? filteredDisposables.length :
+                   activeTab === 'recipes' ? filteredRecipes.length : filteredCatalog.length}
+                </strong> in this tab
+                {centralStoreMatches.length > 0 && (
+                  <span style={{ marginLeft: 6, color: '#e8a838' }}>
+                    · {centralStoreMatches.length} in Central Store
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* ============================================================== */}
       {/* 5. MAIN CONTENT SCROLL AREA (Touch Friendly Items List)        */}
@@ -885,19 +1098,20 @@ export default function ChefRequisitionWorkspace({
               </span>
             </div>
 
-            {(radarData?.critical_items || []).map((item) => {
+            {filteredCritical.map((item) => {
               const key = item.item_code || item.name;
+              const itemName = item.name || item.item_name;
               const staged = draftItems.find(i => (i.item_code || i.name) === key);
               const stagedQty = staged ? staged.qty : 0;
               const stockRemaining = parseFloat(item.current_stock ?? 0);
-              const isStockout = stockRemaining <= 0;
+              const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
 
               return (
                 <div
                   key={key}
                   style={{
                     background: staged ? 'rgba(232, 168, 56, 0.12)' : 'rgba(30, 41, 59, 0.7)',
-                    border: `1.5px solid ${staged ? '#e8a838' : isStockout ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.08)'}`,
+                    border: `1.5px solid ${hasStockoutNotice ? 'rgba(239, 68, 68, 0.6)' : staged ? '#e8a838' : 'rgba(255, 255, 255, 0.08)'}`,
                     borderRadius: 14,
                     padding: '12px 14px',
                     display: 'flex',
@@ -907,29 +1121,60 @@ export default function ChefRequisitionWorkspace({
                     transition: 'all 0.15s ease'
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>
-                        {item.name}
-                      </span>
-                      <span style={{
-                        fontSize: 10,
+                  <div 
+                    onClick={() => setConfiguringItem({ ...item, name: itemName, dept: activeDept })}
+                    style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                    title="Touch to configure full indent options (qty, units, dish, notes)"
+                  >
+                    {/* SHOW ONLY THE ITEM NAME */}
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
+                      {itemName}
+                    </div>
+
+                    {/* AFTER CHEF PUTS IN THE NUMBER: If out of stock, say "Out of stock! Store Manager informed instantly." */}
+                    {hasStockoutNotice && (
+                      <div style={{
+                        marginTop: 6,
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(239, 68, 68, 0.22)',
+                        border: '1px solid rgba(239, 68, 68, 0.5)',
+                        color: '#fca5a5',
+                        fontSize: 11.5,
                         fontWeight: 700,
-                        padding: '1px 6px',
-                        borderRadius: 4,
-                        background: isStockout ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                        color: isStockout ? '#ef4444' : '#10b981'
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
                       }}>
-                        {isStockout ? '● OUT OF STOCK' : `● ${stockRemaining} ${item.unit} in store`}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                      Unit: <strong>{item.unit}</strong> · ₹{parseFloat(item.price || 0).toFixed(2)}/unit
-                    </div>
+                        <AlertTriangle size={13} style={{ color: '#ef4444', flexShrink: 0 }} />
+                        <span>Out of stock! Store Manager informed instantly.</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Large Tactile Stepper */}
+                  {/* Large Tactile Stepper & Options Button */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                      title="Open complete options to raise indent"
+                      style={{
+                        height: 38,
+                        padding: '0 8px',
+                        borderRadius: 10,
+                        background: 'rgba(232, 168, 56, 0.15)',
+                        border: '1px solid rgba(232, 168, 56, 0.3)',
+                        color: '#e8a838',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        touchAction: 'manipulation'
+                      }}
+                    >
+                      <SlidersHorizontal size={13} /> Options
+                    </button>
                     <button
                       onClick={() => handleStepQty(item, -1)}
                       disabled={stagedQty <= 0}
@@ -1016,6 +1261,139 @@ export default function ChefRequisitionWorkspace({
                 </div>
               );
             })}
+
+            {filteredCritical.length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '24px 16px',
+                background: 'rgba(30, 41, 59, 0.4)',
+                borderRadius: 14,
+                border: '1px dashed rgba(232, 168, 56, 0.3)',
+                color: '#94a3b8'
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: isTwoLetterSearch ? '#fca5a5' : '#94a3b8', marginBottom: 6 }}>
+                  {isTwoLetterSearch 
+                    ? `No items matching "${searchQuery}" in What is Required`
+                    : 'No critical shortages recorded for this department today.'}
+                </div>
+                {isTwoLetterSearch && (
+                  <>
+                    <div style={{ fontSize: 11, marginBottom: 12 }}>
+                      Check other station tabs or Central Store stock below:
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+                      {filteredDisposables.length > 0 && (
+                        <button
+                          onClick={() => setActiveTab('disposables')}
+                          style={{
+                            background: 'rgba(139, 92, 246, 0.15)',
+                            border: '1px solid #8b5cf6',
+                            color: '#c4b5fd',
+                            padding: '6px 12px',
+                            borderRadius: 8,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          📦 Packaging ({filteredDisposables.length})
+                        </button>
+                      )}
+                      {filteredCatalog.length > 0 && (
+                        <button
+                          onClick={() => setActiveTab('catalog')}
+                          style={{
+                            background: 'rgba(232, 168, 56, 0.15)',
+                            border: '1px solid #e8a838',
+                            color: '#e8a838',
+                            padding: '6px 12px',
+                            borderRadius: 8,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          📋 All Station Items ({filteredCatalog.length})
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Central Store Live 2-Letter Matches */}
+                    {centralStoreMatches.length > 0 && (
+                      <div style={{ textAlign: 'left', marginTop: 12 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#e8a838', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Sparkles size={12} />
+                          <span>Matching Central Store Warehouse Items ({centralStoreMatches.length}):</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {centralStoreMatches.map(item => {
+                            const key = item.item_code || item.name;
+                            const staged = draftItems.find(i => (i.item_code || i.name) === key);
+                            return (
+                              <div
+                                key={key}
+                                style={{
+                                  background: staged ? 'rgba(232, 168, 56, 0.15)' : 'rgba(15, 23, 42, 0.85)',
+                                  border: `1.5px solid ${staged ? '#e8a838' : 'rgba(232, 168, 56, 0.3)'}`,
+                                  borderRadius: 10,
+                                  padding: '10px 12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: 10
+                                }}
+                              >
+                                <div 
+                                  onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                                  style={{ flex: 1, cursor: 'pointer' }}
+                                >
+                                  <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff' }}>{item.name}</div>
+                                  <div style={{ fontSize: 10.5, color: '#94a3b8' }}>
+                                    {item.category} · Stock: <strong style={{ color: '#10b981' }}>{parseFloat(item.remaining || 0)} {item.unit}</strong> · ₹{parseFloat(item.price || 0).toFixed(2)}
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <button
+                                    onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                                    style={{
+                                      padding: '5px 8px',
+                                      borderRadius: 6,
+                                      background: 'rgba(232, 168, 56, 0.15)',
+                                      border: '1px solid rgba(232, 168, 56, 0.3)',
+                                      color: '#e8a838',
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    ⚙️ Options
+                                  </button>
+                                  <button
+                                    onClick={() => handleStepQty(item, 1)}
+                                    style={{
+                                      padding: '5px 10px',
+                                      borderRadius: 6,
+                                      background: '#e8a838',
+                                      border: 'none',
+                                      color: '#080c14',
+                                      fontSize: 11,
+                                      fontWeight: 800,
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    + Stage
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -1039,18 +1417,20 @@ export default function ChefRequisitionWorkspace({
               </span>
             </div>
 
-            {(radarData?.disposables || []).map((item) => {
+            {filteredDisposables.map((item) => {
               const key = item.item_code || item.name;
+              const itemName = item.name || item.item_name;
               const staged = draftItems.find(i => (i.item_code || i.name) === key);
               const stagedQty = staged ? staged.qty : 0;
               const stockRemaining = parseFloat(item.current_stock ?? 0);
+              const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
 
               return (
                 <div
                   key={key}
                   style={{
                     background: staged ? 'rgba(232, 168, 56, 0.12)' : 'rgba(30, 41, 59, 0.7)',
-                    border: `1.5px solid ${staged ? '#e8a838' : 'rgba(255, 255, 255, 0.08)'}`,
+                    border: `1.5px solid ${hasStockoutNotice ? 'rgba(239, 68, 68, 0.6)' : staged ? '#e8a838' : 'rgba(255, 255, 255, 0.08)'}`,
                     borderRadius: 14,
                     padding: '12px 14px',
                     display: 'flex',
@@ -1059,16 +1439,59 @@ export default function ChefRequisitionWorkspace({
                     gap: 12
                   }}
                 >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>
-                      {item.name}
+                  <div 
+                    onClick={() => setConfiguringItem({ ...item, name: itemName, dept: activeDept })}
+                    style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                    title="Touch to configure full indent options"
+                  >
+                    {/* SHOW ONLY THE ITEM NAME */}
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
+                      {itemName}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                      Store stock: <strong>{stockRemaining} {item.unit}</strong> · ₹{parseFloat(item.price || 0).toFixed(2)}
-                    </div>
+
+                    {/* AFTER CHEF PUTS IN THE NUMBER: If out of stock, say "Out of stock! Store Manager informed instantly." */}
+                    {hasStockoutNotice && (
+                      <div style={{
+                        marginTop: 6,
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(239, 68, 68, 0.22)',
+                        border: '1px solid rgba(239, 68, 68, 0.5)',
+                        color: '#fca5a5',
+                        fontSize: 11.5,
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        <AlertTriangle size={13} style={{ color: '#ef4444', flexShrink: 0 }} />
+                        <span>Out of stock! Store Manager informed instantly.</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                      title="Open complete options to raise indent"
+                      style={{
+                        height: 36,
+                        padding: '0 8px',
+                        borderRadius: 10,
+                        background: 'rgba(232, 168, 56, 0.15)',
+                        border: '1px solid rgba(232, 168, 56, 0.3)',
+                        color: '#e8a838',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        touchAction: 'manipulation'
+                      }}
+                    >
+                      <SlidersHorizontal size={13} /> Options
+                    </button>
                     <button
                       onClick={() => handleStepQty(item, -1)}
                       disabled={stagedQty <= 0}
@@ -1126,6 +1549,139 @@ export default function ChefRequisitionWorkspace({
                 </div>
               );
             })}
+
+            {filteredDisposables.length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '24px 16px',
+                background: 'rgba(30, 41, 59, 0.4)',
+                borderRadius: 14,
+                border: '1px dashed rgba(232, 168, 56, 0.3)',
+                color: '#94a3b8'
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: isTwoLetterSearch ? '#fca5a5' : '#94a3b8', marginBottom: 6 }}>
+                  {isTwoLetterSearch 
+                    ? `No packaging items matching "${searchQuery}"`
+                    : 'No packaging items found.'}
+                </div>
+                {isTwoLetterSearch && (
+                  <>
+                    <div style={{ fontSize: 11, marginBottom: 12 }}>
+                      Check other station tabs or Central Store stock below:
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+                      {filteredCritical.length > 0 && (
+                        <button
+                          onClick={() => setActiveTab('required')}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            border: '1px solid #ef4444',
+                            color: '#fca5a5',
+                            padding: '6px 12px',
+                            borderRadius: 8,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🚨 Required ({filteredCritical.length})
+                        </button>
+                      )}
+                      {filteredCatalog.length > 0 && (
+                        <button
+                          onClick={() => setActiveTab('catalog')}
+                          style={{
+                            background: 'rgba(232, 168, 56, 0.15)',
+                            border: '1px solid #e8a838',
+                            color: '#e8a838',
+                            padding: '6px 12px',
+                            borderRadius: 8,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          📋 All Station Items ({filteredCatalog.length})
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Central Store Live 2-Letter Matches */}
+                    {centralStoreMatches.length > 0 && (
+                      <div style={{ textAlign: 'left', marginTop: 12 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#e8a838', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Sparkles size={12} />
+                          <span>Matching Central Store Warehouse Items ({centralStoreMatches.length}):</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {centralStoreMatches.map(item => {
+                            const key = item.item_code || item.name;
+                            const staged = draftItems.find(i => (i.item_code || i.name) === key);
+                            return (
+                              <div
+                                key={key}
+                                style={{
+                                  background: staged ? 'rgba(232, 168, 56, 0.15)' : 'rgba(15, 23, 42, 0.85)',
+                                  border: `1.5px solid ${staged ? '#e8a838' : 'rgba(232, 168, 56, 0.3)'}`,
+                                  borderRadius: 10,
+                                  padding: '10px 12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: 10
+                                }}
+                              >
+                                <div 
+                                  onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                                  style={{ flex: 1, cursor: 'pointer' }}
+                                >
+                                  <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff' }}>{item.name}</div>
+                                  <div style={{ fontSize: 10.5, color: '#94a3b8' }}>
+                                    {item.category} · Stock: <strong style={{ color: '#10b981' }}>{parseFloat(item.remaining || 0)} {item.unit}</strong> · ₹{parseFloat(item.price || 0).toFixed(2)}
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <button
+                                    onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                                    style={{
+                                      padding: '5px 8px',
+                                      borderRadius: 6,
+                                      background: 'rgba(232, 168, 56, 0.15)',
+                                      border: '1px solid rgba(232, 168, 56, 0.3)',
+                                      color: '#e8a838',
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    ⚙️ Options
+                                  </button>
+                                  <button
+                                    onClick={() => handleStepQty(item, 1)}
+                                    style={{
+                                      padding: '5px 10px',
+                                      borderRadius: 6,
+                                      background: '#e8a838',
+                                      border: 'none',
+                                      color: '#080c14',
+                                      fontSize: 11,
+                                      fontWeight: 800,
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    + Stage
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -1149,7 +1705,7 @@ export default function ChefRequisitionWorkspace({
               </span>
             </div>
 
-            {(radarData?.station_recipes || []).map((recipe) => (
+            {filteredRecipes.map((recipe) => (
               <div
                 key={recipe.id}
                 style={{
@@ -1197,6 +1753,23 @@ export default function ChefRequisitionWorkspace({
                 </div>
               </div>
             ))}
+
+            {filteredRecipes.length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '24px 16px',
+                background: 'rgba(30, 41, 59, 0.4)',
+                borderRadius: 14,
+                border: '1px dashed rgba(232, 168, 56, 0.3)',
+                color: '#94a3b8'
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: isTwoLetterSearch ? '#fca5a5' : '#94a3b8' }}>
+                  {isTwoLetterSearch 
+                    ? `No recipes matching "${searchQuery}"`
+                    : 'No recipes configured for this station.'}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -1209,13 +1782,14 @@ export default function ChefRequisitionWorkspace({
               const staged = draftItems.find(i => (i.item_code || i.name) === key);
               const stagedQty = staged ? staged.qty : 0;
               const stockRemaining = parseFloat(item.current_stock ?? 0);
+              const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
 
               return (
                 <div
                   key={key}
                   style={{
                     background: staged ? 'rgba(232, 168, 56, 0.12)' : 'rgba(30, 41, 59, 0.7)',
-                    border: `1.5px solid ${staged ? '#e8a838' : 'rgba(255, 255, 255, 0.08)'}`,
+                    border: `1.5px solid ${hasStockoutNotice ? 'rgba(239, 68, 68, 0.6)' : staged ? '#e8a838' : 'rgba(255, 255, 255, 0.08)'}`,
                     borderRadius: 14,
                     padding: '12px 14px',
                     display: 'flex',
@@ -1224,16 +1798,59 @@ export default function ChefRequisitionWorkspace({
                     gap: 12
                   }}
                 >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>
+                  <div 
+                    onClick={() => setConfiguringItem({ ...item, name: itemName, dept: activeDept })}
+                    style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                    title="Touch to configure full indent options"
+                  >
+                    {/* SHOW ONLY THE ITEM NAME */}
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
                       {itemName}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                      Store stock: <strong>{stockRemaining} {item.unit}</strong> · {item.subcat_name || ''}
-                    </div>
+
+                    {/* AFTER CHEF PUTS IN THE NUMBER: If out of stock, say "Out of stock! Store Manager informed instantly." */}
+                    {hasStockoutNotice && (
+                      <div style={{
+                        marginTop: 6,
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(239, 68, 68, 0.22)',
+                        border: '1px solid rgba(239, 68, 68, 0.5)',
+                        color: '#fca5a5',
+                        fontSize: 11.5,
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        <AlertTriangle size={13} style={{ color: '#ef4444', flexShrink: 0 }} />
+                        <span>Out of stock! Store Manager informed instantly.</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      onClick={() => setConfiguringItem({ ...item, name: itemName, dept: activeDept })}
+                      title="Open complete options to raise indent"
+                      style={{
+                        height: 36,
+                        padding: '0 8px',
+                        borderRadius: 10,
+                        background: 'rgba(232, 168, 56, 0.15)',
+                        border: '1px solid rgba(232, 168, 56, 0.3)',
+                        color: '#e8a838',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        touchAction: 'manipulation'
+                      }}
+                    >
+                      <SlidersHorizontal size={13} /> Options
+                    </button>
                     <button
                       onClick={() => handleStepQty({ ...item, name: itemName }, -1)}
                       disabled={stagedQty <= 0}
@@ -1291,6 +1908,114 @@ export default function ChefRequisitionWorkspace({
                 </div>
               );
             })}
+
+            {filteredCatalog.length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '24px 16px',
+                background: 'rgba(30, 41, 59, 0.4)',
+                borderRadius: 14,
+                border: '1px dashed rgba(232, 168, 56, 0.3)',
+                color: '#94a3b8'
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: isTwoLetterSearch ? '#fca5a5' : '#94a3b8', marginBottom: 6 }}>
+                  {isTwoLetterSearch 
+                    ? `No station items matching "${searchQuery}"`
+                    : 'No items found in this department template.'}
+                </div>
+                {isTwoLetterSearch && centralStoreMatches.length > 0 && (
+                  <div style={{ textAlign: 'left', marginTop: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#e8a838', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Sparkles size={12} />
+                      <span>Matching Central Store Warehouse Items ({centralStoreMatches.length}):</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {centralStoreMatches.map(item => {
+                        const key = item.item_code || item.name;
+                        const itemName = item.name || item.item_name;
+                        const staged = draftItems.find(i => (i.item_code || i.name) === key);
+                        const stagedQty = staged ? staged.qty : 0;
+                        const stockRemaining = parseFloat(item.remaining ?? item.current_stock ?? 0);
+                        const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
+
+                        return (
+                          <div
+                            key={key}
+                            style={{
+                              background: staged ? 'rgba(232, 168, 56, 0.15)' : 'rgba(15, 23, 42, 0.85)',
+                              border: `1.5px solid ${hasStockoutNotice ? 'rgba(239, 68, 68, 0.6)' : staged ? '#e8a838' : 'rgba(232, 168, 56, 0.3)'}`,
+                              borderRadius: 10,
+                              padding: '10px 12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 10
+                            }}
+                          >
+                            <div 
+                              onClick={() => setConfiguringItem({ ...item, name: itemName, dept: activeDept })}
+                              style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                            >
+                              <div style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>{itemName}</div>
+                              {hasStockoutNotice && (
+                                <div style={{
+                                  marginTop: 4,
+                                  padding: '3px 6px',
+                                  borderRadius: 5,
+                                  background: 'rgba(239, 68, 68, 0.22)',
+                                  border: '1px solid rgba(239, 68, 68, 0.5)',
+                                  color: '#fca5a5',
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5
+                                }}>
+                                  <AlertTriangle size={12} style={{ color: '#ef4444', flexShrink: 0 }} />
+                                  <span>Out of stock! Store Manager informed instantly.</span>
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <button
+                                onClick={() => setConfiguringItem({ ...item, dept: activeDept })}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: 6,
+                                  background: 'rgba(232, 168, 56, 0.15)',
+                                  border: '1px solid rgba(232, 168, 56, 0.3)',
+                                  color: '#e8a838',
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ⚙️ Options
+                              </button>
+                              <button
+                                onClick={() => handleStepQty(item, 1)}
+                                style={{
+                                  padding: '5px 10px',
+                                  borderRadius: 6,
+                                  background: '#e8a838',
+                                  border: 'none',
+                                  color: '#080c14',
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                + Stage
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -1378,6 +2103,27 @@ export default function ChefRequisitionWorkspace({
           </button>
         </div>
       </div>
+
+      {/* Complete Chef Options Modal for Raising Indent on Item */}
+      <RaiseIndentItemModal
+        item={configuringItem}
+        defaultDept={activeDept}
+        isOpen={Boolean(configuringItem)}
+        onClose={() => setConfiguringItem(null)}
+        onItemStaged={(stagedItem) => {
+          setDraftItems(prev => {
+            const key = stagedItem.item_code || stagedItem.name;
+            const idx = prev.findIndex(i => (i.item_code || i.name) === key);
+            if (idx >= 0) {
+              const next = [...prev];
+              next[idx] = stagedItem;
+              return next;
+            }
+            return [...prev, stagedItem];
+          });
+          setConfiguringItem(null);
+        }}
+      />
     </div>
   );
 }

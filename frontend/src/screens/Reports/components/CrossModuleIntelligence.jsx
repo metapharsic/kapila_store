@@ -84,8 +84,8 @@ export default function CrossModuleIntelligence({ onAgentUpdate, onNavigateItem,
     try {
       const forceParam = force ? "?force=true" : "";
       const [intelRes, veritasRes] = await Promise.allSettled([
-        authedGet(`/api/reports/cross-module-insights${forceParam}`).then(r => r.json()),
-        authedGet(`/api/reports/data-quality-audit${forceParam}`).then(r => r.json()),
+        authedGet(`/api/reports/cross-module-insights${forceParam}`),
+        authedGet(`/api/reports/data-quality-audit${forceParam}`),
       ]);
 
       const elapsed = Date.now() - t0;
@@ -133,7 +133,6 @@ export default function CrossModuleIntelligence({ onAgentUpdate, onNavigateItem,
     let active = true;
     setTrendLoading(true);
     authedGet("/api/reports/valuation-trend?days=30")
-      .then((r) => r.json())
       .then((res) => {
         if (active && res.success) setValuationTrend(res.data.trend || []);
       })

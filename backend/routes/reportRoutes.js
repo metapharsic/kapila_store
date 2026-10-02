@@ -87,5 +87,15 @@ router.post(
   reportController.runEodReport
 );
 
+// Indent & Purchase Intelligence report: indents, purchases, GRNs, beyond-
+// expectation consumption, department consumption, approval-time analytics
+// and hourly indent-raise distribution for the day — WhatsApp digest to
+// admin + store manager, Excel workbook as the response body.
+router.post(
+  "/indent-intelligence/run",
+  requirePermission("reports.indent_intelligence_run"),
+  reportController.runIndentIntelligenceReport
+);
+
 module.exports = router;
 

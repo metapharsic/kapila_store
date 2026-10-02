@@ -19,6 +19,7 @@ router.get("/:id/export-excel", requireAnyPermission(["indents.view", "stock.exp
 router.post("/subcategories", requirePermission("indents.create"), ctrl.createSubcategory);
 router.post("/subcategories/:id/items", requirePermission("indents.create"), ctrl.createSubcategoryItem);
 router.post("/chef-submit", requirePermission("indents.create"), ctrl.chefSubmit);
+router.post("/notify-stockout", requireAnyPermission(["indents.create", "indents.view"]), ctrl.notifyStockout);
 router.post("/:id/process", requireAnyPermission(["indents.approve", "issuances.create"]), ctrl.processFulfillment);
 router.post("/smart-autofill", requirePermission("indents.create"), ctrl.smartAutofill);
 router.post("/voice-parse", requirePermission("indents.create"), ctrl.voiceParse);

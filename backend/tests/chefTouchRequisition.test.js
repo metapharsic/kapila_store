@@ -3,6 +3,7 @@ const indentController = require('../controllers/indentController');
 
 describe('Chef Touch Requisition Cockpit & Multi-Agent Radar Suite', () => {
   let createdIndentId = null;
+  let createdNotificationId = null;
 
   afterAll(async () => {
     try {
@@ -10,6 +11,9 @@ describe('Chef Touch Requisition Cockpit & Multi-Agent Radar Suite', () => {
         await db('approval_requests').where('module', 'indents').where('resource_id', createdIndentId).del();
         await db('indent_items').where('indent_id', createdIndentId).del();
         await db('indents').where('id', createdIndentId).del();
+      }
+      if (createdNotificationId) {
+        await db('notifications').where('id', createdNotificationId).del();
       }
     } catch (e) {
       console.error('Test cleanup error:', e.message);
@@ -99,5 +103,43 @@ describe('Chef Touch Requisition Cockpit & Multi-Agent Radar Suite', () => {
     // Verify saved in DB
     const savedItems = await db('indent_items').where('indent_id', createdIndentId);
     expect(savedItems.length).toBe(2);
+  });
+
+  it('3. Should trigger instant stockout alert to Store Manager via notifyStockout', async () => {
+    const req = {
+      body: {
+        itemName: 'Idly Rice Premium',
+        itemCode: 'TFN-RICE-01',
+        dept: 'TIFFINS',
+        requestedQty: 25,
+        unit: 'KG'
+      },
+      user: { id: 1, name: 'Chef Test', role: 'chef' }
+    };
+    const res = {
+      statusCode: 200,
+      status: jest.fn(function(code) { this.statusCode = code; return this; }),
+      json: jest.fn(function(data) { this.data = data; return this; })
+    };
+    const next = jest.fn();
+
+    await indentController.notifyStockout(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalled();
+    const body = res.json.mock.calls[0][0];
+
+    expect(body.success).toBe(true);
+    expect(body.alerted).toBe(true);
+    expect(body.notificationId).toBeDefined();
+    createdNotificationId = body.notificationId;
+
+    // Verify notification was stored in DB with critical severity
+    const notif = await db('notifications').where('id', createdNotificationId).first();
+    expect(notif).toBeDefined();
+    expect(notif.severity).toBe('critical');
+    expect(notif.type).toBe('low_stock');
+    expect(notif.title).toContain('Stockout Alert');
+    expect(notif.message).toContain('Idly Rice Premium');
   });
 });

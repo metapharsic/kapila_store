@@ -56,10 +56,29 @@ function autoFitColumns(worksheet, minWidth = 14, maxWidth = 52) {
 }
 
 /**
+ * Merge a cell range, but never crash the whole report over it: ExcelJS
+ * throws "Cannot merge already merged cells" if any cell in the range is
+ * already part of a previous merge (e.g. a group-name collision or an
+ * unexpected data shape). We only swallow that specific error and log a
+ * warning - any other error from mergeCells still propagates.
+ */
+function safeMergeCells(worksheet, range) {
+  try {
+    worksheet.mergeCells(range);
+  } catch (err) {
+    if (err && /already merged/i.test(err.message || "")) {
+      console.warn(`[excel] Skipped duplicate mergeCells("${range}") on sheet "${worksheet.name}": ${err.message}`);
+    } else {
+      throw err;
+    }
+  }
+}
+
+/**
  * Style a title banner row
  */
 function formatTitleBanner(worksheet, title, subtitle, dateStr) {
-  worksheet.mergeCells("A1:G1");
+  safeMergeCells(worksheet, "A1:G1");
   const titleCell = worksheet.getCell("A1");
   titleCell.value = `HOTEL KAPILA INVENTORY MANAGEMENT SYSTEM`;
   titleCell.font = { name: "Calibri", size: 16, bold: true, color: { argb: PALETTE.headerText } };
@@ -67,7 +86,7 @@ function formatTitleBanner(worksheet, title, subtitle, dateStr) {
   titleCell.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
   worksheet.getRow(1).height = 36;
 
-  worksheet.mergeCells("A2:G2");
+  safeMergeCells(worksheet, "A2:G2");
   const subCell = worksheet.getCell("A2");
   subCell.value = `${title.toUpperCase()} • Generated on: ${dateStr} • Status: OFFICIAL STORE AUDIT`;
   subCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "94A3B8" } };
@@ -427,7 +446,7 @@ class InventoryReportService {
     ws.getRow(7).height = 14;
 
     // AI Store Advisor Section
-    ws.mergeCells("A8:G8");
+    safeMergeCells(ws, "A8:G8");
     const aiTitle = ws.getCell("A8");
     aiTitle.value = "🤖 AI STORE ADVISOR & OPERATIONAL BRIEFING";
     aiTitle.font = { name: "Calibri", size: 11, bold: true, color: { argb: PALETTE.headerText } };
@@ -445,7 +464,7 @@ class InventoryReportService {
 
     aiNotes.forEach((note, i) => {
       const rNum = 9 + i;
-      ws.mergeCells(`A${rNum}:G${rNum}`);
+      safeMergeCells(ws, `A${rNum}:G${rNum}`);
       const c = ws.getCell(`A${rNum}`);
       c.value = note;
       c.font = { name: "Calibri", size: 10, italic: false, color: { argb: "1E293B" } };
@@ -460,7 +479,7 @@ class InventoryReportService {
 
     // Category Breakdown Header
     const catStartRow = 14;
-    ws.mergeCells(`A${catStartRow}:G${catStartRow}`);
+    safeMergeCells(ws, `A${catStartRow}:G${catStartRow}`);
     const catHeader = ws.getCell(`A${catStartRow}`);
     catHeader.value = "📊 INVENTORY VALUATION BREAKDOWN BY CATEGORY";
     catHeader.font = { name: "Calibri", size: 11, bold: true, color: { argb: PALETTE.headerText } };
@@ -1249,3 +1268,4 @@ module.exports.autoFitColumns = autoFitColumns;
 module.exports.formatTitleBanner = formatTitleBanner;
 module.exports.styleHeaderRow = styleHeaderRow;
 module.exports.applyCellFormat = applyCellFormat;
+module.exports.safeMergeCells = safeMergeCells;

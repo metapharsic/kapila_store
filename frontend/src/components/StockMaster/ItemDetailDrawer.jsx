@@ -7,8 +7,9 @@ import {
   X, MapPin, Building2, Calendar, Clock, DollarSign,
   Package, AlertTriangle, CheckCircle, Printer, Edit3,
   PlusCircle, FileText, ArrowRight, Layers, Tag, ShieldCheck,
-  TrendingDown, TrendingUp, RefreshCw, ShoppingCart
+  TrendingDown, TrendingUp, RefreshCw, ShoppingCart, ClipboardList
 } from "lucide-react";
+import RaiseIndentItemModal from "../chef/RaiseIndentItemModal";
 
 export default function ItemDetailDrawer({
   isOpen,
@@ -26,6 +27,7 @@ export default function ItemDetailDrawer({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview"); // "overview", "movements", "issuances_indents", "batches"
+  const [raiseIndentOpen, setRaiseIndentOpen] = useState(false);
 
   const effectiveOpen = isOpen !== undefined ? Boolean(isOpen) : Boolean(propItem);
   const effectiveItemId = itemId || propItem?.id;
@@ -351,6 +353,22 @@ export default function ItemDetailDrawer({
                   border: "1px solid var(--border-color)"
                 }}
               >
+                <Btn
+                  variant="primary"
+                  icon={<ClipboardList size={14} />}
+                  onClick={() => setRaiseIndentOpen(true)}
+                  style={{
+                    fontSize: 12,
+                    padding: "6px 14px",
+                    background: "linear-gradient(135deg, #e8a838 0%, #b45309 100%)",
+                    color: "#080c14",
+                    fontWeight: 800,
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(232, 168, 56, 0.35)"
+                  }}
+                >
+                  Raise Indent
+                </Btn>
                 <Btn
                   variant="primary"
                   icon={<PlusCircle size={14} />}
@@ -765,6 +783,19 @@ export default function ItemDetailDrawer({
           ) : null}
         </div>
       </div>
+
+      {/* Chef Touch Raise Indent Modal */}
+      {raiseIndentOpen && (
+        <RaiseIndentItemModal
+          item={item}
+          isOpen={raiseIndentOpen}
+          onClose={() => setRaiseIndentOpen(false)}
+          onSuccess={() => {
+            setRaiseIndentOpen(false);
+            if (effectiveItemId) loadDetails(effectiveItemId);
+          }}
+        />
+      )}
     </div>
   );
 }

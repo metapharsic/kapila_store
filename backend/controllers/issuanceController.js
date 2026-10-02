@@ -268,6 +268,21 @@ async function create(req, res, next) {
 
     await auditLog(req, { action: "issuances.create", resource: "issuances", resourceId: issuance.id, after: issuance });
 
+    // Automatically intimate Admin & Store Manager immediately with item count and total price value
+    const { notifyIssuanceCompleted } = require("../services/automaticAlertService");
+    const totalIssuedVal = issuance.items?.reduce((sum, it) => sum + ((parseFloat(it.issued) || 0) * (parseFloat(it.unit_price) || 0)), 0) || 0;
+    const positiveItemCount = issuance.items?.filter((it) => (parseFloat(it.issued) || 0) > 0).length || issuance.items?.length || 0;
+    notifyIssuanceCompleted({
+      issuance,
+      items: issuance.items,
+      totalIssuedValue: totalIssuedVal,
+      itemCount: positiveItemCount,
+      user: req.user,
+      dept: issuance.dept,
+      indentId: issuance.indent_id,
+      issueSlipNumber: `ISS-${issuance.id}`,
+    }).catch((err) => console.warn("[IssuanceController] notifyIssuanceCompleted warning:", err.message));
+
     const { checkHighValueAlert } = require("../utils/highValueAlert");
     checkHighValueAlert({
       module: "issuance",

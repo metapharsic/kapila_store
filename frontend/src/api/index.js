@@ -37,6 +37,7 @@ export const indents = {
   createSubcategory:(body) => api.post("/indents/subcategories", body),
   createSubcategoryItem:(subcatId, body) => api.post(`/indents/subcategories/${subcatId}/items`, body),
   chefSubmit:      (body) => api.post("/indents/chef-submit", body),
+  notifyStockout:  (body) => api.post("/indents/notify-stockout", body),
   processFulfillment:(id, body) => api.post(`/indents/${id}/process`, body),
   chefRadar:       (params) => api.get("/indents/chef-radar", params),
   recommendations: (params) => api.get("/indents/recommendations", params),
