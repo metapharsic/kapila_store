@@ -266,3 +266,42 @@ body::after {
   }
 }
 
+/* --- Theme Overrides (Touch Panel / Dark Mode) --- */
+.theme-dark {
+  --bg-page:        #121214;
+  --bg-page-subtle: #18181b;
+  --bg-page-warm:   #1a1a1e;
+  --bg-card:        #1c1c1f;
+  --bg-modal:       #1c1c1f;
+  --bg-hover:       rgba(255, 255, 255, 0.05);
+  --bg-active:      rgba(244, 200, 75, 0.20);
+
+  --text-main:          #f4f4f5;
+  --text-muted:         #a1a1aa;
+  --text-dim:           #71717a;
+  --text-light:         #ffffff;
+
+  --border-color:       rgba(255, 255, 255, 0.12);
+  --border-subtle:      rgba(255, 255, 255, 0.05);
+  --border-strong:      rgba(255, 255, 255, 0.20);
+  
+  --shadow-sm:          0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md:          0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg:          0 10px 28px rgba(0, 0, 0, 0.8);
+}
+
+.theme-dark .chip {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+.theme-dark .chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+.theme-dark .chip.active {
+  background: var(--color-gold-dim);
+  color: var(--color-gold);
+  border-color: var(--color-gold);
+}
+

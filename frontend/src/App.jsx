@@ -10,7 +10,8 @@ import {
   LayoutDashboard, Package, Factory, Building2, Receipt, Inbox, Bell, 
   Scale, ArrowLeftRight, CalendarRange, ClipboardList, Send, ChefHat, 
   ArchiveRestore, Trash2, Search, Users, ShieldCheck, LogOut, BarChart3,
-  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield, GitPullRequest
+  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield, GitPullRequest,
+  Sun, Moon
 } from "lucide-react";
 
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -163,6 +164,20 @@ function Inner() {
   };
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("kapila_theme") || "light");
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("theme-dark");
+      document.body.classList.add("theme-dark");
+    } else {
+      document.documentElement.classList.remove("theme-dark");
+      document.body.classList.remove("theme-dark");
+    }
+    localStorage.setItem("kapila_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
 
   const lowStockCount = reorderAlerts.length;
 
@@ -624,6 +639,9 @@ function Inner() {
                 </button>
 
                 <NotificationPanel user={user} />
+                <button onClick={toggleTheme} title="Toggle Touch Panel Color Mode" aria-label="Toggle Theme" style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.surface, border: `1px solid ${COLORS.border}`, display: "grid", placeItems: "center", cursor: "pointer" }}>
+                  {theme === "dark" ? <Sun size={15} color={COLORS.muted} /> : <Moon size={15} color={COLORS.muted} />}
+                </button>
                 <button onClick={logout} title="Logout" aria-label="Logout" style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.surface, border: `1px solid ${COLORS.border}`, display: "grid", placeItems: "center", cursor: "pointer" }}>
                   <LogOut size={15} color={COLORS.muted} />
                 </button>
