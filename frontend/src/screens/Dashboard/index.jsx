@@ -4,9 +4,10 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from "recharts";
-import { Bell, User, CheckCircle, AlertTriangle, Info, ArrowRight, Activity, Package, Layers, TrendingUp, Clock, ClipboardList, Send, ChefHat, ArchiveRestore, Trash2, ClipboardCheck } from "lucide-react";
+import { Bell, User, CheckCircle, AlertTriangle, Info, ArrowRight, Activity, Package, Layers, TrendingUp, Clock, ClipboardList, Send, ChefHat, ArchiveRestore, Trash2, ClipboardCheck, Cpu } from "lucide-react";
 import * as api from "../../api";
 import { useAppContext } from "../../context/AppContext";
+import MultiAgentThreadMonitorModal from "../../components/MultiAgentThreadMonitorModal";
 
 import { COLORS as THEME } from "../../styles/colors";
 
@@ -41,7 +42,8 @@ const AnimatedNumber = ({ value, formatter = (v) => v }) => {
     window.requestAnimationFrame(step);
   }, [value]);
 
-  return <span>{formatter(displayValue)}</span>;
+  const formatted = formatter ? formatter(displayValue) : displayValue;
+  return <span>{typeof formatted === "object" && !React.isValidElement(formatted) ? String(formatted) : formatted}</span>;
 };
 
 // --- COMPONENTS ---
@@ -87,6 +89,7 @@ export default function Dashboard() {
   const [anomalies, setAnomalies] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [indentFunnel, setIndentFunnel] = useState(null);
+  const [showSwarmModal, setShowSwarmModal] = useState(false);
   
   // Clock Tick
   useEffect(() => {
@@ -324,6 +327,26 @@ export default function Dashboard() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={() => setShowSwarmModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                backgroundColor: "rgba(232, 168, 56, 0.15)",
+                border: "1px solid rgba(232, 168, 56, 0.4)",
+                color: "#e8a838",
+                padding: "6px 14px",
+                borderRadius: "100px",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              <Cpu size={14} />
+              <span>Multi-Agent Swarm (5 Online)</span>
+            </button>
             <span style={{ backgroundColor: `${THEME.primary}15`, color: THEME.primary, padding: "6px 16px", borderRadius: "100px", fontSize: "12px", fontWeight: 600 }}>Admin</span>
             {/* Live Pill */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: `${THEME.success}15`, color: THEME.success, padding: "6px 16px", borderRadius: "100px", fontSize: "12px", fontWeight: 600 }}>
@@ -794,6 +817,12 @@ export default function Dashboard() {
           }
         }
       `}</style>
+
+      <MultiAgentThreadMonitorModal
+        isOpen={showSwarmModal}
+        onClose={() => setShowSwarmModal(false)}
+        onSyncComplete={fetchAllData}
+      />
     </div>
   );
 }

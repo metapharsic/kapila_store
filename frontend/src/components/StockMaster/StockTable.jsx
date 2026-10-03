@@ -19,7 +19,8 @@ import {
   Building2,
   Calendar,
   Layers,
-  FileSpreadsheet
+  FileSpreadsheet,
+  MoreHorizontal
 } from "lucide-react";
 import { today } from "../../utils/dates";
 import StockSkeletonLoader from "./StockSkeletonLoader";
@@ -105,6 +106,100 @@ const getActionLinkStyle = (variant) => {
       return base;
   }
 };
+
+// Compact icon-only button used by the row actions cluster.
+const getIconBtnStyle = (variant) => {
+  const base = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    border: "1px solid",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    flexShrink: 0,
+  };
+  switch (variant) {
+    case "view":
+      return { ...base, background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" };
+    case "more":
+      return { ...base, background: "transparent", color: "#64748b", borderColor: "#e2e8f0" };
+    default:
+      return base;
+  }
+};
+
+/**
+ * RowActions — a primary "View" icon button plus a kebab menu holding the
+ * remaining row operations (Append, Edit, Print, Indent, Delete, …).
+ * Keeps dense tables scannable instead of a row of wide icon+label chips.
+ */
+function RowActions({ onView, viewTitle = "View details", menuItems = [] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, position: "relative" }}>
+      <button onClick={onView} style={getIconBtnStyle("view")} title={viewTitle}>
+        <Eye size={14} />
+      </button>
+      {menuItems.length > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+          style={getIconBtnStyle("more")}
+          title="More actions"
+        >
+          <MoreHorizontal size={15} />
+        </button>
+      )}
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 30 }} />
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              right: 0,
+              zIndex: 31,
+              background: "var(--bg-card, #fff)",
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: 10,
+              boxShadow: "0 10px 28px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06)",
+              minWidth: 168,
+              padding: 5,
+            }}
+          >
+            {menuItems.map((m, i) => (
+              <button
+                key={i}
+                onClick={() => { setOpen(false); m.onClick(); }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  width: "100%",
+                  padding: "7px 10px",
+                  background: "transparent",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: m.danger ? "#b91c1c" : "var(--text-main)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = m.danger ? "#fef2f2" : "#f1f5f9")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                {m.icon} {m.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function StockTable({
   items = [],
@@ -275,11 +370,11 @@ export function StockTable({
                     <th>Category</th>
                     <th>Rack Location</th>
                     <th>Total Batches</th>
-                    <th>Stock Available</th>
-                    <th>Avg Cost</th>
-                    <th>Total Value</th>
+                    <th style={{ textAlign: "right" }}>Stock Available</th>
+                    <th style={{ textAlign: "right" }}>Avg Cost</th>
+                    <th style={{ textAlign: "right" }}>Total Value</th>
                     <th>Status</th>
-                    {!readOnly && <th>Item Actions</th>}
+                    {!readOnly && <th style={{ textAlign: "right", minWidth: 76 }}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -308,17 +403,18 @@ export function StockTable({
                                 const avatar = getInitialsAvatar(item.name);
                                 return (
                                   <div style={{
-                                    width: 32,
-                                    height: 32,
+                                    width: 26,
+                                    height: 26,
                                     borderRadius: "50%",
                                     background: avatar.bg,
                                     color: avatar.fg,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    fontSize: 12,
+                                    fontSize: 10.5,
                                     fontWeight: 700,
-                                    flexShrink: 0
+                                    flexShrink: 0,
+                                    opacity: 0.85
                                   }}>
                                     {avatar.text}
                                   </div>
@@ -373,14 +469,14 @@ export function StockTable({
                               {item.batches.length} batch(es)
                             </span>
                           </td>
-                          <td style={{ fontWeight: 600, color: healthy ? COLORS.success : COLORS.danger }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span>{item.remaining.toFixed(2)} {item.unit}</span>
+                          <td style={{ fontWeight: 600, color: healthy ? COLORS.success : COLORS.danger, textAlign: "right" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+                              <span>{item.remaining.toFixed(2)}</span>
                               <UnitDimensionBadge unit={item.unit} compact />
                             </div>
                           </td>
-                          <td>{avgCost > 0 ? `₹${avgCost.toFixed(2)}` : "—"}</td>
-                          <td style={{ fontWeight: 700, color: COLORS.teal }}>₹{totalVal.toFixed(2)}</td>
+                          <td style={{ textAlign: "right" }}>{avgCost > 0 ? `₹${avgCost.toFixed(2)}` : "—"}</td>
+                          <td style={{ fontWeight: 700, color: COLORS.teal, textAlign: "right" }}>₹{totalVal.toFixed(2)}</td>
                           <td>
                             <span className="status-badge" style={{ background: healthy ? "var(--color-accent-green-light)" : "var(--color-accent-red-light)", color: healthy ? "var(--color-accent-green)" : "var(--color-accent-red)" }}>
                               {healthy ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
@@ -388,30 +484,15 @@ export function StockTable({
                             </span>
                           </td>
                           {!readOnly && (
-                            <td>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <button
-                                  onClick={() => onView(item.batches ? item.batches[0] : item)}
-                                  style={getActionLinkStyle("view")}
-                                  title="View complete stock and batch history"
-                                >
-                                  <Eye size={12} /> View
-                                </button>
-                                <button
-                                  onClick={() => onAppend(item)}
-                                  style={getActionLinkStyle("append")}
-                                  title="Append inward delivery batch"
-                                >
-                                  <PlusCircle size={12} /> Append
-                                </button>
-                                <button
-                                  onClick={() => handleEditClick(item)}
-                                  style={getActionLinkStyle("edit")}
-                                  title="Edit item information"
-                                >
-                                  <Edit3 size={12} /> Edit
-                                </button>
-                              </div>
+                            <td style={{ textAlign: "right" }}>
+                              <RowActions
+                                onView={() => onView(item.batches ? item.batches[0] : item)}
+                                viewTitle="View complete stock and batch history"
+                                menuItems={[
+                                  { icon: <PlusCircle size={13} />, label: "Append Batch", onClick: () => onAppend(item) },
+                                  { icon: <Edit3 size={13} />, label: "Edit Item", onClick: () => handleEditClick(item) },
+                                ]}
+                              />
                             </td>
                           )}
                         </tr>
@@ -693,13 +774,13 @@ export function StockTable({
                     <th style={{ minWidth: 200 }}>Item Name & SKU</th>
                     <th>Category</th>
                     <th style={{ minWidth: 160 }}>Rack Loading Position</th>
-                    <th style={{ minWidth: 120 }}>Stock Available</th>
+                    <th style={{ minWidth: 120, textAlign: "right" }}>Stock Available</th>
                     <th style={{ minWidth: 140 }}>Vendor / Supplier</th>
-                    <th>Unit Cost</th>
-                    <th>Valuation</th>
+                    <th style={{ textAlign: "right" }}>Unit Cost</th>
+                    <th style={{ textAlign: "right" }}>Valuation</th>
                     <th style={{ minWidth: 130 }}>Entry Time</th>
                     <th>Batch & Expiry</th>
-                    {!readOnly && <th style={{ minWidth: 280 }}>Operations & Actions</th>}
+                    {!readOnly && <th style={{ textAlign: "right", minWidth: 76 }}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -723,17 +804,18 @@ export function StockTable({
                               const avatar = getInitialsAvatar(item.name);
                               return (
                                 <div style={{
-                                  width: 32,
-                                  height: 32,
+                                  width: 26,
+                                  height: 26,
                                   borderRadius: "50%",
                                   background: avatar.bg,
                                   color: avatar.fg,
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  fontSize: 12,
+                                  fontSize: 10.5,
                                   fontWeight: 700,
-                                  flexShrink: 0
+                                  flexShrink: 0,
+                                  opacity: 0.85
                                 }}>
                                   {avatar.text}
                                 </div>
@@ -804,20 +886,20 @@ export function StockTable({
                         </td>
 
                         {/* 4. Stock Available */}
-                        <td>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                        <td style={{ textAlign: "right" }}>
+                          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "flex-end", gap: 5, marginBottom: 4 }}>
                             <span style={{ fontWeight: 700, fontSize: 14, color: color === "#10b981" ? "#047857" : color === "#f59e0b" ? "#b45309" : "#dc2626" }}>
                               {parseFloat(item.remaining || 0).toFixed(2)}
                             </span>
-                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                              <span style={{ fontSize: 11.5, color: "#334155", fontWeight: 600 }}>{item.unit}</span>
-                              <UnitDimensionBadge unit={item.unit} compact />
-                            </div>
+                            <span style={{ fontSize: 11.5, color: "#334155", fontWeight: 600 }}>{item.unit}</span>
                           </div>
-                          <div style={{ height: 5, background: "rgba(15, 23, 42, 0.08)", borderRadius: 3, width: 90, overflow: "hidden" }}>
+                          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                            <UnitDimensionBadge unit={item.unit} compact />
+                          </div>
+                          <div style={{ height: 5, background: "rgba(15, 23, 42, 0.08)", borderRadius: 3, width: 90, overflow: "hidden", marginLeft: "auto" }}>
                             <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: color }} />
                           </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#475569", marginTop: 2, width: 90, fontWeight: 500 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#475569", marginTop: 2, width: 90, marginLeft: "auto", fontWeight: 500 }}>
                             <span>Orig: {parseFloat(item.qty || 0).toFixed(1)}</span>
                             <span>{pct.toFixed(0)}%</span>
                           </div>
@@ -839,12 +921,12 @@ export function StockTable({
                         </td>
 
                         {/* 6. Unit Cost */}
-                        <td style={{ fontSize: 13, color: "var(--text-main)", fontWeight: 600 }}>
+                        <td style={{ fontSize: 13, color: "var(--text-main)", fontWeight: 600, textAlign: "right" }}>
                           {item.price ? `₹${parseFloat(item.price).toFixed(2)} / ${item.unit}` : "—"}
                         </td>
 
                         {/* 7. Total Valuation */}
-                        <td>
+                        <td style={{ textAlign: "right" }}>
                           {item.price ? (
                             <>
                               <span style={{ fontWeight: 700, color: color === "#10b981" ? "#047857" : color === "#f59e0b" ? "#b45309" : "#dc2626", fontSize: 13.5 }}>
@@ -877,62 +959,18 @@ export function StockTable({
 
                         {/* 10. Operations & Action Hyperlinks */}
                         {!readOnly && (
-                          <td>
-                            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-                              {/* VIEW */}
-                              <button
-                                onClick={() => onView(item.batches ? item.batches[0] : item)}
-                                style={getActionLinkStyle("view")}
-                                title="View 360° Stock Details & Batches"
-                              >
-                                <Eye size={12} /> View
-                              </button>
-
-                              {/* EDIT */}
-                              <button
-                                onClick={() => handleEditClick(item)}
-                                style={getActionLinkStyle("edit")}
-                                title="Edit Item & Warehouse Coordinates"
-                              >
-                                <Edit3 size={12} /> Edit
-                              </button>
-
-                              {/* APPEND */}
-                              <button
-                                onClick={() => onAppend(item)}
-                                style={getActionLinkStyle("append")}
-                                title="Append Inward Stock Delivery Batch"
-                              >
-                                <PlusCircle size={12} /> Append
-                              </button>
-
-                              {/* PRINT */}
-                              <button
-                                onClick={() => setPrintModalItem(item)}
-                                style={getActionLinkStyle("print")}
-                                title="Print QR/Barcode Shelf Label"
-                              >
-                                <Printer size={12} /> Print
-                              </button>
-
-                              {/* RAISE INDENT */}
-                              <button
-                                onClick={() => setIndentModalItem(item.batches ? item.batches[0] : item)}
-                                style={getActionLinkStyle("indent")}
-                                title="Chef / Station: Raise Indent Requisition for this Item"
-                              >
-                                <ClipboardList size={12} /> Indent
-                              </button>
-
-                              {/* DELETE */}
-                              <button
-                                onClick={() => handleDeleteClick(item)}
-                                style={getActionLinkStyle("delete")}
-                                title="Decommission / Remove Item"
-                              >
-                                <Trash2 size={12} /> Delete
-                              </button>
-                            </div>
+                          <td style={{ textAlign: "right" }}>
+                            <RowActions
+                              onView={() => onView(item.batches ? item.batches[0] : item)}
+                              viewTitle="View 360° Stock Details & Batches"
+                              menuItems={[
+                                { icon: <Edit3 size={13} />, label: "Edit Item", onClick: () => handleEditClick(item) },
+                                { icon: <PlusCircle size={13} />, label: "Append Batch", onClick: () => onAppend(item) },
+                                { icon: <Printer size={13} />, label: "Print Label", onClick: () => setPrintModalItem(item) },
+                                { icon: <ClipboardList size={13} />, label: "Raise Indent", onClick: () => setIndentModalItem(item.batches ? item.batches[0] : item) },
+                                { icon: <Trash2 size={13} />, label: "Decommission", onClick: () => handleDeleteClick(item), danger: true },
+                              ]}
+                            />
                           </td>
                         )}
                       </tr>

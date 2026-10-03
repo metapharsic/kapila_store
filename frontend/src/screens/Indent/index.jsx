@@ -16,8 +16,9 @@ import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { useLocalSpeech } from "../../hooks/useLocalSpeech";
 import { getConversionMultiplier, getCompatibleUnits, areUnitsCompatible } from "../../utils/units";
-import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList, FileSpreadsheet, Send, Sparkles, RotateCcw, TrendingUp, AlertTriangle, CheckCircle2, Minus, Download } from "lucide-react";
+import { Plus, Zap, Mic, History, Trash2, Printer, Search, Inbox, ChevronDown, ChevronUp, Camera, ClipboardList, FileSpreadsheet, Send, Sparkles, RotateCcw, TrendingUp, AlertTriangle, CheckCircle2, Minus, Download, Cpu } from "lucide-react";
 import EnhancedItemAdditionModal from "./EnhancedItemAdditionModal";
+import MultiAgentThreadMonitorModal from "../../components/MultiAgentThreadMonitorModal";
 
 // Guaranteed-unique row id. Date.now()+Math.random() collides because the large
 // millisecond value truncates Math.random()'s fraction to ~2 decimals.
@@ -254,6 +255,7 @@ export default function IndentScreen() {
   const [templateStats, setTemplateStats] = useState({ total: 0, dept: "" });
   const [filterMode, setFilterMode] = useState("all"); // 'all' | 'ordered' | 'low_stock'
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [showSwarmModal, setShowSwarmModal] = useState(false);
 
   const stepQty = (idx, delta) => {
     setForm(prev => {
@@ -1369,7 +1371,30 @@ export default function IndentScreen() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowSwarmModal(true)}
+                    title="Multi-Agent Swarm Telemetry & Indent Restoration (5 Threads)"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      background: "rgba(232, 168, 56, 0.15)",
+                      border: "1.5px solid rgba(232, 168, 56, 0.45)",
+                      color: "#b45309",
+                      padding: "5px 12px",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                    }}
+                  >
+                    <Cpu size={14} color="#b45309" />
+                    <span>Swarm Telemetry (5 Threads)</span>
+                  </button>
+
                   <label style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>Or Select Dropdown:</label>
                   <select
                     className="indent-field"
@@ -2718,8 +2743,17 @@ export default function IndentScreen() {
           .indent-top-section { flex-direction: column; height: auto; }
           .indent-left-panel, .indent-right-panel { width: 100%; }
           .indent-right-panel { min-height: 400px; }
-        }
       `}}/>
+
+      <MultiAgentThreadMonitorModal
+        isOpen={showSwarmModal}
+        onClose={() => setShowSwarmModal(false)}
+        initialSwarm="indents"
+        onSyncComplete={() => {
+          loadDepartmentTemplate(form.dept || "TIFFINS");
+          setMsg("✓ Indent swarm telemetry refreshed & templates verified.");
+        }}
+      />
     </Section>
   );
 }

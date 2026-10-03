@@ -93,7 +93,8 @@ export default function ModularExtensionsModal({ isOpen, onClose }) {
       <div 
         style={{
           width: "100%",
-          maxWidth: 680,
+          maxWidth: "min(680px, 90vw)",
+          maxHeight: "90vh",
           background: "#181a20",
           border: "1px solid rgba(232, 168, 56, 0.35)",
           borderRadius: 14,
@@ -111,6 +112,9 @@ export default function ModularExtensionsModal({ isOpen, onClose }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 10,
+          flexShrink: 0,
           background: "linear-gradient(180deg, rgba(232, 168, 56, 0.08) 0%, rgba(0, 0, 0, 0) 100%)"
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -178,7 +182,8 @@ export default function ModularExtensionsModal({ isOpen, onClose }) {
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: 12
+          gap: 12,
+          flexShrink: 0
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#9ca3af" }}>
             <Info size={15} color={COLORS.accent} />
@@ -219,7 +224,7 @@ export default function ModularExtensionsModal({ isOpen, onClose }) {
         </div>
 
         {/* Modules List */}
-        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, maxHeight: "60vh", overflowY: "auto" }}>
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, flex: 1, minHeight: 0, overflowY: "auto" }}>
           {Object.entries(MODULAR_EXTENSIONS_CONFIG).map(([key, config]) => {
             const isEnabled = !!modularExtensions[key];
             return (
@@ -347,6 +352,9 @@ export default function ModularExtensionsModal({ isOpen, onClose }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 10,
+          flexShrink: 0,
           background: "rgba(0, 0, 0, 0.2)"
         }}>
           <span style={{ fontSize: 11.5, color: COLORS.muted }}>

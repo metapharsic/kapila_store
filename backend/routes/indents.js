@@ -16,6 +16,8 @@ router.get("/automated-pattern-preview", requireAnyPermission(["indents.view", "
 router.get("/chef-radar", requireAnyPermission(["indents.view", "indents.create"]), ctrl.getChefRadar);
 router.get("/recommendations", requirePermission("indents.view"), ctrl.getRecommendations);
 router.get("/:id/export-excel", requireAnyPermission(["indents.view", "stock.export", "dashboard.export"]), ctrl.exportSingleIndentExcel);
+router.post("/restore-historical-multi-agent", requireAnyPermission(["indents.create", "stock.manage"]), ctrl.restoreHistoricalMultiAgent);
+router.get("/restore-status", requireAnyPermission(["indents.view", "stock.view"]), ctrl.getRestoreStatus);
 router.post("/subcategories", requirePermission("indents.create"), ctrl.createSubcategory);
 router.post("/subcategories/:id/items", requirePermission("indents.create"), ctrl.createSubcategoryItem);
 router.post("/chef-submit", requirePermission("indents.create"), ctrl.chefSubmit);

@@ -820,7 +820,8 @@ export default function MaintenanceScreen() {
         }}>
           <div style={{
             background: "var(--bg-card)", border: "1px solid #334155", borderRadius: 12, padding: 24,
-            width: "100%", maxWidth: 360, textAlign: "center"
+            width: "100%", maxWidth: "min(360px, 90vw)", maxHeight: "90vh", overflowY: "auto",
+            boxSizing: "border-box", textAlign: "center"
           }}>
             <h3 style={{ margin: "0 0 6px", color: "var(--text-main)" }}>{qrModalAsset.name}</h3>
             <p style={{ margin: "0 0 16px", color: "var(--color-gold)", fontFamily: "monospace", fontSize: 13 }}>

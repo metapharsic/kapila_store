@@ -159,7 +159,7 @@ export default function TransferChallanModal({ transfer, onClose }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
               gap: 12,
               padding: 12,
               background: COLORS.bg,
@@ -206,7 +206,8 @@ export default function TransferChallanModal({ transfer, onClose }) {
           </div>
 
           {/* Items Table */}
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 16 }}>
+          <div style={{ overflowX: "auto", marginBottom: 16 }}>
+          <table style={{ width: "100%", minWidth: 760, borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: COLORS.bg, borderBottom: `2px solid ${COLORS.border}` }}>
                 {["#", "SKU / Code", "Item Description", "Rack/Bin", "Dispatched Qty", "Received Qty", "Rate (₹)", "Total (₹)"].map((h) => (
@@ -260,6 +261,7 @@ export default function TransferChallanModal({ transfer, onClose }) {
               </tr>
             </tfoot>
           </table>
+          </div>
 
           {transfer.remarks && (
             <div style={{ padding: 10, background: COLORS.bg, borderRadius: 6, border: `1px solid ${COLORS.border}`, marginBottom: 16, fontSize: 11 }}>
@@ -272,7 +274,7 @@ export default function TransferChallanModal({ transfer, onClose }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
               gap: 16,
               marginTop: 24,
               paddingTop: 16,

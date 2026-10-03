@@ -212,7 +212,7 @@ describe('Inbound DC, 3-Way Match & Returnable Assets End-to-End Suite', () => {
         purpose: 'Returning empty 40L Stainless Milk Cans for cleaning & refilling',
         returnable_qty_out: 4,
         returnable_item_type: 'Stainless Steel Milk Cans',
-        expected_return_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+        return_due_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
         items: [
           {
             item_name: '40-Liter Stainless Steel Milk Cans',

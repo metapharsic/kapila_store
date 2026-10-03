@@ -54,7 +54,7 @@ export default function RegisterAssetModal({ isOpen, onClose, onSubmit, departme
     }}>
       <div style={{
         background: "var(--bg-card)", border: "1px solid #334155", borderRadius: 12,
-        width: "100%", maxWidth: 640, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
+        width: "100%", maxWidth: "min(640px, 90vw)", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
         maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden"
       }}>
         {/* Header */}
@@ -89,7 +89,7 @@ export default function RegisterAssetModal({ isOpen, onClose, onSubmit, departme
 
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} style={{ padding: 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#cbd5e1", marginBottom: 6 }}>
                 Equipment Name *

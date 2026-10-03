@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { COLORS } from "../../styles/colors";
+import { useState } from "react";
+import ModalShell from "../../components/ui/ModalShell";
 import { security } from "../../api";
-import { RefreshCw, AlertCircle, X, Check, Clock, PackageCheck } from "lucide-react";
+import { AlertCircle, Check, Clock, PackageCheck } from "lucide-react";
 
 export default function ReconcileRgpModal({ isOpen, pass, onClose, onSuccess }) {
   const [qtyReturned, setQtyReturned] = useState(1);
@@ -43,66 +43,36 @@ export default function ReconcileRgpModal({ isOpen, pass, onClose, onSuccess }) 
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0, 0, 0, 0.8)",
-      backdropFilter: "blur(6px)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      padding: "20px"
-    }}>
-      <div style={{
-        background: "var(--bg-modal)",
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: "14px",
-        width: "100%",
-        maxWidth: "500px",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-        color: "var(--text-main)"
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: "16px 20px",
-          borderBottom: "1px solid var(--border-color)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.6) 100%)"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{
-              width: "34px",
-              height: "34px",
-              borderRadius: "8px",
-              background: "rgba(16, 185, 129, 0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#34D399"
-            }}>
-              <PackageCheck size={18} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: "16px", fontWeight: "700", margin: 0 }}>
-                Reconcile Returnable Containers (RGP)
-              </h3>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
-                Pass #{pass.pass_number} • {pass.vendor_name || "Vendor"}
-              </p>
-            </div>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      size="compact"
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "34px",
+            height: "34px",
+            borderRadius: "8px",
+            background: "rgba(16, 185, 129, 0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#34D399"
+          }}>
+            <PackageCheck size={18} />
           </div>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
-            <X size={18} />
-          </button>
+          <div>
+            <div style={{ fontSize: "16px", fontWeight: "700" }}>
+              Reconcile Returnable Containers (RGP)
+            </div>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
+              Pass #{pass.pass_number} • {pass.vendor_name || "Vendor"}
+            </p>
+          </div>
         </div>
-
-        {error && (
+      }
+    >
+      {error && (
           <div style={{
             margin: "14px 20px 0",
             padding: "10px 14px",
@@ -120,15 +90,15 @@ export default function ReconcileRgpModal({ isOpen, pass, onClose, onSuccess }) 
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ padding: "18px 20px" }}>
-          <div style={{
-            padding: "14px",
-            background: "var(--bg-page)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "10px",
-            marginBottom: "16px",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
+      <form onSubmit={handleSubmit}>
+        <div style={{
+          padding: "14px",
+          background: "var(--bg-page)",
+          border: "1px solid var(--border-color)",
+          borderRadius: "10px",
+          marginBottom: "16px",
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
             gap: "10px",
             textAlign: "center"
           }}>
@@ -159,7 +129,7 @@ export default function ReconcileRgpModal({ isOpen, pass, onClose, onSuccess }) 
             <input
               type="text"
               disabled
-              value={pass.returnable_item_type || "Commercial LPG Cylinders"}
+              value={pass.returnable_item_type || "Not specified"}
               style={{
                 width: "100%",
                 padding: "10px 12px",
@@ -258,8 +228,7 @@ export default function ReconcileRgpModal({ isOpen, pass, onClose, onSuccess }) 
               {loading ? "Reconciling..." : "Save Container Receipt"}
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </ModalShell>
   );
 }

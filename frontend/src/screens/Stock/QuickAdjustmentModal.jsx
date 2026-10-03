@@ -55,7 +55,8 @@ const QuickAdjustmentModal = ({
     }}>
       <div style={{
         background: COLORS.surface, border: `1px solid ${COLORS.border}`,
-        borderRadius: 12, padding: 24, width: 450, maxWidth: "90%",
+        borderRadius: 12, padding: 24, width: 450, maxWidth: "90vw",
+        maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box",
         boxShadow: `0 8px 32px rgba(15, 23, 42, 0.15)`
       }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
@@ -65,7 +66,7 @@ const QuickAdjustmentModal = ({
           Adjusting batch code <span style={{ color: COLORS.purple, fontWeight: "bold" }}>{adjustModalItem.item_code}</span> of <span style={{ color: COLORS.text, fontWeight: "bold" }}>{adjustModalItem.name}</span>.
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10, marginBottom: 16 }}>
           <div>
             <label style={{ fontSize: 11, color: COLORS.muted, display: "block", marginBottom: 4 }}>System Remaining</label>
             <div style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, padding: "8px 12px", borderRadius: 6, fontSize: 13, fontWeight: "bold", color: COLORS.text }}>
@@ -80,7 +81,7 @@ const QuickAdjustmentModal = ({
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 10, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)", gap: 10, marginBottom: 16 }}>
           <Input 
             label={`Adjusted Remaining (${adjustModalItem.unit})`}
             type="number"

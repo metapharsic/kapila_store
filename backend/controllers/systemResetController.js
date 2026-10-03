@@ -1,4 +1,6 @@
 const db = require("../db");
+const { auditLog } = require("../services/auditService");
+const catalogSeedService = require("../services/catalogSeedService");
 
 // Each group lists real tables (verified against backend/db/migrations).
 // Tables are ordered child-first so any manual FK cleanup reads naturally,
@@ -32,11 +34,13 @@ const RESETTABLE_GROUPS = {
   },
   stock_adjustments: {
     label: "Stock & Adjustments",
-    description: "Stock levels, stock adjustments and stock aliases.",
+    description: "Stock levels, stock adjustments, stock aliases and the chef-facing indent catalog (subcategories/items) shown on department tiles and indent screens.",
     tables: [
       "stock_adjustments",
       "stock_aliases",
       "stock",
+      "indent_subcategory_items",
+      "indent_subcategories",
     ],
   },
   production_leftovers: {
@@ -197,8 +201,39 @@ async function resetGroups(req, res, next) {
   }
 }
 
+// POST /api/system-reset/restore-catalog
+// Re-seeds indent_subcategories / indent_subcategory_items (migration 065)
+// and indent_templates (migration 054) from their original migration seed
+// data. Idempotent: safe to call repeatedly, never duplicates existing rows.
+async function restoreCatalog(req, res, next) {
+  try {
+    const result = await catalogSeedService.restoreFullCatalog();
+
+    await auditLog(req, {
+      action: "system.restore_catalog",
+      resource: "system",
+      metadata: {
+        restored: result,
+        confirmedAt: new Date().toISOString(),
+      },
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        subcategoriesInserted: result.subcategoriesInserted,
+        itemsInserted: result.itemsInserted,
+        templatesInserted: result.templatesInserted,
+      },
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   RESETTABLE_GROUPS,
   listResettableGroups,
   resetGroups,
+  restoreCatalog,
 };

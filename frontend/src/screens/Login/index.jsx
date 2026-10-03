@@ -87,8 +87,10 @@ export default function LoginScreen() {
   // Touchpad PIN Pad state
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
+  const [padColorMode, setPadColorMode] = useState("default"); // 'default', 'light', 'dark', 'accent'
 
   const [error, setError] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   // Load dynamic stations and shifts from database via multi-thread backend
@@ -687,7 +689,7 @@ export default function LoginScreen() {
                     justifyContent: "center",
                     fontWeight: 800
                   }}>
-                    {selectedRole.icon}
+                    {typeof selectedRole.icon === "string" ? renderStationIcon(selectedRole.icon) : (selectedRole.icon || renderStationIcon(selectedRole.iconKey))}
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 800, color: "#ffffff" }}>
@@ -753,12 +755,29 @@ export default function LoginScreen() {
 
               {/* PIN Code Keypad (For Wall Touchpads & Quick Passcodes) */}
               <div style={{
-                background: "rgba(0, 0, 0, 0.25)",
+                background: padColorMode === 'light' ? 'rgba(255, 255, 255, 0.9)' : padColorMode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : padColorMode === 'accent' ? `${selectedRole.color}22` : 'rgba(0, 0, 0, 0.25)',
                 border: "1px solid rgba(255, 255, 255, 0.06)",
                 borderRadius: 16,
                 padding: "14px 12px",
-                marginBottom: 12
+                marginBottom: 12,
+                transition: "background 0.3s ease"
               }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: -10, position: 'relative', zIndex: 10 }}>
+                  {['default', 'light', 'dark', 'accent'].map(mode => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setPadColorMode(mode)}
+                      style={{
+                        width: 14, height: 14, borderRadius: '50%',
+                        background: mode === 'light' ? '#fff' : mode === 'dark' ? '#000' : mode === 'accent' ? selectedRole.color : '#475569',
+                        border: padColorMode === mode ? `2px solid ${selectedRole.color}` : '1px solid rgba(255,255,255,0.2)',
+                        cursor: 'pointer'
+                      }}
+                      title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Mode`}
+                    />
+                  ))}
+                </div>
                 <div style={{ textAlign: "center", marginBottom: 10 }}>
                   <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, marginBottom: 6 }}>
                     Or Enter 4-Digit Station PIN (Default: 1 2 3 4)

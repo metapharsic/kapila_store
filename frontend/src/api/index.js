@@ -27,6 +27,8 @@ export const stock = {
   substitute: (name) => api.get("/stock/substitute", { name }),
   lifoSuggestions: (params) => api.get("/stock/lifo-suggestions", params),
   agentStatus: () => api.get("/stock/agent-status"),
+  syncTodayMultiAgent: () => api.post("/stock/sync-today-multi-agent"),
+  getSyncTodayStatus: () => api.get("/stock/sync-today-status"),
 };
 
 export const indents = {
@@ -40,6 +42,8 @@ export const indents = {
   notifyStockout:  (body) => api.post("/indents/notify-stockout", body),
   processFulfillment:(id, body) => api.post(`/indents/${id}/process`, body),
   chefRadar:       (params) => api.get("/indents/chef-radar", params),
+  restoreHistoricalMultiAgent: () => api.post("/indents/restore-historical-multi-agent"),
+  getRestoreStatus: () => api.get("/indents/restore-status"),
   recommendations: (params) => api.get("/indents/recommendations", params),
   smartAutofill:   (body)   => api.post("/indents/smart-autofill", body),
   voiceParse:      (text)   => api.post("/indents/voice-parse", { text }),
@@ -311,6 +315,7 @@ export const reports = {
 export const systemReset = {
   listGroups: () => api.get("/system-reset/groups"),
   reset: (groups, confirmText) => api.post("/system-reset", { groups, confirmText }),
+  restoreCatalog: () => api.post("/system-reset/restore-catalog", {}),
 };
 
 export const maintenance = {

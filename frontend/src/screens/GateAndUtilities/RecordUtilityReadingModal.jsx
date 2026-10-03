@@ -99,7 +99,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
         border: `1px solid ${COLORS.border}`,
         borderRadius: "14px",
         width: "100%",
-        maxWidth: "720px",
+        maxWidth: "min(720px, 90vw)",
         maxHeight: "92vh",
         overflowY: "auto",
         boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
@@ -161,7 +161,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
 
         <form onSubmit={handleSubmit} style={{ padding: "20px 22px" }}>
           {/* Shift and Date */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "16px", marginBottom: "18px" }}>
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
                 Reading Date *
@@ -225,7 +225,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
                 </span>
               )}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "10px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   Start Weight (Kg)
@@ -289,7 +289,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
                 />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "10px", marginTop: "10px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   Active on Manifold
@@ -369,7 +369,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
                 </span>
               )}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "10px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   EB Meter Start (kWh)
@@ -413,7 +413,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
                 />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "10px", marginTop: "10px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   DG Run Hours
@@ -491,7 +491,7 @@ export default function RecordUtilityReadingModal({ isOpen, onClose, onSuccess }
                 Water Supply & RO Output
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "10px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   Water Tanker Count

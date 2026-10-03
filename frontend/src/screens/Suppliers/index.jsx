@@ -581,7 +581,7 @@ export default function SuppliersScreen() {
       
       {viewPoId && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(4px)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Card style={{ maxWidth: 700, width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 0, overflow: "hidden", borderRadius: 16 }}>
+          <Card style={{ maxWidth: 700, width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 0, overflow: "hidden", borderRadius: 16, minWidth: 0 }}>
             {/* Modal Header */}
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F8FAFC" }}>
               <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, fontSize: 18, color: "#0F172A" }}>
@@ -605,7 +605,7 @@ export default function SuppliersScreen() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                   
                   {/* PO Info Cards */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16 }}>
                     <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", padding: 16, borderRadius: 8 }}>
                       <p style={{ margin: 0, fontSize: 12, color: "#64748B", fontWeight: 600, textTransform: "uppercase" }}>PO Number</p>
                       <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 700, color: "#0F172A", fontFamily: "monospace" }}>{poDetails.po_number}</p>
@@ -637,8 +637,8 @@ export default function SuppliersScreen() {
                   {/* Line Items Table */}
                   <div>
                     <h4 style={{ margin: "0 0 12px 0", fontSize: 14, color: "#0F172A" }}>Invoice Items</h4>
-                    <div style={{ border: "1px solid #E2E8F0", borderRadius: 8, overflow: "hidden" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, textAlign: "left" }}>
+                    <div style={{ border: "1px solid #E2E8F0", borderRadius: 8, overflowX: "auto" }}>
+                      <table style={{ width: "100%", minWidth: 480, borderCollapse: "collapse", fontSize: 14, textAlign: "left" }}>
                         <thead>
                           <tr style={{ background: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
                             <th style={{ padding: "10px 16px", color: "#64748B", fontWeight: 600 }}>Item</th>

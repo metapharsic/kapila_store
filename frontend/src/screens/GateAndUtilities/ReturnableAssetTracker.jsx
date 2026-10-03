@@ -45,12 +45,12 @@ export default function ReturnableAssetTracker() {
   passes.forEach(p => {
     const due = parseInt(p.returnable_balance_due, 10) || 0;
     if (due <= 0) return;
-    const desc = (p.purpose || p.item_summary || "").toLowerCase();
-    if (desc.includes("lpg") || desc.includes("cylinder") || desc.includes("gas")) {
+    const itemType = (p.returnable_item_type || "").toLowerCase();
+    if (itemType.includes("lpg") || itemType.includes("cylinder") || itemType.includes("gas")) {
       totalLpgOut += due;
-    } else if (desc.includes("can") || desc.includes("milk") || desc.includes("dairy")) {
+    } else if (itemType.includes("can") || itemType.includes("milk") || itemType.includes("dairy")) {
       totalMilkCansOut += due;
-    } else if (desc.includes("crate") || desc.includes("tray") || desc.includes("box")) {
+    } else if (itemType.includes("crate") || itemType.includes("tray") || itemType.includes("box")) {
       totalCratesOut += due;
     } else {
       totalBanquetOut += due;
@@ -65,7 +65,7 @@ export default function ReturnableAssetTracker() {
     const term = search.toLowerCase();
     const matchesSearch = 
       (p.pass_number || "").toLowerCase().includes(term) ||
-      (p.party_name || "").toLowerCase().includes(term) ||
+      (p.vendor_name || "").toLowerCase().includes(term) ||
       (p.purpose || "").toLowerCase().includes(term) ||
       (p.vehicle_number || "").toLowerCase().includes(term);
 
@@ -256,7 +256,7 @@ export default function ReturnableAssetTracker() {
                 const due = parseInt(p.returnable_balance_due, 10) || 0;
                 const out = parseInt(p.returnable_qty_out, 10) || 0;
                 const ret = parseInt(p.returnable_qty_in, 10) || 0;
-                const isOverdue = due > 0 && p.expected_return_date && new Date(p.expected_return_date) < new Date();
+                const isOverdue = due > 0 && p.return_due_date && new Date(p.return_due_date) < new Date();
 
                 return (
                   <tr key={p.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
@@ -265,13 +265,13 @@ export default function ReturnableAssetTracker() {
                       <div style={{ fontSize: 11, color: COLORS.muted }}>{p.issue_date || p.created_at?.slice(0, 10)}</div>
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <div style={{ fontWeight: 500 }}>{p.party_name}</div>
+                      <div style={{ fontWeight: 500 }}>{p.vendor_name}</div>
                       <div style={{ fontSize: 11, color: COLORS.muted }}>{p.vehicle_number || "No vehicle listed"}</div>
                     </td>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ fontWeight: 500 }}>{p.purpose || "Returnable Assets"}</div>
                       <div style={{ fontSize: 11, color: COLORS.muted }}>
-                        {p.expected_return_date ? `Expected by: ${p.expected_return_date}` : "Open return date"}
+                        {p.return_due_date ? `Expected by: ${p.return_due_date}` : "Open return date"}
                       </div>
                     </td>
                     <td style={{ padding: "12px 16px", fontWeight: 600 }}>

@@ -680,5 +680,5 @@ const delegateBtnStyle = {
   cursor: "pointer",
 };
 const modalOverlay = { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: SPACING.xl };
-const modalContent = { background: COLORS.bg, borderRadius: RADIUS.md, padding: SPACING.xxl, width: "100%", maxWidth: 480, border: `1px solid ${COLORS.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
+const modalContent = { background: COLORS.bg, borderRadius: RADIUS.md, padding: SPACING.xxl, width: "100%", maxWidth: "min(480px, 90vw)", maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box", border: `1px solid ${COLORS.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
 const closeBtn = { background: "none", border: "none", color: COLORS.muted, fontSize: 24, cursor: "pointer", padding: 0, lineHeight: 1 };

@@ -586,7 +586,7 @@ async function closeDay(req, res, next) {
 const CANONICAL_TEMPLATES = [
   { dept: "TIFFINS", aliases: ["TIFFINS ", "TIFFINS"], displayName: "Tiffins & Breakfast", icon: "☕" },
   { dept: "STAFF", aliases: ["STAFF ", "STAFF"], displayName: "Staff Meals", icon: "👥" },
-  { dept: "SI-MEALS", aliases: ["SI- MEALS ", "SI-MEALS", "SI MEALS"], displayName: "South Indian Meals", icon: "🍛" },
+  { dept: "SI-MEALS", aliases: ["SI- MEALS ", "SI- MEALS", "SI-MEALS", "SI MEALS"], displayName: "South Indian Meals", icon: "🍛" },
   { dept: "NORTH INDIAN", aliases: ["NORTH INDIAN"], displayName: "North Indian Kitchen", icon: "🍲" },
   { dept: "CHAT & SOFTY", aliases: ["CHAT, JP Disposal, Softy.", "CHAT & SOFTY", "CHAT"], displayName: "Chat & Softy / Disposables", icon: "🍦" },
   { dept: "CHINESE & DOSA", aliases: ["CHINESE & DOSA"], displayName: "Chinese & Dosa Counter", icon: "🍜" },
@@ -925,7 +925,10 @@ async function getChefRadar(req, res, next) {
       deptRecords,
       itemCounts,
       stockUnits,
-      indentUnits
+      indentUnits,
+      deptTemplates,
+      templateCounts,
+      stockAgg
     ] = await Promise.all([
       IndentAgentService.getSubcategories(dept),
       db("stock")
@@ -964,7 +967,28 @@ async function getChefRadar(req, res, next) {
         .select("s.department_name")
         .count("i.id as count"),
       db("stock").distinct("unit").whereNotNull("unit"),
-      db("indent_items").distinct("unit").whereNotNull("unit")
+      db("indent_items").distinct("unit").whereNotNull("unit"),
+      db("indent_templates")
+        .where((b) => {
+          b.whereRaw("UPPER(template_name) = ?", [dept])
+            .orWhereRaw("UPPER(template_name) = ?", [dept.replace(/-/g, "- ")])
+            .orWhereRaw("UPPER(template_name) = ?", [dept.replace(/&/g, "AND")]);
+        })
+        .orderBy("row_no", "asc"),
+      db("indent_templates")
+        .groupBy("template_name")
+        .select(db.raw("UPPER(template_name) as dept_name"))
+        .count("id as count"),
+      db("stock")
+        .select(
+          db.raw("LOWER(TRIM(name)) as lower_name"),
+          "item_code",
+          db.raw("SUM(remaining) as total_remaining"),
+          db.raw("MAX(unit) as unit"),
+          db.raw("MAX(price) as price"),
+          db.raw("MAX(min_alert_qty) as reorder_level")
+        )
+        .groupByRaw("LOWER(TRIM(name)), item_code")
     ]);
 
     // Fetch items for all subcategories in parallel multi-thread promises
@@ -972,24 +996,96 @@ async function getChefRadar(req, res, next) {
       subcats.map((sc) => IndentAgentService.getSubcategoryItems(sc.id))
     );
 
+    // Build quick lookup map for stock items
+    const stockMapByName = {};
+    const stockMapByCode = {};
+    (stockAgg || []).forEach((s) => {
+      const remaining = parseFloat(s.total_remaining) || 0;
+      const price = parseFloat(s.price) || 0;
+      const reorder_level = parseFloat(s.reorder_level) || 0;
+      const info = { remaining, unit: s.unit, price, reorder_level, item_code: s.item_code };
+      if (s.lower_name) stockMapByName[s.lower_name] = info;
+      if (s.item_code) stockMapByCode[s.item_code.toLowerCase().trim()] = info;
+    });
+
+    // Real-time warehouse telemetry check to prevent logic mismatches
+    const [totalStockRow, inStockRow] = await Promise.all([
+      db("stock").count("id as count").first(),
+      db("stock").where("remaining", ">", 0).count("id as count").first()
+    ]);
+    const totalWarehouseCount = parseInt(totalStockRow?.count || 0);
+    const inStockCount = parseInt(inStockRow?.count || 0);
+    const isWarehouseEmpty = totalWarehouseCount === 0;
+
     const catalogItems = [];
+    const seenItemKeys = new Set();
+
     subcats.forEach((sc, idx) => {
       const { items } = subcatItemsList[idx] || { items: [] };
-      items.forEach((it) =>
+      items.forEach((it) => {
+        const itemName = it.item_name || it.name;
+        const normName = (itemName || "").toLowerCase().trim();
+        const codeKey = (it.sku || it.item_code || "").toLowerCase().trim();
+        if (normName) seenItemKeys.add(normName);
+        if (codeKey) seenItemKeys.add(codeKey);
+
+        const stockQty = isWarehouseEmpty ? 0 : (typeof it.current_stock === "number" ? it.current_stock : parseFloat(it.current_stock || 0));
+        const isOutOfStock = isWarehouseEmpty || stockQty <= 0;
         catalogItems.push({
           ...it,
           id: it.id,
-          name: it.item_name || it.name,
-          item_name: it.item_name || it.name,
+          name: itemName,
+          item_name: itemName,
           unit: it.unit || "KG",
           price: it.live_price || it.default_cost || 0,
-          current_stock: typeof it.current_stock === "number" ? it.current_stock : parseFloat(it.current_stock || 0),
+          current_stock: stockQty,
+          is_out_of_stock: isOutOfStock,
+          stock_status: isWarehouseEmpty ? 'WAREHOUSE_EMPTY' : isOutOfStock ? 'OUT_OF_STOCK' : stockQty <= (it.min_alert_qty || 5) ? 'LOW_STOCK' : 'OPTIMAL',
           subcat_id: sc.id,
           subcat_code: sc.code,
           subcat_name: sc.name,
           subcat_icon: sc.icon,
-        })
-      );
+        });
+      });
+    });
+
+    // Merge preloaded department template items from database
+    (deptTemplates || []).forEach((tmpl) => {
+      const tmplName = (tmpl.item_name || "").trim();
+      const normName = tmplName.toLowerCase();
+      const codeKey = (tmpl.item_code || "").toLowerCase().trim();
+
+      if (!seenItemKeys.has(normName) && (!codeKey || !seenItemKeys.has(codeKey))) {
+        if (normName) seenItemKeys.add(normName);
+        if (codeKey) seenItemKeys.add(codeKey);
+
+        const stockInfo = (codeKey && stockMapByCode[codeKey]) || stockMapByName[normName] || null;
+        const stockQty = isWarehouseEmpty ? 0 : (stockInfo ? stockInfo.remaining : 0);
+        const isOutOfStock = isWarehouseEmpty || stockQty <= 0;
+        const price = stockInfo ? stockInfo.price : 0;
+        const reorderLevel = stockInfo ? stockInfo.reorder_level : 5;
+
+        catalogItems.push({
+          id: `tmpl_${tmpl.id}`,
+          item_name: tmplName,
+          name: tmplName,
+          item_code: tmpl.item_code || stockInfo?.item_code || null,
+          sku: tmpl.item_code || stockInfo?.item_code || null,
+          unit: (tmpl.default_unit || stockInfo?.unit || "KG").toUpperCase(),
+          price,
+          default_cost: price,
+          live_price: price,
+          current_stock: stockQty,
+          is_out_of_stock: isOutOfStock,
+          stock_status: isWarehouseEmpty ? 'WAREHOUSE_EMPTY' : isOutOfStock ? 'OUT_OF_STOCK' : stockQty <= reorderLevel ? 'LOW_STOCK' : 'OPTIMAL',
+          subcat_id: null,
+          subcat_code: 'PRELOADED',
+          subcat_name: `${dept} Preloaded Items`,
+          subcat_icon: '📋',
+          row_no: tmpl.row_no,
+          is_preloaded_template: true
+        });
+      }
     });
 
     // Check active indent items
@@ -1004,6 +1100,10 @@ async function getChefRadar(req, res, next) {
     const countMap = {};
     itemCounts.forEach((c) => {
       countMap[(c.department_name || "").toUpperCase()] = parseInt(c.count, 10);
+    });
+    (templateCounts || []).forEach((tc) => {
+      const dName = (tc.dept_name || "").toUpperCase().replace(/- /g, "-");
+      countMap[dName] = Math.max(countMap[dName] || 0, parseInt(tc.count, 10));
     });
 
     const enrichedDepts = deptRecords.map((r) => {
@@ -1042,10 +1142,15 @@ async function getChefRadar(req, res, next) {
     });
     const unitsList = Array.from(unitSet).sort();
 
+    // Accurate critical shortages calculation
+    const catalogShortagesCount = catalogItems.filter(s => s.is_out_of_stock).length;
+    const criticalStockZeroCount = criticalStock.filter((s) => parseFloat(s.current_stock) <= 0).length;
+    const finalShortagesCount = isWarehouseEmpty ? catalogItems.length : Math.max(catalogShortagesCount, criticalStockZeroCount);
+
     // Dynamic database-driven tabs definition
     const tabs = [
       { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || dept})`, count: catalogItems.length },
-      { id: 'required', label: '🚨 Critical Radar', count: criticalStock.length },
+      { id: 'required', label: '🚨 Critical Radar', count: isWarehouseEmpty ? catalogItems.length : criticalStock.length },
       { id: 'disposables', label: '📦 Packaging & Disposables', count: disposables.length },
       { id: 'recipes', label: '🍲 Recipe Demand', count: stationRecipes.length }
     ];
@@ -1056,6 +1161,12 @@ async function getChefRadar(req, res, next) {
       dept,
       dept_info: currentDeptObj,
       today,
+      warehouse_summary: {
+        total_skus: totalWarehouseCount,
+        in_stock_skus: inStockCount,
+        out_of_stock_skus: totalWarehouseCount - inStockCount,
+        is_empty: isWarehouseEmpty
+      },
       subcategories: subcats,
       catalog_items: catalogItems,
       disposables,
@@ -1091,9 +1202,11 @@ async function getChefRadar(req, res, next) {
         scout: {
           name: "Agent Requisition Scout",
           role: "Depletion & Shortage Radar",
-          status: "ONLINE",
+          status: isWarehouseEmpty ? "WAREHOUSE_EMPTY" : "ONLINE",
+          warehouse_is_empty: isWarehouseEmpty,
+          total_warehouse_skus: totalWarehouseCount,
           items_monitored: catalogItems.length + criticalStock.length,
-          critical_shortages_count: criticalStock.filter((s) => parseFloat(s.current_stock) <= 0).length,
+          critical_shortages_count: finalShortagesCount,
         },
         recipe: {
           name: "Agent Recipe Synthesizer",
@@ -1176,6 +1289,26 @@ async function notifyStockout(req, res, next) {
   }
 }
 
+async function restoreHistoricalMultiAgent(req, res, next) {
+  try {
+    const MultiAgentIndentRestorer = require("../services/multiAgentIndentRestorer");
+    const result = await MultiAgentIndentRestorer.executeRestoration();
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getRestoreStatus(req, res, next) {
+  try {
+    const MultiAgentIndentRestorer = require("../services/multiAgentIndentRestorer");
+    const telemetry = await MultiAgentIndentRestorer.getLiveStatus();
+    res.json({ success: true, data: telemetry });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   list, 
   create, 
@@ -1201,6 +1334,8 @@ module.exports = {
   exportSingleIndentExcel,
   getChefRadar,
   notifyStockout,
+  restoreHistoricalMultiAgent,
+  getRestoreStatus,
 };
 
 

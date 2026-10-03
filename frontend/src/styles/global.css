@@ -153,6 +153,22 @@ input, select, textarea, button {
   padding: 12px 14px;
 }
 
+/* --- Responsive Table Wrapper ---
+   Used across Stock, Audit, Ledger, Indent, etc. screens. Ensures the
+   scroll wrapper AND the table itself stretch to fill their container's
+   full width instead of shrinking to fit content (which left a gap on
+   wide screens), while still allowing horizontal scroll on narrow ones. */
+.resp-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.resp-table-wrap table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }

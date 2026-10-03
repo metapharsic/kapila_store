@@ -287,7 +287,9 @@ export default function StoreLiveMonitorCard() {
             border: "1px solid #ef4444",
             borderRadius: 14,
             padding: 24,
-            maxWidth: 440,
+            maxWidth: "min(440px, 90vw)",
+            maxHeight: "90vh",
+            overflowY: "auto",
             width: "100%",
             boxShadow: "0 25px 70px rgba(0,0,0,0.7), 0 0 30px rgba(239, 68, 68, 0.2)",
           }}>

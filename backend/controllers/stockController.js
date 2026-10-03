@@ -1470,6 +1470,28 @@ async function getMultiAgentStatus(req, res, next) {
   }
 }
 
+// POST /api/stock/sync-today-multi-agent
+async function triggerMultiAgentSync(req, res, next) {
+  try {
+    const loader = require("../services/multiAgentInventoryLoader");
+    const result = await loader.executeFullSync();
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/stock/sync-today-status
+async function getMultiAgentSyncStatus(req, res, next) {
+  try {
+    const loader = require("../services/multiAgentInventoryLoader");
+    const status = await loader.getLiveStatus();
+    res.json({ success: true, data: status });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   list,
   create,
@@ -1494,5 +1516,7 @@ module.exports = {
   exportStockExcel,
   getLIFOSuggestions,
   getMultiAgentStatus,
+  triggerMultiAgentSync,
+  getMultiAgentSyncStatus,
 };
 

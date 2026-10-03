@@ -801,7 +801,7 @@ export default function SystemConfigScreen() {
             padding: 20,
           }}
         >
-          <Card style={{ maxWidth: 680, width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 24, overflow: "hidden" }}>
+          <Card style={{ maxWidth: "min(680px, 92vw)", width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 24, overflow: "hidden", boxSizing: "border-box" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Upload size={20} color={COLORS.success} />
@@ -1111,7 +1111,7 @@ export default function SystemConfigScreen() {
             padding: 20,
           }}
         >
-          <Card style={{ maxWidth: 680, width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 24, overflow: "hidden" }}>
+          <Card style={{ maxWidth: "min(680px, 92vw)", width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 24, overflow: "hidden", boxSizing: "border-box" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Download size={20} color="#3b82f6" />

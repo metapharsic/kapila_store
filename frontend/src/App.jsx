@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import kapilaLogo from "./assets/kapila-logo.png";
 import { COLORS } from "./styles/colors";
 import "./styles/global.css";
@@ -12,6 +12,9 @@ import {
   ArchiveRestore, Trash2, Search, Users, ShieldCheck, LogOut, BarChart3,
   CalendarCheck, ClipboardCheck, Wrench, Truck, Shield, GitPullRequest
 } from "lucide-react";
+
+import ErrorBoundary from "./components/ErrorBoundary";
+
 
 import Dashboard      from "./screens/Dashboard";
 import StockScreen    from "./screens/Stock";
@@ -319,7 +322,11 @@ function Inner() {
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    return (
+      <ErrorBoundary>
+        <LoginScreen />
+      </ErrorBoundary>
+    );
   }
 
   const showSidebar = !isChef;
@@ -462,7 +469,11 @@ function Inner() {
                         color: isActive ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
                         display: "flex", flexShrink: 0
                       }}>
-                        {n.icon}
+                        {React.isValidElement(n.icon)
+                          ? n.icon
+                          : typeof n.icon === "function" || (typeof n.icon === "object" && n.icon !== null && n.icon.$$typeof)
+                          ? React.createElement(n.icon, { size: 16 })
+                          : n.icon}
                       </span>
                       <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {n.label}
@@ -648,7 +659,9 @@ function Inner() {
             </div>
 
             <div style={{ position: "relative", zIndex: 1 }}>
-              {screens[screen]}
+              <ErrorBoundary>
+                {screens[screen]}
+              </ErrorBoundary>
             </div>
           </main>
         </div>
@@ -665,10 +678,12 @@ function Inner() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <Inner />
-      </AppProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppProvider>
+          <Inner />
+        </AppProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

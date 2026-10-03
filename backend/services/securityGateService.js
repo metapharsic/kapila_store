@@ -160,6 +160,11 @@ async function createPass(data, user = {}, trxOrDb = db) {
     const pass_number = await generatePassNumber(trx);
 
     const isRgp = data.pass_type === "RGP_RETURNABLE";
+    if (isRgp && !(data.returnable_item_type && String(data.returnable_item_type).trim())) {
+      const err = new Error("returnable_item_type is required for returnable gate passes");
+      err.status = 400;
+      throw err;
+    }
     const qtyOut = isRgp ? Math.max(0, parseInt(data.returnable_qty_out, 10) || 0) : 0;
     const qtyIn = 0;
     const balanceDue = qtyOut;
@@ -206,7 +211,7 @@ async function createPass(data, user = {}, trxOrDb = db) {
         in_time: data.in_time ? new Date(data.in_time) : new Date(),
         out_time: null,
         status: data.status || "IN_PREMISES",
-        returnable_item_type: isRgp ? (data.returnable_item_type || "Commercial LPG Cylinders") : null,
+        returnable_item_type: isRgp ? String(data.returnable_item_type).trim() : null,
         returnable_qty_out: qtyOut,
         returnable_qty_in: qtyIn,
         returnable_balance_due: balanceDue,

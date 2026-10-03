@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import Btn from "../../components/Btn";
+import ModalShell from "../../components/ui/ModalShell";
 import { COLORS, UNITS } from "../../styles/colors";
 import * as api from "../../api";
 import { useAppContext } from "../../context/AppContext";
@@ -157,26 +158,6 @@ export default function SupplierDocUpload({ supplierList, onSuccess, onClose }) 
   };
 
   // ── Styles ───────────────────────────────────────────────────────────────
-  const overlayStyle = {
-    position: "fixed", inset: 0, zIndex: 200,
-    background: "rgba(0,0,0,0.55)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    padding: 20,
-  };
-  const panelStyle = {
-    background: COLORS.surface, borderRadius: 16,
-    boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-    width: "100%", maxWidth: 760,
-    maxHeight: "90vh", overflowY: "auto",
-    display: "flex", flexDirection: "column",
-  };
-  const headerStyle = {
-    padding: "20px 24px 16px",
-    borderBottom: `1px solid ${COLORS.border}`,
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-  };
-  const bodyStyle = { padding: "24px" };
-
   const labelStyle = {
     fontSize: 11, color: COLORS.muted,
     textTransform: "uppercase", letterSpacing: "0.06em",
@@ -193,21 +174,11 @@ export default function SupplierDocUpload({ supplierList, onSuccess, onClose }) 
 
   // ── Renders ──────────────────────────────────────────────────────────────
   return (
-    <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={panelStyle}>
-
-        {/* HEADER */}
-        <div style={headerStyle}>
-          <div>
-            <p style={{ fontWeight: 700, fontSize: 16, color: COLORS.text }}>Upload Supplier Delivery Document</p>
-            <p style={{ fontSize: 12, color: COLORS.muted, marginTop: 2 }}>
-              Upload a PDF challan or photo — AI will extract items and update your stock
-            </p>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, color: COLORS.muted, cursor: "pointer", lineHeight: 1 }}>×</button>
-        </div>
-
-        <div style={bodyStyle}>
+    <ModalShell onClose={onClose} title="Upload Supplier Delivery Document" size="default">
+      <p style={{ fontSize: 12, color: COLORS.muted, marginTop: -8, marginBottom: 16 }}>
+        Upload a PDF challan or photo — AI will extract items and update your stock
+      </p>
+      <div>
 
           {/* ── DONE STATE ───────────────────────────────────────────────── */}
           {stage === STAGE.DONE && result && (
@@ -356,7 +327,7 @@ export default function SupplierDocUpload({ supplierList, onSuccess, onClose }) 
               </div>
 
               {/* Header fields */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 20 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: 14, marginBottom: 20 }}>
                 <div>
                   <label style={labelStyle}>Delivery Date</label>
                   <input type="date" value={header.date} onChange={e => setHeader(h => ({ ...h, date: e.target.value }))} style={inputStyle} />
@@ -379,7 +350,7 @@ export default function SupplierDocUpload({ supplierList, onSuccess, onClose }) 
                 <span style={{ color: COLORS.success }}>✓ Green</span> = matched to existing stock · <span style={{ color: COLORS.warning }}>⚠ Amber</span> = new item (will be created) · All fields are editable.
               </p>
 
-              <div className="resp-table-wrap" style={{ marginBottom: 16 }}>
+              <div className="resp-table-wrap" style={{ marginBottom: 16, overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 640 }}>
                   <thead>
                     <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
@@ -497,8 +468,7 @@ export default function SupplierDocUpload({ supplierList, onSuccess, onClose }) 
             </>
           )}
 
-        </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

@@ -21,7 +21,8 @@ const PrintPreviewModal = ({
     }}>
       <div style={{
         background: COLORS.surface, border: `1px solid ${COLORS.border}`,
-        borderRadius: 12, padding: 24, width: 380, maxWidth: "90%",
+        borderRadius: 12, padding: 24, width: 380, maxWidth: "90vw",
+        maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box",
         boxShadow: `0 8px 32px rgba(15, 23, 42, 0.15)`
       }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>

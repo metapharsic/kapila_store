@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { COLORS } from "../../styles/colors";
+import { useState } from "react";
+import ModalShell from "../../components/ui/ModalShell";
 import { security } from "../../api";
-import { Shield, Truck, AlertCircle, X, Check, Clock, User, FileText, Phone } from "lucide-react";
+import { Shield, AlertCircle, Check, Clock } from "lucide-react";
 
 export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
   const [passType, setPassType] = useState("INWARD_MATERIAL");
@@ -17,7 +17,7 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
   const [poNumber, setPoNumber] = useState("");
   
   // Returnable RGP specific
-  const [returnableItemType, setReturnableItemType] = useState("47.5kg Commercial LPG Cylinders");
+  const [returnableItemType, setReturnableItemType] = useState("");
   const [returnableQtyOut, setReturnableQtyOut] = useState(1);
   const [returnDueDate, setReturnDueDate] = useState(
     new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10)
@@ -40,6 +40,10 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
     }
     if (!purpose.trim()) {
       setError("Purpose of visit is required");
+      return;
+    }
+    if (passType === "RGP_RETURNABLE" && !returnableItemType.trim()) {
+      setError("Please select the returnable item type");
       return;
     }
 
@@ -74,77 +78,36 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0, 0, 0, 0.8)",
-      backdropFilter: "blur(6px)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      padding: "20px"
-    }}>
-      <div style={{
-        background: "var(--bg-modal)",
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: "14px",
-        width: "100%",
-        maxWidth: "680px",
-        maxHeight: "92vh",
-        overflowY: "auto",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-        color: "var(--text-main)"
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: "18px 24px",
-          borderBottom: "1px solid var(--border-color)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.6) 100%)"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "8px",
-              background: "var(--color-gold-dim)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--color-gold)"
-            }}>
-              <Shield size={20} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: "17px", fontWeight: "700", margin: 0, letterSpacing: "-0.01em" }}>
-                Generate Security Gate Pass
-              </h2>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
-                Log incoming & outgoing vehicles, delivery challans, and returnable containers (RGP)
-              </p>
-            </div>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      size="default"
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "8px",
+            background: "var(--color-gold-dim)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--color-gold)"
+          }}>
+            <Shield size={20} />
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--text-muted)",
-              cursor: "pointer",
-              padding: "4px"
-            }}
-          >
-            <X size={20} />
-          </button>
+          <div>
+            <div style={{ fontSize: "17px", fontWeight: "700", letterSpacing: "-0.01em" }}>
+              Generate Security Gate Pass
+            </div>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
+              Log incoming & outgoing vehicles, delivery challans, and returnable containers (RGP)
+            </p>
+          </div>
         </div>
-
-        {error && (
+      }
+    >
+      {error && (
           <div style={{
             margin: "16px 24px 0",
             padding: "12px 16px",
@@ -162,8 +125,8 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ padding: "20px 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "16px" }}>
             {/* Pass Type */}
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "6px" }}>
@@ -321,7 +284,7 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
               <h4 style={{ margin: "0 0 10px", fontSize: "13px", color: "var(--color-gold)", fontWeight: "700" }}>
                 Returnable Asset Details (RGP)
               </h4>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "12px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
                     Container / Asset Type *
@@ -333,18 +296,24 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
                       width: "100%",
                       padding: "8px 10px",
                       background: "var(--bg-modal)",
-                      border: "1px solid var(--border-color)",
+                      border: `1px solid ${!returnableItemType.trim() ? "#F87171" : "var(--border-color)"}`,
                       borderRadius: "6px",
                       color: "var(--text-main)",
                       fontSize: "12px"
                     }}
                   >
+                    <option value="">Select item type...</option>
                     <option value="47.5kg Commercial LPG Cylinders">47.5kg Commercial LPG Cylinders</option>
                     <option value="50L SS Milk Cans">50L Stainless Steel Milk Cans</option>
                     <option value="Plastic Vegetable Crates">Plastic Vegetable Crates</option>
                     <option value="Beverage Glass Crates">Beverage Glass Crates</option>
                     <option value="Other Equipment">Other Returnable Equipment</option>
                   </select>
+                  {!returnableItemType.trim() && (
+                    <span style={{ fontSize: "10px", color: "#F87171", marginTop: "4px", display: "block" }}>
+                      Please select the returnable item type
+                    </span>
+                  )}
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
@@ -413,7 +382,7 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           {/* Documents row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginTop: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "12px", marginTop: "16px" }}>
             <div>
               <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
                 Delivery Challan (DC) #
@@ -519,7 +488,7 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (passType === "RGP_RETURNABLE" && !returnableItemType.trim())}
               style={{
                 padding: "10px 22px",
                 background: "linear-gradient(135deg, var(--color-gold) 0%, #ca8a04 100%)",
@@ -528,7 +497,8 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
                 color: "var(--bg-modal)",
                 fontSize: "13px",
                 fontWeight: "700",
-                cursor: loading ? "not-allowed" : "pointer",
+                cursor: (loading || (passType === "RGP_RETURNABLE" && !returnableItemType.trim())) ? "not-allowed" : "pointer",
+                opacity: (passType === "RGP_RETURNABLE" && !returnableItemType.trim()) ? 0.6 : 1,
                 display: "flex",
                 alignItems: "center",
                 gap: "8px"
@@ -538,8 +508,7 @@ export default function NewGatePassModal({ isOpen, onClose, onSuccess }) {
               {loading ? "Generating..." : "Generate Pass & Log Entry"}
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </ModalShell>
   );
 }

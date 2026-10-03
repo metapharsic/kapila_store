@@ -166,13 +166,13 @@ export default function EditItemDrawer({ item, onClose, onSaved }) {
           </div>
 
           {mode === "modify" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 24 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", borderRadius: 10, padding: 18 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-gold)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 16 }}>Item Identity</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                     <Input label="Item Name" value={name} onChange={(e) => setName(e.target.value)} />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
                       <div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                           <label style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 500 }}>Base Unit</label>
@@ -208,7 +208,7 @@ export default function EditItemDrawer({ item, onClose, onSaved }) {
                       </div>
                       <Input label="Unit Price (₹)" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
                       <div>
                         <label style={{ fontSize: 11.5, color: "var(--text-muted)", display: "block", marginBottom: 4, fontWeight: 500 }}>Category</label>
                         <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px 10px", fontSize: 13, background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: 6 }}>

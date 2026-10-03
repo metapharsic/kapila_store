@@ -427,7 +427,7 @@ export default function IssuanceHistory({ items, total, page, loading, error, on
 
             {/* Metadata Grid */}
             <div style={{ 
-              display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, 
+              display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, 
               padding: 16, background: COLORS.bg, borderRadius: 8, marginBottom: 20 
             }}>
               <div>
@@ -457,8 +457,8 @@ export default function IssuanceHistory({ items, total, page, loading, error, on
             </div>
 
             {/* Items Table */}
-            <div style={{ flex: 1, overflowY: "auto", marginBottom: 20 }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <div style={{ flex: 1, overflowY: "auto", overflowX: "auto", marginBottom: 20 }}>
+              <table style={{ width: "100%", minWidth: 560, borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
                     <th style={{ padding: "8px 12px", textAlign: "left", color: COLORS.muted, fontWeight: 600, fontSize: 11, textTransform: "uppercase" }}>Code</th>

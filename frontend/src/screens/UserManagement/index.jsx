@@ -55,6 +55,12 @@ export default function UserManagementScreen() {
   const [resetSubmitting, setResetSubmitting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(null);
 
+  // Restore Default Catalog (recovery action, paired with Danger Zone)
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [restoreSubmitting, setRestoreSubmitting] = useState(false);
+  const [restoreError, setRestoreError] = useState("");
+  const [restoreSuccess, setRestoreSuccess] = useState(null);
+
   const selectedRoleNames = useMemo(() => new Set(form.role_ids.map(Number)), [form.role_ids]);
 
   const filteredUsers = useMemo(() => {
@@ -273,6 +279,25 @@ export default function UserManagementScreen() {
       setResetError(err.message);
     } finally {
       setResetSubmitting(false);
+    }
+  };
+
+  const openRestoreConfirm = () => {
+    setRestoreError("");
+    setShowRestoreConfirm(true);
+  };
+
+  const submitRestoreCatalog = async () => {
+    setRestoreSubmitting(true);
+    setRestoreError("");
+    try {
+      const res = await api.systemReset.restoreCatalog();
+      setShowRestoreConfirm(false);
+      setRestoreSuccess(res.data || null);
+    } catch (err) {
+      setRestoreError(err.message);
+    } finally {
+      setRestoreSubmitting(false);
     }
   };
 
@@ -676,6 +701,39 @@ export default function UserManagementScreen() {
             </div>
           </Card>
         )}
+
+        {/* Restore Default Catalog — a calm recovery action, visually distinct from the destructive reset above */}
+        {canSystemReset && (
+          <Card style={{ border: `2px solid ${COLORS.info}`, background: `${COLORS.info}0d` }}>
+            <h3 style={{ marginTop: 0, marginBottom: SPACING.xs, color: COLORS.info, display: "flex", alignItems: "center", gap: SPACING.sm }}>
+              <span aria-hidden>&#8635;</span> Restore Default Catalog
+            </h3>
+            <p style={{ color: COLORS.muted, fontSize: 12, marginTop: 0, marginBottom: SPACING.lg }}>
+              Re-seeds the chef-facing indent catalog (subcategories &amp; items) and the indent templates back to their
+              original defaults — the data wiped by the "Stock &amp; Adjustments" or "Indents &amp; Issuances" resets above.
+              Safe to run any number of times: existing rows are never duplicated.
+            </p>
+
+            {restoreError && <div style={{ color: COLORS.danger, marginBottom: SPACING.md, fontSize: 13 }}>{restoreError}</div>}
+
+            {restoreSuccess && (
+              <div style={{ background: `${COLORS.success}22`, border: `1px solid ${COLORS.success}`, borderRadius: RADIUS.sm, padding: SPACING.md, marginBottom: SPACING.lg }}>
+                <div style={{ fontWeight: 700, color: COLORS.success, marginBottom: SPACING.xs }}>Default catalog restored</div>
+                <div style={{ fontSize: 12, color: COLORS.text }}>
+                  Subcategories added: {restoreSuccess.subcategoriesInserted ?? 0} &middot; Subcategory items added: {restoreSuccess.itemsInserted ?? 0} &middot; Indent template rows added: {restoreSuccess.templatesInserted ?? 0}
+                </div>
+              </div>
+            )}
+
+            <Btn
+              style={{ background: COLORS.info }}
+              onClick={openRestoreConfirm}
+              disabled={restoreSubmitting}
+            >
+              Restore Default Catalog
+            </Btn>
+          </Card>
+        )}
       </div>
 
       {/* Activity Log Modal */}
@@ -716,7 +774,7 @@ export default function UserManagementScreen() {
       {/* Permissions Matrix Modal */}
       {showRoleMatrix && (
         <div style={modalOverlay} onClick={() => setShowRoleMatrix(false)}>
-          <div style={{ ...modalContent, maxWidth: 800 }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ ...modalContent, maxWidth: "min(800px, 90vw)" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: SPACING.xl }}>
               <h3 style={{ margin: 0, color: COLORS.text }}>Role Permissions Matrix</h3>
               <button onClick={() => setShowRoleMatrix(false)} style={closeBtn}>&times;</button>
@@ -806,6 +864,33 @@ export default function UserManagementScreen() {
         </div>
       )}
 
+      {/* Restore Default Catalog Confirmation Modal */}
+      {showRestoreConfirm && (
+        <div style={modalOverlay} onClick={() => !restoreSubmitting && setShowRestoreConfirm(false)}>
+          <div style={{ ...modalContent, border: `2px solid ${COLORS.info}` }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: SPACING.lg }}>
+              <h3 style={{ margin: 0, color: COLORS.info }}>Confirm Restore Default Catalog</h3>
+              <button onClick={() => setShowRestoreConfirm(false)} style={closeBtn}>&times;</button>
+            </div>
+            <p style={{ color: COLORS.text, fontSize: 13 }}>
+              This re-seeds <strong>indent subcategories &amp; items</strong> and <strong>indent templates</strong> from their
+              original defaults. Rows that already exist are left as-is and will not be duplicated or overwritten.
+            </p>
+            {restoreError && <div style={{ color: COLORS.danger, fontSize: 12, marginTop: SPACING.sm }}>{restoreError}</div>}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: SPACING.sm, marginTop: SPACING.lg }}>
+              <Btn variant="ghost" onClick={() => setShowRestoreConfirm(false)} disabled={restoreSubmitting}>Cancel</Btn>
+              <Btn
+                style={{ background: COLORS.info }}
+                onClick={submitRestoreCatalog}
+                disabled={restoreSubmitting}
+              >
+                {restoreSubmitting ? "Restoring..." : "Confirm Restore"}
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
+
     </Section>
   );
 }
@@ -835,5 +920,5 @@ const td = { padding: `${SPACING.md}px ${SPACING.lg}px`, verticalAlign: "middle"
 
 // Modal Styles
 const modalOverlay = { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: SPACING.xl };
-const modalContent = { background: COLORS.bg, borderRadius: RADIUS.md, padding: SPACING.xxl, width: "100%", maxWidth: 600, border: `1px solid ${COLORS.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
+const modalContent = { background: COLORS.bg, borderRadius: RADIUS.md, padding: SPACING.xxl, width: "100%", maxWidth: "min(600px, 90vw)", maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box", border: `1px solid ${COLORS.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
 const closeBtn = { background: "none", border: "none", color: COLORS.muted, fontSize: 24, cursor: "pointer", padding: 0, lineHeight: 1 };

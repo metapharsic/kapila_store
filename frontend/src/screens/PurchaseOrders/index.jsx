@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import RateComparisonModal from "./RateComparisonModal";
 import PrintPOModal from "./PrintPOModal";
+import ModalShell from "../../components/ui/ModalShell";
 import P2PAgentStatusBar from "../../components/agents/P2PAgentStatusBar";
 import { PO_STATUS_CONFIG, PO_STATUSES } from "../../utils/poStatus";
 import { today } from "../../utils/dates";
@@ -1783,34 +1784,14 @@ export default function PurchaseOrdersScreen() {
 
       {/* Append Line Item Modal */}
       {appendingPo && (
-        <div
-          style={{
-            position: "fixed", inset: 0, zIndex: 9999,
-            background: "rgba(0, 0, 0, 0.82)", backdropFilter: "blur(5px)",
-            display: "flex", alignItems: "center", justifyContent: "center", padding: 20
-          }}
-          onClick={(e) => e.target === e.currentTarget && setAppendingPo(null)}
+        <ModalShell
+          onClose={() => setAppendingPo(null)}
+          title={`Append Item to ${appendingPo.po_number}`}
+          size="compact"
         >
-          <div style={{
-            background: "#18181b", border: `1px solid ${COLORS.border}`, borderRadius: 12,
-            width: "100%", maxWidth: 520, padding: 24, boxShadow: "0 20px 40px rgba(0,0,0,0.7)"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: COLORS.text, margin: 0 }}>
-                  Append Item to {appendingPo.po_number}
-                </h3>
-                <p style={{ fontSize: 12, color: COLORS.muted, margin: "2px 0 0" }}>
-                  Vendor: <strong style={{ color: COLORS.text }}>{appendingPo.supplier_name}</strong>
-                </p>
-              </div>
-              <button
-                onClick={() => setAppendingPo(null)}
-                style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", fontSize: 18 }}
-              >
-                ✕
-              </button>
-            </div>
+          <p style={{ fontSize: 12, color: COLORS.muted, margin: "-8px 0 14px" }}>
+            Vendor: <strong style={{ color: COLORS.text }}>{appendingPo.supplier_name}</strong>
+          </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -1847,7 +1828,7 @@ export default function PurchaseOrdersScreen() {
                 </datalist>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 12 }}>
                 <div>
                   <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
                     Item Code
@@ -1881,7 +1862,7 @@ export default function PurchaseOrdersScreen() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 12 }}>
                 <div>
                   <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", marginBottom: 4 }}>
                     Quantity
@@ -1939,8 +1920,7 @@ export default function PurchaseOrdersScreen() {
                 </Btn>
               </div>
             </div>
-          </div>
-        </div>
+        </ModalShell>
       )}
 
       {/* Delete Confirmation Modal */}
@@ -1955,7 +1935,8 @@ export default function PurchaseOrdersScreen() {
         >
           <div style={{
             background: "#18181b", border: `1px solid ${COLORS.coral}`, borderRadius: 12,
-            width: "100%", maxWidth: 440, padding: 24, boxShadow: "0 20px 40px rgba(0,0,0,0.7)"
+            width: "100%", maxWidth: 440, maxHeight: "90vh", overflowY: "auto",
+            padding: 24, boxShadow: "0 20px 40px rgba(0,0,0,0.7)"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               <AlertTriangle size={24} color={COLORS.coral} />

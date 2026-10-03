@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { COLORS } from "../styles/colors";
 
 const variants = {
@@ -29,6 +29,15 @@ export default function Btn({ children, onClick, variant = "primary", icon, smal
   delete sanitizedStyle.backgroundColor;
   delete sanitizedStyle.background;
 
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (React.isValidElement(icon)) return icon;
+    if (typeof icon === "function" || (typeof icon === "object" && icon !== null && icon.$$typeof)) {
+      return React.createElement(icon, { size: small ? 13 : 15 });
+    }
+    return icon;
+  };
+
   return (
     <button
       onClick={isInteractive ? onClick : undefined}
@@ -54,7 +63,7 @@ export default function Btn({ children, onClick, variant = "primary", icon, smal
       }}
     >
       {loading && <span className="pulse" style={{ width: 12, height: 12, border: "2px solid currentColor", borderRightColor: "transparent", borderRadius: "50%", display: "inline-block" }}></span>}
-      {!loading && icon && <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{icon}</span>}
+      {!loading && icon && <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{renderIcon()}</span>}
       {children}
     </button>
   );

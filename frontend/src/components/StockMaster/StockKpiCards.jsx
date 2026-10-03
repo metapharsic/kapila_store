@@ -15,7 +15,7 @@ export function StockKpiCards({ data = {}, filters = {}, handleStatCardClick = (
   ];
 
   return (
-    <div className="resp-grid-3 kpi-row" style={{ marginBottom: 14 }}>
+    <div className="resp-grid-3 kpi-row" style={{ marginBottom: 16 }}>
       {kpis.map((kpi) => {
         const isActive = (kpi.id === "total" && isTotalActive) || (kpi.id === "active" && isActiveActive) || (kpi.id === "low" && isLowActive);
         return (

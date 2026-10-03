@@ -10,20 +10,21 @@ export default function AppendBatchModal({
   item,
   onSuccess
 }) {
-  if (!isOpen || !item) return null;
-
+  const safeItem = item || {};
   const [qty, setQty] = useState("");
-  const [price, setPrice] = useState(item.price ? String(item.price) : "");
-  const [supplier, setSupplier] = useState(item.supplier || "");
+  const [price, setPrice] = useState(safeItem.price ? String(safeItem.price) : "");
+  const [supplier, setSupplier] = useState(safeItem.supplier || "");
   const [invoiceNo, setInvoiceNo] = useState("");
-  const [batchNo, setBatchNo] = useState(`BAT-${item.item_code}-${Date.now().toString().slice(-4)}`);
+  const [batchNo, setBatchNo] = useState(`BAT-${safeItem.item_code}-${Date.now().toString().slice(-4)}`);
   const [expiryDate, setExpiryDate] = useState("");
-  const [rackLocation, setRackLocation] = useState(item.rack_location || "Rack A-01 / Shelf 1");
-  const [storageZone, setStorageZone] = useState(item.storage_zone || "Main Dry Store");
+  const [rackLocation, setRackLocation] = useState(safeItem.rack_location || "Rack A-01 / Shelf 1");
+  const [storageZone, setStorageZone] = useState(safeItem.storage_zone || "Main Dry Store");
   const [date, setDate] = useState(today());
   const [purchaseTime, setPurchaseTime] = useState(new Date().toISOString().slice(0, 16));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  if (!item) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,7 +137,7 @@ export default function AppendBatchModal({
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
                 Quantity Received * ({item.unit})
@@ -184,7 +185,7 @@ export default function AppendBatchModal({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)", gap: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
                 Vendor / Supplier Name
@@ -229,7 +230,7 @@ export default function AppendBatchModal({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
                 Batch Identifier
@@ -273,7 +274,7 @@ export default function AppendBatchModal({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
                 Storage Zone
@@ -318,7 +319,7 @@ export default function AppendBatchModal({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
                 Receipt Date
@@ -373,7 +374,7 @@ export default function AppendBatchModal({
             <Btn variant="secondary" onClick={onClose} disabled={loading}>
               Cancel
             </Btn>
-            <Btn variant="primary" icon={PlusCircle} type="submit" disabled={loading}>
+            <Btn variant="primary" icon={<PlusCircle size={15} />} type="submit" disabled={loading}>
               {loading ? "Appending Batch…" : "Confirm Inward & Append"}
             </Btn>
           </div>

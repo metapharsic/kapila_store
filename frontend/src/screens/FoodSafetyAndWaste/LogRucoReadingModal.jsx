@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import ModalShell from "../../components/ui/ModalShell";
 import { COLORS } from "../../styles/colors";
 import { waste } from "../../api";
-import { Droplet, AlertTriangle, X, Check, Truck, ShieldAlert } from "lucide-react";
+import { Droplet, AlertTriangle, Check, Truck, ShieldAlert } from "lucide-react";
 
 const DEPARTMENTS = [
   "TIFFINS",
@@ -125,71 +126,26 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0,0,0,0.75)",
-        backdropFilter: "blur(4px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-        padding: "16px"
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: COLORS.surface,
-          borderRadius: "12px",
-          width: "100%",
-          maxWidth: "600px",
-          maxHeight: "92vh",
-          display: "flex",
-          flexDirection: "column",
-          border: `1px solid ${COLORS.border}`,
-          boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
-          color: COLORS.text
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            padding: "18px 24px",
-            borderBottom: `1px solid ${COLORS.border}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: `linear-gradient(135deg, ${COLORS.surface} 0%, rgba(232, 168, 56, 0.08) 100%)`
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Droplet size={22} color={COLORS.gold} />
-            <div>
-              <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 600, color: COLORS.text }}>
-                FSSAI RUCO — Used Cooking Oil Management
-              </h2>
-              <span style={{ fontSize: "0.78rem", color: COLORS.textMuted }}>
-                Repurpose Used Cooking Oil compliance (Statutory Limit: TPC &le; 25.0%)
-              </span>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      size="default"
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Droplet size={22} color={COLORS.gold} />
+          <div>
+            <div style={{ fontSize: "1.05rem", fontWeight: 600, color: COLORS.text }}>
+              FSSAI RUCO — Used Cooking Oil Management
             </div>
+            <span style={{ fontSize: "0.78rem", color: COLORS.textMuted }}>
+              Repurpose Used Cooking Oil compliance (Statutory Limit: TPC &le; 25.0%)
+            </span>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: COLORS.textMuted,
-              cursor: "pointer",
-              padding: "4px"
-            }}
-          >
-            <X size={20} />
-          </button>
         </div>
-
-        {/* Mode Selector Tabs */}
-        <div style={{ display: "flex", borderBottom: `1px solid ${COLORS.border}`, padding: "0 24px" }}>
+      }
+    >
+      {/* Mode Selector Tabs */}
+      <div style={{ display: "flex", borderBottom: `1px solid ${COLORS.border}`, marginBottom: "16px" }}>
           <button
             type="button"
             onClick={() => { setActiveMode("TEST_READING"); setError(""); }}
@@ -232,9 +188,9 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-          <div style={{ padding: "20px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
+      {/* Form Body */}
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {error && (
               <div
                 style={{
@@ -285,7 +241,7 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
             {/* TEST READING MODE */}
             {activeMode === "TEST_READING" && (
               <>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.8rem", color: COLORS.textMuted, marginBottom: "6px" }}>
                       Log Date *
@@ -332,7 +288,7 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.8rem", color: COLORS.textMuted, marginBottom: "6px" }}>
                       Fryer / Station Name *
@@ -380,7 +336,7 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.8rem", color: COLORS.textMuted, marginBottom: "6px" }}>
                       Digital TPC Meter Reading (%) *
@@ -490,7 +446,7 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
             {/* BIODIESEL VENDOR HANDOVER MODE */}
             {activeMode === "VENDOR_HANDOVER" && (
               <>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.8rem", color: COLORS.textMuted, marginBottom: "6px" }}>
                       Handover Date *
@@ -537,7 +493,7 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.8rem", color: COLORS.textMuted, marginBottom: "6px" }}>
                       Authorized Biodiesel Recycler *
@@ -582,7 +538,7 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.8rem", color: COLORS.textMuted, marginBottom: "6px" }}>
                       Revenue / Buyback Amount Recovered (₹)
@@ -631,58 +587,57 @@ export default function LogRucoReadingModal({ isOpen, onClose, onSuccess, curren
                 </div>
               </>
             )}
-          </div>
+        </div>
 
-          {/* Footer */}
-          <div
+        {/* Footer */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "12px",
+            marginTop: "20px",
+            paddingTop: "16px",
+            borderTop: `1px solid ${COLORS.border}`
+          }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
             style={{
-              padding: "16px 24px",
-              borderTop: `1px solid ${COLORS.border}`,
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "12px",
-              backgroundColor: "rgba(0,0,0,0.2)"
+              padding: "8px 16px",
+              borderRadius: "6px",
+              backgroundColor: "transparent",
+              border: `1px solid ${COLORS.border}`,
+              color: COLORS.textMuted,
+              fontSize: "0.85rem",
+              cursor: "pointer"
             }}
           >
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "6px",
-                backgroundColor: "transparent",
-                border: `1px solid ${COLORS.border}`,
-                color: COLORS.textMuted,
-                fontSize: "0.85rem",
-                cursor: "pointer"
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: "8px 20px",
-                borderRadius: "6px",
-                backgroundColor: COLORS.gold,
-                border: "none",
-                color: "#111",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                opacity: loading ? 0.7 : 1
-              }}
-            >
-              <Check size={16} />
-              {loading ? "Recording..." : activeMode === "TEST_READING" ? "Save TPC Reading" : "Record Handover"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: "8px 20px",
+              borderRadius: "6px",
+              backgroundColor: COLORS.gold,
+              border: "none",
+              color: "#111",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              opacity: loading ? 0.7 : 1
+            }}
+          >
+            <Check size={16} />
+            {loading ? "Recording..." : activeMode === "TEST_READING" ? "Save TPC Reading" : "Record Handover"}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   );
 }

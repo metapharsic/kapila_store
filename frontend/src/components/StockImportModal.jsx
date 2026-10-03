@@ -103,7 +103,7 @@ export default function StockImportModal({ open, onClose, onImported }) {
       <div style={{
         background: COLORS.surface, border: `1px solid ${COLORS.border}`,
         borderRadius: RADIUS.lg, padding: SPACING.xxl, width: step === "review" ? 900 : 480,
-        maxWidth: "94%", maxHeight: "88vh", overflowY: "auto",
+        maxWidth: "90vw", maxHeight: "90vh", overflowY: "auto",
         boxShadow: "0 8px 32px rgba(15, 23, 42, 0.15)",
       }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>

@@ -217,7 +217,8 @@ export default function GatePassDetailModal({
       <div style={{
         background: "var(--bg-modal)",
         border: "1px solid rgba(232,168,56,0.3)",
-        borderRadius: 14, width: "100%", maxWidth: 880,
+        borderRadius: 14, width: "100%", maxWidth: "min(880px, 90vw)", maxHeight: "90vh",
+        display: "flex", flexDirection: "column", overflow: "hidden",
         color: "var(--text-main)", boxShadow: "0 25px 60px rgba(0,0,0,0.7)",
         animation: "modalPopUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)"
       }}>
@@ -227,6 +228,7 @@ export default function GatePassDetailModal({
           borderBottom: "1px solid var(--border-color)",
           display: "flex", justifyContent: "space-between", alignItems: "center",
           background: "linear-gradient(135deg,var(--bg-page),rgba(15,23,42,0.9))",
+          flexShrink: 0,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{
@@ -286,6 +288,7 @@ export default function GatePassDetailModal({
           </div>
         </div>
 
+        <div style={{ overflowY: "auto", flex: 1 }}>
         {/* ── Toasts ── */}
         {msg && (
           <div style={{ margin: "12px 24px 0", padding: "10px 14px", background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 8, color: "#34D399", fontSize: 13, fontWeight: 600 }}>
@@ -308,7 +311,7 @@ export default function GatePassDetailModal({
           <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* Pass Info Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "16px 20px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 14, background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "16px 20px" }}>
               {[
                 { label: "Vehicle", value: `${p.vehicle_number || ""} (${(p.vehicle_type || "").replace(/_/g, " ")})` },
                 { label: "Driver", value: `${p.driver_name || ""}${p.driver_phone ? " — " + p.driver_phone : ""}` },
@@ -364,7 +367,7 @@ export default function GatePassDetailModal({
                   onSubmit={handleAddItem}
                   style={{ padding: "16px 18px", background: "rgba(232,168,56,0.05)", borderBottom: "1px solid rgba(232,168,56,0.2)", display: "flex", flexDirection: "column", gap: 10 }}
                 >
-                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
                     <div>
                       <label style={LABEL_STYLE}>Item / Material Name *</label>
                       <input
@@ -389,7 +392,7 @@ export default function GatePassDetailModal({
                       </select>
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 10, alignItems: "flex-end" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 2fr) auto", gap: 10, alignItems: "flex-end" }}>
                     <div>
                       <label style={LABEL_STYLE}>Package Type</label>
                       <input
@@ -504,6 +507,8 @@ export default function GatePassDetailModal({
             <p style={{ margin: 0 }}>{err || "Gate pass not found."}</p>
           </div>
         )}
+
+        </div>
 
         {/* ── Hidden Print Template ── */}
         <div ref={printRef} style={{ display: "none" }}>

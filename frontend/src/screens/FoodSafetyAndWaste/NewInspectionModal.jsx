@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { COLORS } from "../../styles/colors";
+import { useState } from "react";
+import ModalShell from "../../components/ui/ModalShell";
 import { foodSafety } from "../../api";
-import { ShieldCheck, Thermometer, AlertCircle, X, Check, Clock } from "lucide-react";
+import { ShieldCheck, Thermometer, AlertCircle, Check, Clock } from "lucide-react";
 
 export default function NewInspectionModal({ isOpen, onClose, onSuccess }) {
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -69,68 +69,36 @@ export default function NewInspectionModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0, 0, 0, 0.8)",
-      backdropFilter: "blur(6px)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      padding: "20px"
-    }}>
-      <div style={{
-        background: "var(--bg-modal)",
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: "14px",
-        width: "100%",
-        maxWidth: "680px",
-        maxHeight: "92vh",
-        overflowY: "auto",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-        color: "var(--text-main)"
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: "16px 22px",
-          borderBottom: "1px solid var(--border-color)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.6) 100%)"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "8px",
-              background: "rgba(16, 185, 129, 0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#34D399"
-            }}>
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: "16px", fontWeight: "700", margin: 0 }}>
-                Log HACCP Food Receiving Inspection
-              </h3>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
-                Verify raw material temperature, packaging seals, sensory quality, and FSSAI expiry
-              </p>
-            </div>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      size="default"
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "8px",
+            background: "rgba(16, 185, 129, 0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#34D399"
+          }}>
+            <ShieldCheck size={20} />
           </div>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
-            <X size={20} />
-          </button>
+          <div>
+            <div style={{ fontSize: "16px", fontWeight: "700" }}>
+              Log HACCP Food Receiving Inspection
+            </div>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
+              Verify raw material temperature, packaging seals, sensory quality, and FSSAI expiry
+            </p>
+          </div>
         </div>
-
-        {error && (
+      }
+    >
+      {error && (
           <div style={{
             margin: "14px 22px 0",
             padding: "10px 14px",
@@ -148,8 +116,8 @@ export default function NewInspectionModal({ isOpen, onClose, onSuccess }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ padding: "20px 22px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
                 Food Category *
@@ -296,7 +264,7 @@ export default function NewInspectionModal({ isOpen, onClose, onSuccess }) {
                 HACCP Temperature & Sensory Inspection
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "10px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   Delivery Temp (°C)
@@ -393,7 +361,7 @@ export default function NewInspectionModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           {/* Status and Action */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px", marginTop: "16px" }}>
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
                 Inspection Verdict *
@@ -503,8 +471,7 @@ export default function NewInspectionModal({ isOpen, onClose, onSuccess }) {
               {loading ? "Recording..." : "Save Inspection"}
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </ModalShell>
   );
 }

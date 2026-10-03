@@ -1452,7 +1452,7 @@ export default function InboundDCScreen() {
             {/* Modal Body */}
             <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
               <div style={{
-                display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+                display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))",
                 gap: 16, marginBottom: 20, fontSize: 13
               }}>
                 <div>
@@ -1476,8 +1476,8 @@ export default function InboundDCScreen() {
               </div>
 
               {/* Items List */}
-              <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 8, overflow: "hidden", marginBottom: 16 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 8, overflowX: "auto", marginBottom: 16 }}>
+                <table style={{ width: "100%", minWidth: 480, borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`, color: COLORS.muted, textAlign: "left" }}>
                       <th style={{ padding: "8px 12px" }}>Item</th>

@@ -1,0 +1,114 @@
+[
+  {
+    "code": "SUB-SOUTHTIFFIN",
+    "name": "South indian Tiffines",
+    "department_name": "TIFFINS",
+    "icon": "🥞",
+    "description": "Idli rava, urad gota, poha, upma rava, toor dal, curry leaves, mustard seeds, and fresh coconut."
+  },
+  {
+    "code": "SUB-BATTER",
+    "name": "Dosa Batter",
+    "department_name": "TIFFINS",
+    "icon": "🥣",
+    "description": "Pre-fermented stone-ground Idli-Dosa batter, Ragi multigrain batter, and Pesarattu batter."
+  },
+  {
+    "code": "SUB-DOSA",
+    "name": "Dosa",
+    "department_name": "CHINESE & DOSA",
+    "icon": "🫓",
+    "description": "Parboiled dosa rice, methi seeds, chana dal, pure ghee, sesame oil, and gun powder / podi."
+  },
+  {
+    "code": "SUB-SOUTHMEALS",
+    "name": "Sount indian meals.",
+    "department_name": "SI-MEALS",
+    "icon": "🍛",
+    "description": "Sona Masoori raw rice, traditional sambar masala, rasam spices, tamarind, drumsticks, and appalams."
+  },
+  {
+    "code": "SUB-VEGETABLES",
+    "name": "Vegetables",
+    "department_name": "NORTH INDIAN",
+    "icon": "🥕",
+    "description": "Daily fresh kitchen produce: Nashik onions, hybrid tomatoes, table potatoes, ginger, and garlic."
+  },
+  {
+    "code": "SUB-COOKIES",
+    "name": "Cookies",
+    "department_name": "STAFF",
+    "icon": "🍪",
+    "description": "Bakery shortbread cookies, cashew butter cookies, choco-chip dough, oatmeal biscuits, and butter."
+  },
+  {
+    "code": "SUB-STALL",
+    "name": "Stall",
+    "department_name": "CHAT & SOFTY",
+    "icon": "🍢",
+    "description": "Live chaat stall puri, papdi, sev, sweet date-tamarind chutney, spicy mint pani, and boiled sprouts."
+  },
+  {
+    "code": "SUB-SOFTY",
+    "name": "Softy ice cream",
+    "department_name": "CHAT & SOFTY",
+    "icon": "🍦",
+    "description": "Commercial softy ice cream liquid premix (vanilla & chocolate), waffle cones, and dessert toppings."
+  },
+  {
+    "code": "SUB-DISPOSABLE",
+    "name": "disposable",
+    "department_name": "CHAT & SOFTY",
+    "icon": "🥡",
+    "description": "Food grade hot beverage paper cups, birchwood spoons, garbage bags, and dinner paper napkins."
+  },
+  {
+    "code": "SUB-JALPAN",
+    "name": "disposable jalpan",
+    "department_name": "CHAT & SOFTY",
+    "icon": "🍱",
+    "description": "3-compartment partitioned jalpan plates, foil snack containers, butter paper rolls, and cling wraps."
+  },
+  {
+    "code": "SUB-CHINESE",
+    "name": "Chinese",
+    "department_name": "CHINESE & DOSA",
+    "icon": "🍜",
+    "description": "Hakka noodles, szechuan paste, dark soy sauce, white vinegar, spring onions, capsicum, and corn starch."
+  },
+  {
+    "code": "SUB-CONTINENTAL",
+    "name": "continental",
+    "department_name": "MOCKTAILS & CONTINENTAL",
+    "icon": "🍝",
+    "description": "Durum wheat penne, spaghetti, extra virgin olive oil, canned pelati tomatoes, parmesan, and basil."
+  },
+  {
+    "code": "SUB-MOCKTAIL",
+    "name": "Mocktails & Ice cream",
+    "department_name": "MOCKTAILS & CONTINENTAL",
+    "icon": "🍹",
+    "description": "Cocktail syrups (Blue Curacao, Mojito, Grenadine), purees, soda, and bulk ice cream tubs."
+  },
+  {
+    "code": "SUB-TEA",
+    "name": "tea",
+    "department_name": "MOCKTAILS & CONTINENTAL",
+    "icon": "☕",
+    "description": "Specialty CTC tea dust, whole Assam leaf, green tea, cardamom, fresh ginger, and tea brewing supplies."
+  },
+  {
+    "code": "SUB-JUICE",
+    "name": "juice",
+    "department_name": "MOCKTAILS & CONTINENTAL",
+    "icon": "🧃",
+    "description": "Fresh farm juicing fruits (Valencia orange, mosambi, pineapple, watermelon), rock salt, and mint."
+  },
+  {
+    "code": "SUB-ROOMSERVICE",
+    "name": "Room Services",
+    "department_name": "ROOM SERVICE",
+    "icon": "🛎️",
+    "description": "In-room dining tea-coffee sachets, butter chiplets, mini jams, bottled water, and presentation amenities."
+  }
+]

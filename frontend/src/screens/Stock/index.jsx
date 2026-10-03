@@ -548,25 +548,25 @@ export default function StockScreen() {
                 </Btn>
               )}
               <Btn small variant="ghost" onClick={exportCSV} title="Export current view to CSV">
-                Export CSV
+                <Download size={14} style={{ marginRight: 4 }} /> Export CSV
               </Btn>
-              <Btn 
-                small 
-                style={{ backgroundColor: "#065f46", color: "#FFFFFF", borderColor: "#059669", display: "inline-flex", alignItems: "center", gap: 5 }} 
-                onClick={handleExportAvailableStockExcel} 
+              <Btn
+                small
+                variant="ghost"
+                onClick={handleExportAvailableStockExcel}
                 title="Export live Available Stock with warehouse racks, vendors & timestamps to Excel (.xlsx)"
                 disabled={isExportingExcel}
               >
-                <FileSpreadsheet size={14} style={{ color: "#34d399" }} /> 
+                <FileSpreadsheet size={14} style={{ marginRight: 4 }} />
                 {isExportingExcel ? "Exporting..." : "Export Excel (.xlsx)"}
               </Btn>
-              <Btn 
-                small 
-                style={{ backgroundColor: "var(--bg-modal)", color: "#FFFFFF", borderColor: "var(--bg-modal)" }} 
-                onClick={() => setIsExportModalOpen(true)} 
+              <Btn
+                small
+                variant="ghost"
+                onClick={() => setIsExportModalOpen(true)}
                 title="Generate Complete Enterprise Excel Inventory Report (7 Sheets)"
               >
-                <FileSpreadsheet size={14} style={{ marginRight: 4, color: "#FBBF24" }} /> Full 7-Sheet Report
+                <FileSpreadsheet size={14} style={{ marginRight: 4 }} /> Full 7-Sheet Report
               </Btn>
             </div>
           </div>

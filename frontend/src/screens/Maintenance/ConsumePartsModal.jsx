@@ -93,7 +93,7 @@ export default function ConsumePartsModal({ isOpen, onClose, workOrder, onSubmit
     }}>
       <div style={{
         background: "var(--bg-card)", border: "1px solid #334155", borderRadius: 12,
-        width: "100%", maxWidth: 620, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
+        width: "100%", maxWidth: "min(620px, 90vw)", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
         maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden"
       }}>
         {/* Header */}

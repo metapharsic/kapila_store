@@ -477,8 +477,14 @@ export default function ReconciliationScreen() {
 
       {/* ──────────── Confirm Modal ──────────── */}
       {showConfirm && (
-        <div style={{ position: "fixed", inset: 0, background: "#00000088", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Card style={{ padding: 28, maxWidth: 520, width: "90%", borderRadius: 14 }}>
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={(e) => e.target === e.currentTarget && setShowConfirm(false)}
+        >
+          <Card
+            style={{ padding: 28, maxWidth: 520, width: "100%", maxHeight: "90vh", overflowY: "auto", borderRadius: 14 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <p style={{ fontSize: 18, fontWeight: 700, color: COLORS.text, marginBottom: 8 }}>⚖️ Confirm Reconciliation</p>
             <p style={{ fontSize: 13, color: COLORS.muted, marginBottom: 18, lineHeight: 1.6 }}>
               Applying <strong style={{ color: COLORS.text }}>{validRows.length} item(s)</strong> — net stock value impact:{" "}
@@ -487,7 +493,7 @@ export default function ReconciliationScreen() {
               </strong>.
               {anomalyRows.length > 0 && <span style={{ color: COLORS.coral }}> ⚠ {anomalyRows.length} anomaly row(s) — please double-check.</span>}
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 10, marginBottom: 20 }}>
               {[
                 { label: "Surplus Items", val: surplusRows.length, sub: "+₹" + totalSurplusVal.toFixed(2), color: COLORS.teal },
                 { label: "Shortage Items", val: shortageRows.length, sub: "-₹" + totalShortageVal.toFixed(2), color: COLORS.coral },

@@ -371,7 +371,9 @@ async function getDepartmentItems(req, res, next) {
 
     const mapping = {};
     templateRows.forEach((r) => {
-      const dept = (r.template_name || "").trim().toUpperCase();
+      let dept = (r.template_name || "").trim().toUpperCase();
+      if (dept === "SI- MEALS" || dept === "SI MEALS") dept = "SI-MEALS";
+      if (dept === "CHAT, JP DISPOSAL, SOFTY." || dept === "CHAT") dept = "CHAT & SOFTY";
       if (!mapping[dept]) mapping[dept] = [];
       mapping[dept].push({
         name: r.item_name,

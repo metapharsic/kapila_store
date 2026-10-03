@@ -6,9 +6,10 @@ import {
   Move, Layout, Columns, PanelLeft, PanelRight, Smartphone, 
   Tablet, Monitor, RefreshCw, X, ChevronUp, ChevronDown, 
   Flame, ShoppingCart, Info, Search, Utensils, ShieldCheck,
-  Check, ArrowRight, Layers, SlidersHorizontal
+  Check, ArrowRight, Layers, SlidersHorizontal, Cpu
 } from 'lucide-react';
 import RaiseIndentItemModal from './RaiseIndentItemModal';
+import MultiAgentThreadMonitorModal from '../MultiAgentThreadMonitorModal';
 
 export const CANONICAL_DEPARTMENTS = [
   { name: 'TIFFINS', code: 'TFN', icon: '🥞', color: '#e8a838', bg: 'rgba(232, 168, 56, 0.14)' },
@@ -24,6 +25,15 @@ export const CANONICAL_DEPARTMENTS = [
 
 const DOCK_CONFIG_KEY = 'kapila_chef_dock_config';
 const DRAFT_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours operational TTL per AGENTS.md
+
+export const renderSafeDeptIcon = (icon, size = 16) => {
+  if (!icon) return null;
+  if (React.isValidElement(icon)) return icon;
+  if (typeof icon === 'function' || (typeof icon === 'object' && icon !== null && icon.$$typeof)) {
+    return React.createElement(icon, { size });
+  }
+  return String(icon);
+};
 
 export default function ChefRequisitionWorkspace({
   defaultDept = 'TIFFINS',
@@ -68,6 +78,9 @@ export default function ChefRequisitionWorkspace({
     });
   }, []);
 
+  // --- Multi-Agent Telemetry & Data (radarData must be declared before Department Selection, which reads it) ---
+  const [radarData, setRadarData] = useState(null);
+
   // --- Department Selection ---
   const [activeDept, setActiveDept] = useState(defaultDept);
   const departments = (radarData?.departments && radarData.departments.length > 0)
@@ -85,13 +98,13 @@ export default function ChefRequisitionWorkspace({
 
   // --- Multi-Agent Telemetry & Data ---
   const [loading, setLoading] = useState(true);
-  const [radarData, setRadarData] = useState(null);
   const [activeTab, setActiveTab] = useState('catalog'); // Default: 'catalog' (predefined items)
   const [searchQuery, setSearchQuery] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [configuringItem, setConfiguringItem] = useState(null);
   const [stockoutAlerts, setStockoutAlerts] = useState({});
+  const [showSwarmModal, setShowSwarmModal] = useState(false);
 
   // --- Draft Requisition Items Map (item_code / name -> LineItem) ---
   const [draftItems, setDraftItems] = useState([]);
@@ -526,7 +539,8 @@ export default function ChefRequisitionWorkspace({
         position: 'fixed',
         top: 0,
         right: 0,
-        width: isMobile ? '100vw' : `${dockConfig.width}px`,
+        width: isMobile ? '100vw' : `min(${dockConfig.width}px, 100vw)`,
+        maxWidth: '100vw',
         height: '100vh',
         borderLeft: '1.5px solid rgba(232, 168, 56, 0.4)',
         borderRight: 'none',
@@ -541,7 +555,8 @@ export default function ChefRequisitionWorkspace({
         position: 'fixed',
         top: 0,
         left: 0,
-        width: isMobile ? '100vw' : `${dockConfig.width}px`,
+        width: isMobile ? '100vw' : `min(${dockConfig.width}px, 100vw)`,
+        maxWidth: '100vw',
         height: '100vh',
         borderRight: '1.5px solid rgba(232, 168, 56, 0.4)',
         borderLeft: 'none',
@@ -588,9 +603,10 @@ export default function ChefRequisitionWorkspace({
       position: 'fixed',
       left: `${dockConfig.floatPos?.x || 40}px`,
       top: `${dockConfig.floatPos?.y || 80}px`,
-      width: isMobile ? '92vw' : `${dockConfig.width || 480}px`,
+      width: isMobile ? '92vw' : `min(${dockConfig.width || 480}px, 92vw)`,
+      maxWidth: '96vw',
       height: '80vh',
-      maxHeight: 750,
+      maxHeight: 'min(750px, 90vh)',
       borderRadius: 20,
     };
   };
@@ -628,7 +644,7 @@ export default function ChefRequisitionWorkspace({
             justifyContent: 'center',
             fontSize: 18
           }}>
-            {currentDeptObj.icon}
+            {renderSafeDeptIcon(currentDeptObj.icon, 18)}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -768,6 +784,28 @@ export default function ChefRequisitionWorkspace({
             </button>
           </div>
 
+          {/* Multi-Agent Swarm Telemetry & Indent Restoration Monitor */}
+          <button
+            onClick={() => setShowSwarmModal(true)}
+            title="Multi-Agent Swarm & Thread Telemetry (Indents & Stock Matching)"
+            style={{
+              background: 'rgba(232, 168, 56, 0.15)',
+              border: '1px solid rgba(232, 168, 56, 0.4)',
+              color: '#e8a838',
+              padding: '5px 9px',
+              borderRadius: 8,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              fontSize: 11,
+              fontWeight: 700
+            }}
+          >
+            <Cpu size={13} />
+            <span style={{ display: isMobile ? 'none' : 'inline' }}>Swarm</span>
+          </button>
+
           {/* Minimize / Close */}
           <button
             onClick={() => updateDockConfig({ isMinimized: true })}
@@ -841,7 +879,7 @@ export default function ChefRequisitionWorkspace({
                 touchAction: 'manipulation'
               }}
             >
-              <span>{dept.icon}</span>
+              <span>{renderSafeDeptIcon(dept.icon, 14)}</span>
               <span>{dept.name}</span>
             </button>
           );
@@ -862,14 +900,37 @@ export default function ChefRequisitionWorkspace({
         color: '#e8a838',
         flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Sparkles size={12} />
           <span>
             <strong>Station Radar:</strong> {radarData?.agents?.scout?.items_monitored ?? '—'} items monitored
-            {typeof radarData?.agents?.scout?.critical_shortages_count === 'number' && (
-              <> · {radarData.agents.scout.critical_shortages_count} critical shortages</>
+            {radarData?.warehouse_summary?.is_empty ? (
+              <span style={{ color: '#ef4444', fontWeight: 700 }}> · Central Store Empty (0 SKUs)</span>
+            ) : (
+              typeof radarData?.agents?.scout?.critical_shortages_count === 'number' && (
+                <> · <span style={{ color: radarData.agents.scout.critical_shortages_count > 0 ? '#ef4444' : '#10b981', fontWeight: 700 }}>{radarData.agents.scout.critical_shortages_count} critical shortages</span></>
+              )
             )}
           </span>
+          <button
+            onClick={() => setShowSwarmModal(true)}
+            title="View Multi-Agent Swarm & Worker Thread Telemetry"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              background: 'rgba(232, 168, 56, 0.15)',
+              border: '1px solid rgba(232, 168, 56, 0.4)',
+              color: '#e8a838',
+              padding: '2px 8px',
+              borderRadius: 6,
+              fontSize: 10,
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            <Cpu size={11} /> Multi-Agent Telemetry
+          </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {draftLoadedTime && (
@@ -1100,6 +1161,31 @@ export default function ChefRequisitionWorkspace({
           </div>
         )}
 
+        {/* --- CENTRAL STORE EMPTY WARNING BANNER --- */}
+        {radarData?.warehouse_summary?.is_empty && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1.5px solid #ef4444',
+            borderRadius: 12,
+            padding: '12px 14px',
+            marginBottom: 8,
+            color: '#fca5a5',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontSize: 12,
+            fontWeight: 700
+          }}>
+            <AlertTriangle size={20} style={{ color: '#ef4444', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff' }}>Central Store Inventory is Currently Empty (0 SKUs on-hand)</div>
+              <div style={{ fontSize: 11, fontWeight: 500, color: '#fecaca', marginTop: 2 }}>
+                All items requested are treated as out-of-stock emergency indents until stock intake is performed.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* --- TAB 1: WHAT IS REQUIRED (CRITICAL & STAPLES) --- */}
         {!loading && activeTab === 'required' && (
           <>
@@ -1126,7 +1212,8 @@ export default function ChefRequisitionWorkspace({
               const staged = draftItems.find(i => (i.item_code || i.name) === key);
               const stagedQty = staged ? staged.qty : 0;
               const stockRemaining = parseFloat(item.current_stock ?? 0);
-              const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
+              const isOutOfStock = stockRemaining <= 0 || item.is_out_of_stock;
+              const hasStockoutNotice = stagedQty > 0 && (isOutOfStock || stockoutAlerts[key]);
 
               return (
                 <div
@@ -1148,9 +1235,36 @@ export default function ChefRequisitionWorkspace({
                     style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                     title="Touch to configure full indent options (qty, units, dish, notes)"
                   >
-                    {/* SHOW ONLY THE ITEM NAME */}
-                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
-                      {itemName}
+                    {/* ITEM NAME + ON-HAND STOCK BADGE */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
+                        {itemName}
+                      </span>
+                      {isOutOfStock ? (
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#ef4444',
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          OUT OF STOCK (0 on-hand)
+                        </span>
+                      ) : (
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: '#10b981',
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          ● Stock: {stockRemaining} {item.unit || ''}
+                        </span>
+                      )}
                     </div>
 
                     {/* AFTER CHEF PUTS IN THE NUMBER: If out of stock, say "Out of stock! Store Manager informed instantly." */}
@@ -1445,7 +1559,8 @@ export default function ChefRequisitionWorkspace({
               const staged = draftItems.find(i => (i.item_code || i.name) === key);
               const stagedQty = staged ? staged.qty : 0;
               const stockRemaining = parseFloat(item.current_stock ?? 0);
-              const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
+              const isOutOfStock = stockRemaining <= 0 || item.is_out_of_stock;
+              const hasStockoutNotice = stagedQty > 0 && (isOutOfStock || stockoutAlerts[key]);
 
               return (
                 <div
@@ -1466,9 +1581,36 @@ export default function ChefRequisitionWorkspace({
                     style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                     title="Touch to configure full indent options"
                   >
-                    {/* SHOW ONLY THE ITEM NAME */}
-                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
-                      {itemName}
+                    {/* ITEM NAME + ON-HAND STOCK BADGE */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
+                        {itemName}
+                      </span>
+                      {isOutOfStock ? (
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#ef4444',
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          OUT OF STOCK (0 on-hand)
+                        </span>
+                      ) : (
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: '#10b981',
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          ● Stock: {stockRemaining} {item.unit || ''}
+                        </span>
+                      )}
                     </div>
 
                     {/* AFTER CHEF PUTS IN THE NUMBER: If out of stock, say "Out of stock! Store Manager informed instantly." */}
@@ -1804,7 +1946,8 @@ export default function ChefRequisitionWorkspace({
               const staged = draftItems.find(i => (i.item_code || i.name) === key);
               const stagedQty = staged ? staged.qty : 0;
               const stockRemaining = parseFloat(item.current_stock ?? 0);
-              const hasStockoutNotice = stagedQty > 0 && (stockRemaining <= 0 || stockoutAlerts[key]);
+              const isOutOfStock = stockRemaining <= 0 || item.is_out_of_stock;
+              const hasStockoutNotice = stagedQty > 0 && (isOutOfStock || stockoutAlerts[key]);
 
               return (
                 <div
@@ -1825,9 +1968,36 @@ export default function ChefRequisitionWorkspace({
                     style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                     title="Touch to configure full indent options"
                   >
-                    {/* SHOW ONLY THE ITEM NAME */}
-                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
-                      {itemName}
+                    {/* ITEM NAME + ON-HAND STOCK BADGE */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', lineHeight: 1.3 }}>
+                        {itemName}
+                      </span>
+                      {isOutOfStock ? (
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#ef4444',
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          OUT OF STOCK (0 on-hand)
+                        </span>
+                      ) : (
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: '#10b981',
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          ● Stock: {stockRemaining} {item.unit || ''}
+                        </span>
+                      )}
                     </div>
 
                     {/* AFTER CHEF PUTS IN THE NUMBER: If out of stock, say "Out of stock! Store Manager informed instantly." */}
@@ -2149,6 +2319,16 @@ export default function ChefRequisitionWorkspace({
             return [...prev, stagedItem];
           });
           setConfiguringItem(null);
+        }}
+      />
+
+      <MultiAgentThreadMonitorModal
+        isOpen={showSwarmModal}
+        onClose={() => setShowSwarmModal(false)}
+        onSyncComplete={() => {
+          fetchRadar();
+          setFeedbackMsg({ type: 'success', text: '✓ Multi-Agent Swarm synchronized inventory and station catalogs!' });
+          setTimeout(() => setFeedbackMsg(null), 4000);
         }}
       />
     </div>

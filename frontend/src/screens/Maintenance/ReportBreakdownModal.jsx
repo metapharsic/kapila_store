@@ -40,8 +40,8 @@ export default function ReportBreakdownModal({ isOpen, onClose, assets = [], onS
     }}>
       <div style={{
         background: "var(--bg-card)", border: "1px solid #334155", borderRadius: 12,
-        width: "100%", maxWidth: 520, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
-        overflow: "hidden"
+        width: "100%", maxWidth: "min(520px, 90vw)", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
+        maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden"
       }}>
         {/* Header */}
         <div style={{
@@ -74,7 +74,7 @@ export default function ReportBreakdownModal({ isOpen, onClose, assets = [], onS
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+        <form onSubmit={handleSubmit} style={{ padding: 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#cbd5e1", marginBottom: 6 }}>
               Select Machine / Equipment *
@@ -96,7 +96,7 @@ export default function ReportBreakdownModal({ isOpen, onClose, assets = [], onS
             </select>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#cbd5e1", marginBottom: 6 }}>
                 Priority Level *

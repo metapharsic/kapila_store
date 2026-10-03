@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Section from "../../components/Section";
 import Card from "../../components/Card";
+import ModalShell from "../../components/ui/ModalShell";
 import Btn from "../../components/Btn";
 import Input from "../../components/Input";
 import Pagination from "../../components/Pagination";
@@ -901,53 +902,38 @@ export default function ReorderPointsScreen() {
 
         {/* Smart Recalibration Modal */}
         {showRecalibrateModal && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(0,0,0,0.75)",
-              backdropFilter: "blur(6px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 9999,
-              padding: 20
-            }}
+          <ModalShell
+            onClose={() => setShowRecalibrateModal(false)}
+            size="compact"
+            title={(
+              <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Sparkles size={18} color={COLORS.accent} />
+                Agent Velocity Forecaster: Smart Recalibration
+              </span>
+            )}
           >
-            <Card style={{ maxWidth: 540, width: "100%", padding: 24, border: "1px solid rgba(232, 168, 56, 0.4)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <Sparkles size={20} color={COLORS.accent} />
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: COLORS.text }}>
-                  Agent Velocity Forecaster: Smart Recalibration
-                </h3>
-              </div>
+            <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.5, marginBottom: 18 }}>
+              This will automatically recalibrate <strong style={{ color: COLORS.text }}>Safety Min Qty</strong> and <strong style={{ color: COLORS.text }}>Reorder Top-Up Qty</strong> across all active inventory using real 14-day kitchen burn velocity and vendor lead time buffers:
+            </p>
 
-              <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.5, marginBottom: 18 }}>
-                This will automatically recalibrate <strong style={{ color: COLORS.text }}>Safety Min Qty</strong> and <strong style={{ color: COLORS.text }}>Reorder Top-Up Qty</strong> across all active inventory using real 14-day kitchen burn velocity and vendor lead time buffers:
-              </p>
-
-              <div style={{ background: "rgba(255,255,255,0.03)", padding: 14, borderRadius: 8, border: `1px solid ${COLORS.border}`, marginBottom: 20, fontSize: 12 }}>
-                <div style={{ marginBottom: 6 }}>
-                  <code style={{ color: COLORS.accent }}>Recommended Min Qty</code> = Lead Time Days × Daily Burn Velocity × 1.25 Buffer
-                </div>
-                <div>
-                  <code style={{ color: COLORS.accent }}>Recommended Reorder Qty</code> = 7-Day Top-Up Cycle × Daily Burn Velocity
-                </div>
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: 14, borderRadius: 8, border: `1px solid ${COLORS.border}`, marginBottom: 20, fontSize: 12, overflowX: "auto" }}>
+              <div style={{ marginBottom: 6 }}>
+                <code style={{ color: COLORS.accent }}>Recommended Min Qty</code> = Lead Time Days × Daily Burn Velocity × 1.25 Buffer
               </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-                <Btn variant="ghost" onClick={() => setShowRecalibrateModal(false)}>
-                  Cancel
-                </Btn>
-                <Btn onClick={handleRecalibrateAll} disabled={recalibrating} style={{ fontWeight: 700 }}>
-                  {recalibrating ? "Recalibrating SKUs…" : "Apply Smart Recalibration ✓"}
-                </Btn>
+              <div>
+                <code style={{ color: COLORS.accent }}>Recommended Reorder Qty</code> = 7-Day Top-Up Cycle × Daily Burn Velocity
               </div>
-            </Card>
-          </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <Btn variant="ghost" onClick={() => setShowRecalibrateModal(false)}>
+                Cancel
+              </Btn>
+              <Btn onClick={handleRecalibrateAll} disabled={recalibrating} style={{ fontWeight: 700 }}>
+                {recalibrating ? "Recalibrating SKUs…" : "Apply Smart Recalibration ✓"}
+              </Btn>
+            </div>
+          </ModalShell>
         )}
       </div>
     </Section>

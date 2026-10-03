@@ -11,6 +11,7 @@ import Card from '../components/Card';
 import Btn from '../components/Btn';
 import ExportReportModal from '../components/ExportReportModal';
 import MultiAgentStatusBar from '../components/MultiAgentStatusBar';
+import MultiAgentThreadMonitorModal from '../components/MultiAgentThreadMonitorModal';
 import { COLORS } from '../styles/colors';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 
@@ -89,6 +90,7 @@ export default function StoreManagerHome() {
   const [todayStockEntries, setTodayStockEntries] = useState(0);
   const [issuanceTrend, setIssuanceTrend] = useState([]);
   const [lowStockItems, setLowStockItems] = useState([]);
+  const [showSwarmModal, setShowSwarmModal] = useState(false);
 
   // Recent Activity
   const [recentActivity, setRecentActivity] = useState([]);
@@ -391,9 +393,13 @@ export default function StoreManagerHome() {
           </div>
 
           {/* Multi-Agent Swarm Status Bar & LIFO Advisory */}
-          <div style={{ marginBottom: '20px' }}>
+          <div 
+            style={{ marginBottom: '20px', cursor: 'pointer' }}
+            onClick={() => setShowSwarmModal(true)}
+            title="Click to view Multi-Agent Swarm & Worker Thread Telemetry"
+          >
             <MultiAgentStatusBar
-              customNote="Multi-agent swarm active: Real-time Vendor Intelligence, LIFO Batch Valuation, and Stock Balance integrity verified"
+              customNote="◈ Multi-Agent Swarm Active: Ingestor, Harmonizer, Ledger, Sync & Veritas Online (Click to view Live Worker Threads)"
             />
           </div>
 
@@ -950,6 +956,11 @@ export default function StoreManagerHome() {
         </div>
       </main>
       <ExportReportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
+      <MultiAgentThreadMonitorModal 
+        isOpen={showSwarmModal} 
+        onClose={() => setShowSwarmModal(false)} 
+        onSyncComplete={loadDashboardData} 
+      />
     </div>
   );
 }

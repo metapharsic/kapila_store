@@ -399,7 +399,7 @@ export default function ItemDetailDrawer({
               {activeTab === "overview" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                   {/* KPI Metrics Strip */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
                     <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
                       <div style={{ fontSize: 11.5, color: "#475569", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.04em" }}>Available Stock</div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: "#0f172a", marginTop: 4, display: "flex", alignItems: "baseline", gap: 6 }}>
@@ -443,7 +443,7 @@ export default function ItemDetailDrawer({
                     <h4 style={{ margin: "0 0 14px 0", fontSize: 14, fontWeight: 700, color: "#1e40af", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 7, letterSpacing: "0.01em" }}>
                       <MapPin size={17} style={{ color: "#2563eb" }} /> Warehouse Loading Coordinates & Facility
                     </h4>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)", gap: 16 }}>
                       <div>
                         <div style={{ fontSize: 11.5, color: "#475569", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.04em" }}>Storage Zone</div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginTop: 4 }}>
@@ -473,7 +473,7 @@ export default function ItemDetailDrawer({
                     <h4 style={{ margin: "0 0 14px 0", fontSize: 14, fontWeight: 700, color: "#0f172a", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 7, letterSpacing: "0.01em" }}>
                       <Building2 size={17} style={{ color: "#d97706" }} /> Supplier & Inward Entry Audit
                     </h4>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 14 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)", gap: 14 }}>
                       <div>
                         <div style={{ fontSize: 11.5, color: "#475569", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.04em" }}>Primary Supplier</div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginTop: 4 }}>

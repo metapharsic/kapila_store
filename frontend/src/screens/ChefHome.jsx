@@ -680,9 +680,17 @@ export default function ChefHome() {
             {activeDepartments.map((dept) => {
               const isHovered = hoveredDept === dept.name;
               return (
-                <button
+                <div
                   key={dept.name}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleOpenDeptIndent(dept.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleOpenDeptIndent(dept.name);
+                    }
+                  }}
                   onMouseEnter={() => setHoveredDept(dept.name)}
                   onMouseLeave={() => setHoveredDept(null)}
                   style={{
@@ -796,7 +804,7 @@ export default function ChefHome() {
                       </button>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

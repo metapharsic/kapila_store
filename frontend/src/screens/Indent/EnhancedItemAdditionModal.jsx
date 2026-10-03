@@ -713,7 +713,7 @@ export default function EnhancedItemAdditionModal({
                   )}
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "12px" }}>
                   {filteredCatalog.map(item => {
                     const key = item.name.toLowerCase().trim();
                     const selected = selectedQuantities[key];
@@ -1111,7 +1111,7 @@ export default function EnhancedItemAdditionModal({
                   )}
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#E2E8F0", marginBottom: "6px" }}>
                       Requested Quantity <span style={{ color: "#EF4444" }}>*</span>
@@ -1162,7 +1162,7 @@ export default function EnhancedItemAdditionModal({
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#E2E8F0", marginBottom: "6px" }}>
                       Estimated Unit Cost (₹ Optional)

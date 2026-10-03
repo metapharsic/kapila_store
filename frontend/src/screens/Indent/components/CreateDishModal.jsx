@@ -73,7 +73,7 @@ export default function CreateDishModal({ onClose, onSuccess }) {
     }}>
       <div style={{
         background: "white", borderRadius: "16px",
-        width: "100%", maxWidth: "600px",
+        width: "100%", maxWidth: "min(600px, 90vw)",
         maxHeight: "90vh", display: "flex", flexDirection: "column",
         boxShadow: "0 24px 64px rgba(0,0,0,0.2)",
         overflow: "hidden",
@@ -108,7 +108,7 @@ export default function CreateDishModal({ onClose, onSuccess }) {
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "16px", marginBottom: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)", gap: "16px", marginBottom: "20px" }}>
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>Dish Name</label>
               <input

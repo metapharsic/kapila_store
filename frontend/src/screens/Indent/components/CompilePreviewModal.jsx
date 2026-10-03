@@ -82,7 +82,7 @@ export default function CompilePreviewModal({ items, dept, date, stocks = [], on
     }}>
       <div style={{
         background: "white", borderRadius: "16px",
-        width: "100%", maxWidth: "720px",
+        width: "100%", maxWidth: "min(720px, 90vw)",
         maxHeight: "88vh", display: "flex", flexDirection: "column",
         boxShadow: "0 24px 64px rgba(0,0,0,0.2)",
         overflow: "hidden",
