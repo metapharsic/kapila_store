@@ -129,6 +129,93 @@ describe('Security Gate & Kitchen Utilities Phase 3 Suite', () => {
     });
   });
 
+  describe('2b. RGP Overdue Detection, Vendor Round-Trip & Item-Type Validation', () => {
+    let overdueRgpPassId = null;
+
+    afterAll(async () => {
+      try {
+        if (overdueRgpPassId) await db('security_gate_passes').where('id', overdueRgpPassId).del();
+      } catch (e) {
+        console.error('Cleanup error:', e.message);
+      }
+    });
+
+    it('should flag an RGP pass with a past return_due_date as overdue and still pending', async () => {
+      const pastDueDate = '2020-01-01'; // well in the past, relative to any test run date
+
+      const rgp = await securityGateService.createPass({
+        pass_type: 'RGP_RETURNABLE',
+        vehicle_type: 'LPG_TRUCK',
+        vehicle_number: 'AP-11-TG-9999',
+        driver_name: 'K. Prasad',
+        vendor_name: 'Super Gas Corporation',
+        purpose: 'Dispatched empty commercial LPG cylinders for refilling (overdue test)',
+        returnable_item_type: '47.5kg Commercial LPG Cylinders',
+        returnable_qty_out: 6,
+        return_due_date: pastDueDate
+      });
+
+      overdueRgpPassId = rgp.id;
+      expect(rgp.return_due_date).toBeDefined();
+      expect(rgp.is_return_completed).toBe(false);
+
+      // Fetch back via listPasses (pending_return filter, matching how the app surfaces open RGPs)
+      const result = await securityGateService.listPasses(
+        { pending_return: true },
+        { page: 1, limit: 100 }
+      );
+      const fetched = result.rows.find((p) => p.id === overdueRgpPassId);
+      expect(fetched).toBeDefined();
+      expect(fetched.is_return_completed).toBe(false);
+
+      // Overdue = pending return whose due date has already passed
+      const dueDate = new Date(fetched.return_due_date);
+      const today = new Date();
+      expect(dueDate.getTime()).toBeLessThan(today.getTime());
+    });
+
+    it('should round-trip vendor_name correctly through createPass and listPasses', async () => {
+      const vendorName = 'Heritage Dairy Logistics Pvt Ltd';
+      const rgp = await securityGateService.createPass({
+        pass_type: 'RGP_RETURNABLE',
+        vehicle_type: 'TRUCK',
+        vehicle_number: 'TS-07-AB-1234',
+        driver_name: 'Ramu',
+        vendor_name: vendorName,
+        purpose: 'Returning empty milk cans for round-trip vendor_name test',
+        returnable_item_type: 'Stainless Steel Milk Cans',
+        returnable_qty_out: 3,
+        return_due_date: '2026-12-01'
+      });
+
+      expect(rgp.vendor_name).toBe(vendorName);
+
+      const result = await securityGateService.listPasses({ search: vendorName }, { page: 1, limit: 10 });
+      const fetched = result.rows.find((p) => p.id === rgp.id);
+      expect(fetched).toBeDefined();
+      expect(fetched.vendor_name).toBe(vendorName);
+      expect(fetched.vendor_name).not.toBe('');
+
+      await db('security_gate_passes').where('id', rgp.id).del();
+    });
+
+    it('should reject creating an RGP pass without returnable_item_type', async () => {
+      await expect(
+        securityGateService.createPass({
+          pass_type: 'RGP_RETURNABLE',
+          vehicle_type: 'LPG_TRUCK',
+          vehicle_number: 'AP-11-TG-0000',
+          driver_name: 'No Item Type Driver',
+          vendor_name: 'Super Gas Corporation',
+          purpose: 'RGP pass missing returnable_item_type (should fail validation)',
+          returnable_qty_out: 2,
+          return_due_date: '2026-12-01'
+          // returnable_item_type intentionally omitted
+        })
+      ).rejects.toThrow();
+    });
+  });
+
   describe('3. Commercial Kitchen Utility Telemetry & Auto-Deltas', () => {
     it('should record a shift utility reading and auto-calculate LPG & EB consumption deltas', async () => {
       const reading = await utilityService.recordReading({

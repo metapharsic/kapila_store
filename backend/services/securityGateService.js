@@ -293,7 +293,7 @@ async function reconcileRgp(id, data = {}, user = {}, trxOrDb = db) {
     const balanceDue = Math.max(0, parseInt(pass.returnable_qty_out, 10) - newQtyIn);
     const isCompleted = balanceDue === 0;
 
-    const auditRemark = `[${new Date().toISOString().slice(0, 16)}] Reconciled +${qtyReturned} returnables (Balance due: ${balanceDue}). Recorded by: ${user.name || "Store/Security"}. ${data.notes || ""}`.trim();
+    const auditRemark = `[${new Date().toISOString().slice(0, 16)}] Reconciled +${qtyReturned} returnables (Balance due: ${balanceDue}). Recorded by: ${user.name || "Unknown user"}. ${data.notes || ""}`.trim();
 
     const [updated] = await trx("security_gate_passes")
       .where("id", id)
