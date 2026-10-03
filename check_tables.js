@@ -1,3 +1,4 @@
+require('./backend/node_modules/dotenv').config({ path: require('path').resolve(__dirname, 'backend/.env') });
 const db = require("./backend/db");
 async function main() {
   const t = await db.raw("SELECT table_name FROM information_schema.tables WHERE table_schema='public'");

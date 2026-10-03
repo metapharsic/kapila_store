@@ -1147,15 +1147,14 @@ async function getChefRadar(req, res, next) {
     const criticalStockZeroCount = criticalStock.filter((s) => parseFloat(s.current_stock) <= 0).length;
     const finalShortagesCount = isWarehouseEmpty ? catalogItems.length : Math.max(catalogShortagesCount, criticalStockZeroCount);
 
-    const availableCatalogItems = catalogItems.filter(i => !i.is_out_of_stock);
     const availableCriticalStock = criticalStock.filter(i => parseFloat(i.current_stock) > 0);
     const availableDisposables = disposables.filter(i => parseFloat(i.current_stock) > 0);
 
     // Dynamic database-driven tabs definition
     const tabs = [
-      { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || dept})`, count: availableCatalogItems.length },
-      { id: 'required', label: '🚨 Critical Radar', count: isWarehouseEmpty ? availableCatalogItems.length : availableCriticalStock.length },
-      { id: 'disposables', label: '📦 Packaging & Disposables', count: availableDisposables.length },
+      { id: 'catalog', label: `📋 Predefined Indent (${currentDeptObj.code || dept})`, count: catalogItems.length },
+      { id: 'required', label: '🚨 Critical Radar', count: isWarehouseEmpty ? catalogItems.length : availableCriticalStock.length },
+      { id: 'disposables', label: '📦 Packaging & Disposables', count: disposables.length },
       { id: 'recipes', label: '🍲 Recipe Demand', count: stationRecipes.length }
     ];
 
@@ -1172,9 +1171,9 @@ async function getChefRadar(req, res, next) {
         is_empty: isWarehouseEmpty
       },
       subcategories: subcats,
-      catalog_items: availableCatalogItems,
-      disposables: availableDisposables,
-      critical_items: availableCriticalStock,
+      catalog_items: catalogItems,
+      disposables: disposables,
+      critical_items: criticalStock,
       station_recipes: stationRecipes,
       departments: enrichedDepts,
       tabs,

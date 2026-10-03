@@ -33,6 +33,7 @@ frontend/.env.*
 *.tar.gz
 *.tgz
 *.sql
+!backend/db/master_database_dump.sql
 *.backup
 *.dump
 brain/

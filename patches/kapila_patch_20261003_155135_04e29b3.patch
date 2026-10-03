@@ -1,0 +1,241 @@
+﻿From 04e29b3c9bed7704c777936add7860eac3346df3 Mon Sep 17 00:00:00 2001
+From: Metapharsic Admin <metapharsic@gmail.com>
+Date: Sat, 3 Oct 2026 15:51:27 +0530
+Subject: [PATCH] feat(kapila): update store system - 2026-10-03 15:51:24
+
+---
+ ...kapila_patch_20261003_154920_ab06110.patch | 222 ++++++++++++++++++
+ 1 file changed, 222 insertions(+)
+ create mode 100644 patches/kapila_patch_20261003_154920_ab06110.patch
+
+diff --git a/patches/kapila_patch_20261003_154920_ab06110.patch b/patches/kapila_patch_20261003_154920_ab06110.patch
+new file mode 100644
+index 0000000..b9a333c
+--- /dev/null
++++ b/patches/kapila_patch_20261003_154920_ab06110.patch
+@@ -0,0 +1,222 @@
++∩╗┐From ab061109c367da9a8f5e791d033b3e526191154c Mon Sep 17 00:00:00 2001
++From: Metapharsic Admin <metapharsic@gmail.com>
++Date: Sat, 3 Oct 2026 15:48:55 +0530
++Subject: [PATCH] chore: track backend .env.example, update gitignore, and save
++ latest patch bundle
++
++---
++ .gitignore                                    |   3 +
++ backend/.env.example                          |  32 ++++
++ ...kapila_patch_20261003_150927_3703086.patch | 143 ++++++++++++++++++
++ 3 files changed, 178 insertions(+)
++ create mode 100644 backend/.env.example
++ create mode 100644 patches/kapila_patch_20261003_150927_3703086.patch
++
++diff --git a/.gitignore b/.gitignore
++index 8ecb128..f21b96c 100644
++--- a/.gitignore
+++++ b/.gitignore
++@@ -17,10 +17,13 @@ out/
++ # Environment and secrets
++ .env
++ .env.*
+++!.env.example
++ backend/.env
++ backend/.env.*
+++!backend/.env.example
++ frontend/.env
++ frontend/.env.*
+++!frontend/.env.example
++ *.env
++ *.pem
++ *.key
++diff --git a/backend/.env.example b/backend/.env.example
++new file mode 100644
++index 0000000..310c098
++--- /dev/null
+++++ b/backend/.env.example
++@@ -0,0 +1,32 @@
+++PORT=3001
+++DATABASE_URL=postgresql://postgres:password@localhost:5432/kapila
+++NODE_ENV=development
+++JWT_SECRET=change-me-min-32-chars-random
+++
+++# Code reads GEMINI_API_KEY (services/localAI.js) ╬ô├ç├╢ powers OCR/voice-parse/
+++# smart-autofill.
+++GEMINI_API_KEY=
+++
+++# Optional fallback: if Gemini hits quota/billing limits, callGemini() retries
+++# via Claude (Anthropic Messages API) instead of failing to local regex/mock.
+++# Voice transcription stays Gemini-only (Claude has no audio input).
+++ANTHROPIC_API_KEY=
+++
+++# Local no-key fallback tier (see config/ollama.md). Defaults below match a
+++# standard `ollama serve` on the same machine ╬ô├ç├╢ only set if different.
+++OLLAMA_URL=http://localhost:11434
+++OLLAMA_MODEL=qwen
+++OLLAMA_VISION_MODEL=llava
+++
+++# Kafka broker for stock/indent/issuance event bus (services/kafkaProducer.js).
+++# App runs fine without it ╬ô├ç├╢ publish calls fail-safe and just log a warning.
+++KAFKA_BROKER=localhost:9092
+++
+++# WhatsApp (Meta Graph API) ╬ô├ç├╢ shrinkage alerts + day-close digest. Without
+++# these, alerts just console.log a mock message instead of sending.
+++WHATSAPP_TOKEN=
+++WHATSAPP_PHONE_ID=
+++ADMIN_WHATSAPP_NUMBER=
+++STORE_MANAGER_WHATSAPP_NUMBER=
+++
+++# See environment/backend.env.example (repo root) for the full annotated list.
++diff --git a/patches/kapila_patch_20261003_150927_3703086.patch b/patches/kapila_patch_20261003_150927_3703086.patch
++new file mode 100644
++index 0000000..5f927ba
++--- /dev/null
+++++ b/patches/kapila_patch_20261003_150927_3703086.patch
++@@ -0,0 +1,143 @@
+++Γê⌐ΓòùΓöÉFrom 37030860d338b909763a64bf07cf71fa80f01a8d Mon Sep 17 00:00:00 2001
+++From: Metapharsic Admin <metapharsic@gmail.com>
+++Date: Sat, 3 Oct 2026 14:55:01 +0530
+++Subject: [PATCH] feat: Add KDS Dark Mode and filter out zero-inventory items
+++ from Chef Radar
+++
+++---
+++ backend/controllers/indentController.js | 16 ++++++----
+++ frontend/src/App.jsx                    | 20 ++++++++++++-
+++ frontend/src/styles/global.css          | 39 +++++++++++++++++++++++++
+++ 3 files changed, 68 insertions(+), 7 deletions(-)
+++
+++diff --git a/backend/controllers/indentController.js b/backend/controllers/indentController.js
+++index 9cd0849..997f11f 100644
+++--- a/backend/controllers/indentController.js
++++++ b/backend/controllers/indentController.js
+++@@ -1147,11 +1147,15 @@ async function getChefRadar(req, res, next) {
+++     const criticalStockZeroCount = criticalStock.filter((s) => parseFloat(s.current_stock) <= 0).length;
+++     const finalShortagesCount = isWarehouseEmpty ? catalogItems.length : Math.max(catalogShortagesCount, criticalStockZeroCount);
+++ 
++++    const availableCatalogItems = catalogItems.filter(i => !i.is_out_of_stock);
++++    const availableCriticalStock = criticalStock.filter(i => parseFloat(i.current_stock) > 0);
++++    const availableDisposables = disposables.filter(i => parseFloat(i.current_stock) > 0);
++++
+++     // Dynamic database-driven tabs definition
+++     const tabs = [
+++-      { id: 'catalog', label: `╬ô├½├¡Γò₧├åΓö£ΓöñΓö£┬╗ Predefined Indent (${currentDeptObj.code || dept})`, count: catalogItems.length },
+++-      { id: 'required', label: '╬ô├½├¡Γò₧├åΓö£┬úΓö¼ΓöÉ Critical Radar', count: isWarehouseEmpty ? catalogItems.length : criticalStock.length },
+++-      { id: 'disposables', label: '╬ô├½├¡Γò₧├åΓö£ΓöñΓö¼┬¼ Packaging & Disposables', count: disposables.length },
++++      { id: 'catalog', label: `╬ô├½├¡Γò₧├åΓö£ΓöñΓö£┬╗ Predefined Indent (${currentDeptObj.code || dept})`, count: availableCatalogItems.length },
++++      { id: 'required', label: '╬ô├½├¡Γò₧├åΓö£┬úΓö¼ΓöÉ Critical Radar', count: isWarehouseEmpty ? availableCatalogItems.length : availableCriticalStock.length },
++++      { id: 'disposables', label: '╬ô├½├¡Γò₧├åΓö£ΓöñΓö¼┬¼ Packaging & Disposables', count: availableDisposables.length },
+++       { id: 'recipes', label: '╬ô├½├¡Γò₧├åΓö£┬╝╬ô├╗├┤ Recipe Demand', count: stationRecipes.length }
+++     ];
+++ 
+++@@ -1168,9 +1172,9 @@ async function getChefRadar(req, res, next) {
+++         is_empty: isWarehouseEmpty
+++       },
+++       subcategories: subcats,
+++-      catalog_items: catalogItems,
+++-      disposables,
+++-      critical_items: criticalStock,
++++      catalog_items: availableCatalogItems,
++++      disposables: availableDisposables,
++++      critical_items: availableCriticalStock,
+++       station_recipes: stationRecipes,
+++       departments: enrichedDepts,
+++       tabs,
+++diff --git a/frontend/src/App.jsx b/frontend/src/App.jsx
+++index fc89eed..2ab5b9a 100644
+++--- a/frontend/src/App.jsx
++++++ b/frontend/src/App.jsx
+++@@ -10,7 +10,8 @@ import {
+++   LayoutDashboard, Package, Factory, Building2, Receipt, Inbox, Bell, 
+++   Scale, ArrowLeftRight, CalendarRange, ClipboardList, Send, ChefHat, 
+++   ArchiveRestore, Trash2, Search, Users, ShieldCheck, LogOut, BarChart3,
+++-  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield, GitPullRequest
++++  CalendarCheck, ClipboardCheck, Wrench, Truck, Shield, GitPullRequest,
++++  Sun, Moon
+++ } from "lucide-react";
+++ 
+++ import ErrorBoundary from "./components/ErrorBoundary";
+++@@ -163,6 +164,20 @@ function Inner() {
+++   };
+++   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+++   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
++++  const [theme, setTheme] = useState(() => localStorage.getItem("kapila_theme") || "light");
++++
++++  useEffect(() => {
++++    if (theme === "dark") {
++++      document.documentElement.classList.add("theme-dark");
++++      document.body.classList.add("theme-dark");
++++    } else {
++++      document.documentElement.classList.remove("theme-dark");
++++      document.body.classList.remove("theme-dark");
++++    }
++++    localStorage.setItem("kapila_theme", theme);
++++  }, [theme]);
++++
++++  const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
+++ 
+++   const lowStockCount = reorderAlerts.length;
+++ 
+++@@ -624,6 +639,9 @@ function Inner() {
+++                 </button>
+++ 
+++                 <NotificationPanel user={user} />
++++                <button onClick={toggleTheme} title="Toggle Touch Panel Color Mode" aria-label="Toggle Theme" style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.surface, border: `1px solid ${COLORS.border}`, display: "grid", placeItems: "center", cursor: "pointer" }}>
++++                  {theme === "dark" ? <Sun size={15} color={COLORS.muted} /> : <Moon size={15} color={COLORS.muted} />}
++++                </button>
+++                 <button onClick={logout} title="Logout" aria-label="Logout" style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.surface, border: `1px solid ${COLORS.border}`, display: "grid", placeItems: "center", cursor: "pointer" }}>
+++                   <LogOut size={15} color={COLORS.muted} />
+++                 </button>
+++diff --git a/frontend/src/styles/global.css b/frontend/src/styles/global.css
+++index f7dca62..576fc17 100644
+++--- a/frontend/src/styles/global.css
++++++ b/frontend/src/styles/global.css
+++@@ -266,3 +266,42 @@ body::after {
+++   }
+++ }
+++ 
++++/* --- Theme Overrides (Touch Panel / Dark Mode) --- */
++++.theme-dark {
++++  --bg-page:        #121214;
++++  --bg-page-subtle: #18181b;
++++  --bg-page-warm:   #1a1a1e;
++++  --bg-card:        #1c1c1f;
++++  --bg-modal:       #1c1c1f;
++++  --bg-hover:       rgba(255, 255, 255, 0.05);
++++  --bg-active:      rgba(244, 200, 75, 0.20);
++++
++++  --text-main:          #f4f4f5;
++++  --text-muted:         #a1a1aa;
++++  --text-dim:           #71717a;
++++  --text-light:         #ffffff;
++++
++++  --border-color:       rgba(255, 255, 255, 0.12);
++++  --border-subtle:      rgba(255, 255, 255, 0.05);
++++  --border-strong:      rgba(255, 255, 255, 0.20);
++++  
++++  --shadow-sm:          0 1px 2px rgba(0, 0, 0, 0.5);
++++  --shadow-md:          0 4px 12px rgba(0, 0, 0, 0.6);
++++  --shadow-lg:          0 10px 28px rgba(0, 0, 0, 0.8);
++++}
++++
++++.theme-dark .chip {
++++  background: var(--bg-hover);
++++  color: var(--text-muted);
++++  border-color: var(--border-color);
++++}
++++.theme-dark .chip:hover {
++++  background: rgba(255, 255, 255, 0.1);
++++  color: var(--text-main);
++++}
++++.theme-dark .chip.active {
++++  background: var(--color-gold-dim);
++++  color: var(--color-gold);
++++  border-color: var(--color-gold);
++++}
++++
+++-- 
+++2.53.0.windows.2
+++
++-- 
++2.53.0.windows.2
++
+-- 
+2.53.0.windows.2
+
