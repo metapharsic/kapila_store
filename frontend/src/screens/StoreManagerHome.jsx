@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import * as api from '../api';
@@ -148,54 +148,54 @@ export default function StoreManagerHome() {
     return () => window.removeEventListener('online', checkOffline);
   }, []);
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      setLoading(true);
-      setLoadingPredictive(true);
-      try {
-        const [homeRes, predictiveRes, summaryRes] = await Promise.all([
-          api.dashboard.storeHome(),
-          api.reorderPoints.predictive(),
-          api.dashboard.summary().catch(() => ({ success: false }))
-        ]);
+  const loadDashboardData = useCallback(async () => {
+    setLoading(true);
+    setLoadingPredictive(true);
+    try {
+      const [homeRes, predictiveRes, summaryRes] = await Promise.all([
+        api.dashboard.storeHome(),
+        api.reorderPoints.predictive(),
+        api.dashboard.summary().catch(() => ({ success: false }))
+      ]);
 
-        if (summaryRes.success) {
-          setLowStockItems((summaryRes.data.low_stock_items || []).slice(0, 8));
-        }
-
-        if (homeRes.success) {
-          const d = homeRes.data;
-          setPendingIndents(d.pending_indents || 0);
-          setLowStockCount(d.low_stock_count || 0);
-          setExpiringCount(d.expiring_soon_count || 0);
-          setTodayIssuances(d.today_issuances || 0);
-          setTodayStockEntries(d.today_stock_entries || 0);
-          setHighValueAlertCount(d.high_value_alert_count || 0);
-          setRecentActivity(d.recent_activity || []);
-          setIssuanceTrend(d.issuance_trend || []);
-          if (Array.isArray(d.modules) && d.modules.length > 0) {
-            setModules(d.modules);
-          }
-          if (Array.isArray(d.shifts) && d.shifts.length > 0) {
-            setAvailableShifts(d.shifts);
-            if (d.shifts[0]?.name) {
-              setHandoffShift(d.shifts[0].name);
-            }
-          }
-        }
-
-        if (predictiveRes.success) {
-          const activeAlerts = (predictiveRes.data || []).filter(item => item.needs_reorder);
-          setPredictiveAlerts(activeAlerts);
-        }
-
-      } catch (err) {
-        console.error("Failed to load dashboard metrics", err);
+      if (summaryRes.success) {
+        setLowStockItems((summaryRes.data.low_stock_items || []).slice(0, 8));
       }
-      setLoading(false);
-      setLoadingPredictive(false);
-    };
 
+      if (homeRes.success) {
+        const d = homeRes.data;
+        setPendingIndents(d.pending_indents || 0);
+        setLowStockCount(d.low_stock_count || 0);
+        setExpiringCount(d.expiring_soon_count || 0);
+        setTodayIssuances(d.today_issuances || 0);
+        setTodayStockEntries(d.today_stock_entries || 0);
+        setHighValueAlertCount(d.high_value_alert_count || 0);
+        setRecentActivity(d.recent_activity || []);
+        setIssuanceTrend(d.issuance_trend || []);
+        if (Array.isArray(d.modules) && d.modules.length > 0) {
+          setModules(d.modules);
+        }
+        if (Array.isArray(d.shifts) && d.shifts.length > 0) {
+          setAvailableShifts(d.shifts);
+          if (d.shifts[0]?.name) {
+            setHandoffShift(d.shifts[0].name);
+          }
+        }
+      }
+
+      if (predictiveRes.success) {
+        const activeAlerts = (predictiveRes.data || []).filter(item => item.needs_reorder);
+        setPredictiveAlerts(activeAlerts);
+      }
+
+    } catch (err) {
+      console.error("Failed to load dashboard metrics", err);
+    }
+    setLoading(false);
+    setLoadingPredictive(false);
+  }, []);
+
+  useEffect(() => {
     const loadBriefing = async () => {
       setLoadingBriefing(true);
       try {
@@ -255,13 +255,13 @@ export default function StoreManagerHome() {
       }
     };
 
-    loadDashboard();
+    loadDashboardData();
     loadBriefing();
     loadLatestHandoff();
     loadAdhocSummary();
     loadAlerts();
     loadDepartments();
-  }, []);
+  }, [loadDashboardData]);
 
   const handleSendDayDigest = async () => {
     if (!digestDept) return;
