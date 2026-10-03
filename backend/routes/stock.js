@@ -20,6 +20,8 @@ router.get("/agent-status", requireAnyPermission(["stock.view", "issuances.creat
 router.get("/details/:id", requireAnyPermission(["stock.view", "stock.create", "stock.edit"]), ctrl.getItemDetails);
 router.post("/sync-today-multi-agent", requireAnyPermission(["stock.create", "stock.edit"]), ctrl.triggerMultiAgentSync);
 router.get("/sync-today-status", requireAnyPermission(["stock.view", "stock.create", "dashboard.view"]), ctrl.getMultiAgentSyncStatus);
+router.post("/agent-consult", requireAnyPermission(["stock.create", "stock.edit", "stock.view"]), ctrl.agentConsultStockItem);
+router.post("/agent-provision", requirePermission("stock.create"), ctrl.agentProvisionStockItem);
 router.get("/",      requireAnyPermission(["stock.view", "recipes.view", "indents.view", "production.view"]), paginate(sorts), ctrl.list);
 router.post("/",     requirePermission("stock.create"), validate("stock"), ctrl.create);
 router.get("/reconcile/history", requirePermission("stock.reconcile"), ctrl.getReconciliationHistory);

@@ -1492,6 +1492,33 @@ async function getMultiAgentSyncStatus(req, res, next) {
   }
 }
 
+// POST /api/stock/agent-consult
+async function agentConsultStockItem(req, res, next) {
+  try {
+    const MultiAgentStockProvisioner = require("../services/multiAgentStockProvisioner");
+    const result = await MultiAgentStockProvisioner.consultItem(req.body || {});
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/stock/agent-provision
+async function agentProvisionStockItem(req, res, next) {
+  try {
+    const MultiAgentStockProvisioner = require("../services/multiAgentStockProvisioner");
+    const result = await MultiAgentStockProvisioner.provisionItem(req.user, req.body || {});
+    
+    if (result && result.stock) {
+      await alertAdminIfLarge(req, "created", result.stock, result.stock.qty || 0);
+    }
+    
+    res.status(201).json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   list,
   create,
@@ -1518,5 +1545,8 @@ module.exports = {
   getMultiAgentStatus,
   triggerMultiAgentSync,
   getMultiAgentSyncStatus,
+  agentConsultStockItem,
+  agentProvisionStockItem,
 };
+
 

@@ -29,6 +29,8 @@ export const stock = {
   agentStatus: () => api.get("/stock/agent-status"),
   syncTodayMultiAgent: () => api.post("/stock/sync-today-multi-agent"),
   getSyncTodayStatus: () => api.get("/stock/sync-today-status"),
+  agentConsult: (body) => api.post("/stock/agent-consult", body),
+  agentProvision: (body) => api.post("/stock/agent-provision", body),
 };
 
 export const indents = {
